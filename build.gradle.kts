@@ -82,7 +82,7 @@ tasks {
 
 modrinth {
     token.set(System.getenv("MODRINTH_TOKEN"))
-    projectId.set("amethyst-core")
+    projectId.set("fzzy-core")
     versionNumber.set(modVersion)
     versionName.set("${base.archivesName.get()}-$modVersion")
     versionType.set("beta")
@@ -90,7 +90,7 @@ modrinth {
     gameVersions.addAll("1.19","1.19.1","1.19.2")
     loaders.addAll("fabric","quilt")
     detectLoaders.set(false)
-    changelog.set("## Changelog for Amethyst Core $modVersion \n\n" + log.readText())
+    changelog.set("## Changelog for Fzzy Core $modVersion \n\n" + log.readText())
     dependencies{
         required.project("fabric-api")
         required.project("fabric-language-kotlin")
