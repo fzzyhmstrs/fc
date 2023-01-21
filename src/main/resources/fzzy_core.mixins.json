@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "me.fzzyhmstrs.fzzy_core.mixins",
+  "compatibilityLevel": "JAVA_16",
+  "mixins": [
+    "ItemStackMixin"
+  ],
+  "client": [
+    "ClientPlayNetworkHandlerMixin",
+    "ItemRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
