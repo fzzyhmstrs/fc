@@ -256,8 +256,8 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
 
     companion object{
 
-        val EMPTY = EmptyModifier()
         val BLANK = Identifier(FC.MOD_ID,"blank")
+        val EMPTY = EmptyModifier()
 
         fun getEmptyHelper(): EmptyModifierHelper{
             return EmptyModifierHelper
@@ -283,7 +283,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
 
         }
 
-        class EmptyModifier:AbstractModifier<EmptyModifier>(BLANK){
+        class EmptyModifier: AbstractModifier<EmptyModifier>(BLANK){
             override fun plus(other: EmptyModifier): EmptyModifier {
                 return this
             }
