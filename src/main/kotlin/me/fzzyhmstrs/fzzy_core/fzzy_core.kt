@@ -35,7 +35,7 @@ object FCC: ClientModInitializer {
     }
 }
 
-object ACPreLaunch: PreLaunchEntrypoint{
+object FCPreLaunch: PreLaunchEntrypoint{
 
     override fun onPreLaunch() {
         MixinExtrasBootstrap.init()
