@@ -11,6 +11,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,6 +22,9 @@ import java.util.List;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
+
+    @Shadow @Final
+    private Item item;
 
     @Shadow public abstract Item getItem();
 
@@ -41,8 +45,8 @@ public abstract class ItemStackMixin {
 
     @Inject(method = "<init>(Lnet/minecraft/item/ItemConvertible;I)V", at = @At("TAIL"))
     private void fzzy_core_initializeFromItem(ItemConvertible item, int count, CallbackInfo ci){
-        if (getItem() == null) return;
-        if (getItem() instanceof Modifiable modifiableItem){
+        if (item == null) return;
+        if (item instanceof Modifiable modifiableItem){
             modifiableItem.getModifierInitializer().initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers());
         }
     }
