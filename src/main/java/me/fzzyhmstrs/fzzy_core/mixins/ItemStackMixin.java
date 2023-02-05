@@ -45,8 +45,8 @@ public abstract class ItemStackMixin {
 
     @Inject(method = "<init>(Lnet/minecraft/item/ItemConvertible;I)V", at = @At("TAIL"))
     private void fzzy_core_initializeFromItem(ItemConvertible item, int count, CallbackInfo ci){
-        if (item == null) return;
-        if (item instanceof Modifiable modifiableItem){
+        if (this.item == null) return;
+        if (this.item instanceof Modifiable modifiableItem){
             modifiableItem.getModifierInitializer().initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers());
         }
     }
