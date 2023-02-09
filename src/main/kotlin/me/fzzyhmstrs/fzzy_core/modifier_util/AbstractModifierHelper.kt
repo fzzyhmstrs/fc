@@ -125,8 +125,14 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     override fun initializeModifiers(stack: ItemStack, nbt: NbtCompound, list: List<Identifier>){
         if (list.isNotEmpty()){
             if (!nbt.contains(NbtKeys.MOD_INIT.str() + stack.translationKey)){
-                list.forEach{
-                    addModifier(it,stack,nbt)
+                if (nbt.contains(NbtKeys.MODIFIERS.str()){
+                    list.forEach{
+                        addModifier(it,stack,nbt)
+                    }
+                } else{
+                    list.forEach{
+                        addModifierToNbt(it,nbt)
+                    }
                 }
                 nbt.putBoolean(NbtKeys.MOD_INIT.str() + stack.translationKey,true)
             }
