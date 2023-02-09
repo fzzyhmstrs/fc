@@ -126,7 +126,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         if (list.isNotEmpty()){
             if (!nbt.contains(NbtKeys.MOD_INIT.str() + stack.translationKey)){
                 list.forEach{
-                    addModifierToNbt(it,nbt)
+                    addModifier(it,stack,nbt)
                 }
                 nbt.putBoolean(NbtKeys.MOD_INIT.str() + stack.translationKey,true)
             }
