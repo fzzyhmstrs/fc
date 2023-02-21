@@ -12,9 +12,13 @@ import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint
 import net.minecraft.util.Identifier
 import kotlin.random.Random
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 
 object FC: ModInitializer {
     const val MOD_ID = "fzzy_core"
+    val LOGGER = LoggerFactory.getLogger("emi_loot");
     val fcRandom = Random(System.currentTimeMillis())
     val fallbackId = Identifier("vanishing_curse")
 
