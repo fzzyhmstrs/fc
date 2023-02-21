@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_core.coding_util
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+import com.google.common.reflect.TypeToken
+import com.google.gson.*
 import me.fzzyhmstrs.fzzy_core.FC
 import me.fzzyhmstrs.fzzy_core.coding_util.SyncedConfigHelper.OldClass
 import me.fzzyhmstrs.fzzy_core.coding_util.SyncedConfigHelper.SyncedConfig
@@ -9,8 +9,11 @@ import me.fzzyhmstrs.fzzy_core.coding_util.SyncedConfigHelper.readOrCreate
 import me.fzzyhmstrs.fzzy_core.coding_util.SyncedConfigHelper.readOrCreateUpdated
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.util.Identifier
 import java.io.File
 import java.io.FileWriter
+import java.lang.reflect.Type
+import java.util.function.Predicate
 
 /**
  * Helper object for building a server-client synced configuration system. Credits for the basis of this implementation to Gabriel Henrique de Oliveira (GabrielOlvH)
@@ -155,5 +158,185 @@ object SyncedConfigHelper {
         }
 
         fun readmeText(): List<String>
+    }
+
+    /////////////////////////////////////////////////////////////////////////
+
+
+    abstract class ValidatedField<T>(protected var storedValue: T): JsonSerializer<ValidatedField<T>>, JsonDeserializer<ValidatedField<T>> {
+
+        protected val gson: Gson = GsonBuilder().create()
+
+        override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): ValidatedField<T> {
+            val tVal = deserializeHeldValue(json)
+            return validateAndCorrectInputs(tVal)
+        }
+
+        override fun serialize(
+            src: ValidatedField<T>,
+            typeOfSrc: Type,
+            context: JsonSerializationContext
+        ): JsonElement {
+            return src.serializeHeldValue()
+        }
+
+        abstract fun deserializeHeldValue(json: JsonElement): T
+
+        abstract fun serializeHeldValue():JsonElement
+
+        abstract fun validateAndCorrectInputs(input: T): ValidatedField<T>
+
+        open fun get(): T{
+            return storedValue
+        }
+
+    }
+
+    open class ValidatedInt(defaultValue: Int, private val minValue: Int, private val maxValue: Int): ValidatedField<Int>(defaultValue) {
+
+        override fun deserializeHeldValue(json: JsonElement): Int {
+            return gson.fromJson(json,Int::class.java)
+        }
+
+        override fun serializeHeldValue(): JsonElement {
+            return JsonPrimitive(storedValue)
+        }
+
+        override fun validateAndCorrectInputs(input: Int): ValidatedField<Int> {
+            if (input < minValue) return ValidatedInt(minValue, minValue, maxValue)
+            if (input > maxValue) return ValidatedInt(maxValue, minValue, maxValue)
+            return ValidatedInt(input,minValue, maxValue)
+        }
+    }
+
+    open class ValidatedFloat(defaultValue: Float, private val minValue: Float, private val maxValue: Float): ValidatedField<Float>(defaultValue) {
+
+        override fun deserializeHeldValue(json: JsonElement): Float {
+            return gson.fromJson(json,Float::class.java)
+        }
+
+        override fun serializeHeldValue(): JsonElement {
+            return JsonPrimitive(storedValue)
+        }
+
+        override fun validateAndCorrectInputs(input: Float): ValidatedField<Float> {
+            if (input < minValue) return ValidatedFloat(minValue, minValue, maxValue)
+            if (input > maxValue) return ValidatedFloat(maxValue, minValue, maxValue)
+            return ValidatedFloat(input,minValue, maxValue)
+        }
+    }
+
+    open class ValidatedDouble(defaultValue: Double, private val minValue: Double, private val maxValue: Double): ValidatedField<Double>(defaultValue) {
+
+        override fun deserializeHeldValue(json: JsonElement): Double {
+            return gson.fromJson(json,Double::class.java)
+        }
+
+        override fun serializeHeldValue(): JsonElement {
+            return JsonPrimitive(storedValue)
+        }
+
+        override fun validateAndCorrectInputs(input: Double): ValidatedField<Double> {
+            if (input < minValue) return ValidatedDouble(minValue, minValue, maxValue)
+            if (input > maxValue) return ValidatedDouble(maxValue, minValue, maxValue)
+            return ValidatedDouble(input,minValue, maxValue)
+        }
+    }
+
+    open class ValidatedShort(defaultValue: Short, private val minValue: Short, private val maxValue: Short): ValidatedField<Short>(defaultValue) {
+
+        override fun deserializeHeldValue(json: JsonElement): Short {
+            return gson.fromJson(json,Short::class.java)
+        }
+
+        override fun serializeHeldValue(): JsonElement {
+            return JsonPrimitive(storedValue)
+        }
+
+        override fun validateAndCorrectInputs(input: Short): ValidatedField<Short> {
+            if (input < minValue) return ValidatedShort(minValue, minValue, maxValue)
+            if (input > maxValue) return ValidatedShort(maxValue, minValue, maxValue)
+            return ValidatedShort(input,minValue, maxValue)
+        }
+    }
+
+    open class ValidatedLong(defaultValue: Long, private val minValue: Long, private val maxValue: Long): ValidatedField<Long>(defaultValue) {
+
+        override fun deserializeHeldValue(json: JsonElement): Long {
+            return gson.fromJson(json,Long::class.java)
+        }
+
+        override fun serializeHeldValue(): JsonElement {
+            return JsonPrimitive(storedValue)
+        }
+
+        override fun validateAndCorrectInputs(input: Long): ValidatedField<Long> {
+            if (input < minValue) return ValidatedLong(minValue, minValue, maxValue)
+            if (input > maxValue) return ValidatedLong(maxValue, minValue, maxValue)
+            return ValidatedLong(input,minValue, maxValue)
+        }
+    }
+
+    open class ValidatedIdentifier(defaultValue: Identifier, private val idValidator: Predicate<Identifier>): ValidatedField<Identifier>(defaultValue) {
+
+        override fun deserializeHeldValue(json: JsonElement): Identifier {
+            val string = gson.fromJson(json, String::class.java)
+            return Identifier.tryParse(string) ?: throw IllegalStateException("Identifier $string not parsable")
+        }
+
+        override fun serializeHeldValue(): JsonElement {
+            return JsonPrimitive(storedValue.toString())
+        }
+
+        override fun validateAndCorrectInputs(input: Identifier): ValidatedField<Identifier> {
+            if (!idValidator.test(input)) return ValidatedIdentifier(storedValue,idValidator)
+            return ValidatedIdentifier(input,idValidator)
+        }
+    }
+
+    open class ValidatedEnum<T:Enum<T>>(defaultValue: T, private val enum: Class<T>): ValidatedField<T>(defaultValue) {
+
+        private val values: Map<String,T>
+        init{
+            val map: MutableMap<String,T> = mutableMapOf()
+            enum.enumConstants?.forEach {
+                map[it.name] = it
+            }
+            values = map
+        }
+
+        override fun deserializeHeldValue(json: JsonElement): T {
+            val string = gson.fromJson(json, String::class.java)
+            return values[string]?:storedValue
+        }
+
+        override fun serializeHeldValue(): JsonElement {
+            return JsonPrimitive(storedValue.name)
+        }
+
+        override fun validateAndCorrectInputs(input: T): ValidatedField<T> {
+            return ValidatedEnum(input,enum)
+        }
+    }
+
+    open class ValidatedList<R,T:List<R>>(defaultValue: List<R>, private val lType: TypeToken<T>, private val listEntryValidator: Predicate<R>): ValidatedField<List<R>>(defaultValue) {
+
+        override fun deserializeHeldValue(json: JsonElement): T {
+            return gson.fromJson(json,lType.type)
+        }
+
+        override fun serializeHeldValue(): JsonElement {
+            return gson.toJsonTree(storedValue,lType.type)
+        }
+
+        override fun validateAndCorrectInputs(input: List<R>): ValidatedField<List<R>> {
+            val tempList: MutableList<R> = mutableListOf()
+            input.forEach {
+                if(listEntryValidator.test(it)){
+                    tempList.add(it)
+                }
+            }
+            return ValidatedList(tempList,lType,listEntryValidator)
+        }
     }
 }
