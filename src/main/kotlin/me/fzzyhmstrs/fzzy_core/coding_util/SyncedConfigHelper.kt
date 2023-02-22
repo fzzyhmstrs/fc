@@ -270,7 +270,7 @@ object SyncedConfigHelper {
         fun readmeText(): List<String>
     }
     
-    open class ReadMeBuilder(file: String, base: String = FC.MOD_ID,headerText: List<String> = listOf()): ReadMeWriter{
+    open class ReadMeBuilder(file: String, base: String = FC.MOD_ID, headerText: List<String> = listOf()): ReadMeWriter{
         
         private val readMeList: MutableList<String> = headerText.toMutableList()
         
@@ -281,6 +281,10 @@ object SyncedConfigHelper {
         open fun addToReadMe(list: List<String>){
             readMeList.addAll(list)
         }
+    }
+    
+    interface ReadMeTextProvider{
+        readmeText(): String{
     }
     
     annotation class ReadMeText(val decription: String)
@@ -368,7 +372,7 @@ object SyncedConfigHelper {
     * Helper methods are provided to more easily sync configs directly with the PacketByteBuf framework, rather than serializing and then deserializing the entire JSON
     */
 
-    abstract class ValidatedField<T>(protected var storedValue: T): ConfigSerializable {
+    abstract class ValidatedField<T>(protected var storedValue: T): ConfigSerializable, ReadMeTextProvider {
 
         protected val gson: Gson = GsonBuilder().create()
 
@@ -439,6 +443,10 @@ object SyncedConfigHelper {
             }
             return ValidationResult.success(input)
         }
+        
+        override fun readmeText(): String{
+            return "Number with a default of $storedValue, a minimum of $minValue, and a maximum of $maxValue"
+        }
 
     }
 
@@ -454,7 +462,7 @@ object SyncedConfigHelper {
 
     open class ValidatedByte(defaultValue: Byte,maxValue: Byte, minValue:Byte = 0): ValidatedNumber<Byte>(Byte::class.java,defaultValue,minValue,maxValue)
 
-    open class ValidatedIdentifier(defaultValue: Identifier, private val idValidator: Predicate<Identifier> = Predicate {true}, private val invalidIdMessage: String = ""): ValidatedField<Identifier>(defaultValue) {
+    open class ValidatedIdentifier(defaultValue: Identifier, private val idValidator: Predicate<Identifier> = Predicate {true}, private val invalidIdMessage: String = "None"): ValidatedField<Identifier>(defaultValue) {
 
         init{
             if (!idValidator.test(defaultValue)){
@@ -486,6 +494,10 @@ object SyncedConfigHelper {
                 return ValidationResult.error(storedValue,errorMessage)
             }
             return ValidationResult.success(input)
+        }
+        
+        overide fun readmeText(){
+            return "Identifier stored as a string that needs to meet the following criteria: $invalidIdMessage"
         }
     }
 
