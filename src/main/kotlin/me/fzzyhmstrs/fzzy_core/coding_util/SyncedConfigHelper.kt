@@ -496,7 +496,7 @@ object SyncedConfigHelper {
             return ValidationResult.success(input)
         }
         
-        overide fun readmeText(){
+        overide fun readmeText(): String{
             return "Identifier stored as a string that needs to meet the following criteria: $invalidIdMessage"
         }
     }
@@ -533,9 +533,13 @@ object SyncedConfigHelper {
         override fun validateAndCorrectInputs(input: T): ValidationResult<T> {
             return ValidationResult.success(input)
         }
+        
+        override fun readmeText(): String{
+            return "Choose from the following options: ${valuesMap.keys}"
+        }
     }
 
-    open class ValidatedList<R,T:List<R>>(defaultValue: List<R>, private val lType: TypeToken<T>, private val listEntryValidator: Predicate<R>, private val invalidEntryMessage: String = ""): ValidatedField<List<R>>(defaultValue) {
+    open class ValidatedList<R,T:List<R>>(defaultValue: List<R>, private val lType: TypeToken<T>, private val listEntryValidator: Predicate<R>, private val invalidEntryMessage: String = "None"): ValidatedField<List<R>>(defaultValue) {
 
         override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<List<R>> {
             return try{
@@ -563,6 +567,10 @@ object SyncedConfigHelper {
                 return ValidationResult.error(tempList, "Config list has errors, entries need to follow these constraints: $invalidEntryMessage. The following entries couldn't be validated and were removed: $errorList")
             }
             return ValidationResult.success(input)
+        }
+        
+        override fun readmeText(): String{
+            return "List of values that meet the following criteria: $invalidEntryMessage"
         }
     }
 }
