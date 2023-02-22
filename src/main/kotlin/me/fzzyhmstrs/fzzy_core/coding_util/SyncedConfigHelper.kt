@@ -18,7 +18,7 @@ import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.javaType
 
 /**
- * Helper object for building a server-client synced configuration system. Credits for the basis of this implementation to Gabriel Henrique de Oliveira (GabrielOlvH)
+ * Helper object for building a server-client synced configuration system. Credits for the basis of this implementation go to Gabriel Henrique de Oliveira (GabrielOlvH)
  *
  * This system is based largely on GSON, and configs are created and read in json format.
  *
@@ -50,7 +50,7 @@ object SyncedConfigHelper {
      *
      * Deprecated as of version X.X.X due to implementation of validated configurations.
      */
-     @Deprecated("This method does not correct invalid inputs, use readOrCreateAndValidate` to perform automatic input correction")
+     @Deprecated("This method does not correct invalid inputs and cannot properly read ValidatedFields, use readOrCreateAndValidate` to perform automatic input correction")
     inline fun <reified T> readOrCreate(file: String, child: String = "", base: String = FC.MOD_ID, configClass: () -> T): T {
         val (dir,dirCreated) = makeDir(child, base)
         if (!dirCreated) {
@@ -78,7 +78,7 @@ object SyncedConfigHelper {
      * Deprecated as of version X.X.X due to implementation of validated configurations.
      */
     @Suppress("UNUSED_PARAMETER")
-    @Deprecated("This method does not correct invalid inputs, use readOrCreateAndValidate` to perform automatic input correction")
+    @Deprecated("This method does not correct invalid inputs and cannot properly read ValidatedFields, use readOrCreateAndValidate` to perform automatic input correction")
     inline fun <reified T, reified P: OldClass<T>> readOrCreateUpdated(file: String, previous: String, child: String = "", base: String = FC.MOD_ID, configClass: () -> T, previousClass: () -> P): T{
         val (dir,dirCreated) = makeDir(child, base)
         if (!dirCreated) {
@@ -116,6 +116,8 @@ object SyncedConfigHelper {
         }
     }
 
+    ////////////////////////////////////////
+    // Updated config creator methods  /////
     ////////////////////////////////////////
 
     /**
@@ -207,7 +209,11 @@ object SyncedConfigHelper {
             return configClass()
         }
     }
-
+    
+    /////////////////////////////////////////////
+    // basic helper methods and interfaces  /////
+    /////////////////////////////////////////////
+    
     /**
      * method can be used to create a directory in the config parent directory. If the directory can't be created, the right member of the returning Pair will be false.
      */
@@ -263,7 +269,24 @@ object SyncedConfigHelper {
 
         fun readmeText(): List<String>
     }
+    
+    open class ReadMeBuilder(file: String, base: String = FC.MOD_ID,headerText: List<String> = listOf()): ReadMeWriter{
+        
+        private val readMeList: MutableList<String> = headerText.toMutableList()
+        
+        override fun readmeText(): List<String>{
+            return readMeList
+        }
+        
+        open fun addToReadMe(list: List<String>){
+            readMeList.addAll(list)
+        }
+    }
+    
+    annotation class ReadMeText(val decription: String)
 
+    /////////////////////////////////////////////////////////////////////////
+    // Serialization utilities and helpers                           ////////
     /////////////////////////////////////////////////////////////////////////
 
     interface ConfigSerializable{
@@ -271,6 +294,7 @@ object SyncedConfigHelper {
         fun deserialize(json: JsonElement, fieldName: String): ValidationResult<Boolean>
     }
 
+    //customserializer that utilizes GSON on un-validated properties, and custom serialization on validated ones. Only serializes mutable properties
     fun serializeConfig(config: Any): String{
         val json = JsonObject()
         config.javaClass.kotlin.declaredMemberProperties.forEach {
@@ -281,7 +305,6 @@ object SyncedConfigHelper {
                     propVal.serialize()
                 } else {
                     gson.toJsonTree(propVal,it.returnType.javaType)
-
                 }
                 json.add(name,el)
             }
@@ -289,6 +312,7 @@ object SyncedConfigHelper {
         return gson.toJson(json)
     }
 
+    
     fun <T: Any> deserializeConfig(config: T, json: JsonElement): ValidationResult<T>{
         if (!json.isJsonObject) return ValidationResult.error(config,"Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing")
         val jsonObject = json.asJsonObject
@@ -334,15 +358,21 @@ object SyncedConfigHelper {
             }
         }
     }
+    
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //Validated Field Collection - serialization indistinguishable from their wrapped values, but deserialized into a validated wrapper
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+    * Validated Field Collection - serialization indistinguishable from their wrapped values, but deserialized into a validated wrapper
+    * 
+    * Validated Fields CANNOT be serialized and deserialized by GSON properly. The JSON provided does not provide enough context as the validation is hidden within code only, and not serialized. These fields are not building new classes from scratch, they are updating and validating a pre-existing default class framework.
+    * 
+    * Helper methods are provided to more easily sync configs directly with the PacketByteBuf framework, rather than serializing and then deserializing the entire JSON
+    */
 
     abstract class ValidatedField<T>(protected var storedValue: T): ConfigSerializable {
 
         protected val gson: Gson = GsonBuilder().create()
 
+        /////// fzzy core serialization ////////
         override fun deserialize(json: JsonElement, fieldName: String): ValidationResult<Boolean> {
             val tVal = deserializeHeldValue(json, fieldName)
             if (tVal.isError()){
@@ -423,123 +453,6 @@ object SyncedConfigHelper {
     open class ValidatedShort(defaultValue: Short,maxValue: Short, minValue:Short = 0): ValidatedNumber<Short>(Short::class.java,defaultValue,minValue,maxValue)
 
     open class ValidatedByte(defaultValue: Byte,maxValue: Byte, minValue:Byte = 0): ValidatedNumber<Byte>(Byte::class.java,defaultValue,minValue,maxValue)
-
-    /*open class ValidatedInt(defaultValue: Int, private val minValue: Int, private val maxValue: Int): ValidatedField<Int>(defaultValue) {
-        
-        override fun deserializeHeldValue(json: JsonElement): Int {
-            return gson.fromJson(json,Int::class.java)
-        }
-
-        override fun serializeHeldValue(): JsonElement {
-            return JsonPrimitive(storedValue)
-        }
-
-        override fun validateAndCorrectInputs(input: Int): Int {
-            if (input < minValue) {
-                errorMessage = "value {$input} is below the minimum bound of {$minValue}. Correct to the minimum value."
-                return minValue
-            }
-            if (input > maxValue) {
-                errorMessage = "value {$input} is above the maximum bound of {$maxValue}. Correct to the maximum value."
-                return maxValue
-            }
-            return input
-        }
-       
-    }
-
-    open class ValidatedFloat(defaultValue: Float, private val minValue: Float, private val maxValue: Float): ValidatedField<Float>(defaultValue) {
-
-        override fun deserializeHeldValue(json: JsonElement): Float {
-            return gson.fromJson(json,Float::class.java)
-        }
-
-        override fun serializeHeldValue(): JsonElement {
-            return JsonPrimitive(storedValue)
-        }
-
-        override fun validateAndCorrectInputs(input: Float): Float {
-            if (input < minValue) {
-                errorMessage = "value {$input} is below the minimum bound of {$minValue}."
-                return minValue
-            }
-            if (input > maxValue) {
-                errorMessage = "value {$input} is above the maximum bound of {$maxValue}."
-                return maxValue
-            }
-            return input
-        }
-    }
-
-    open class ValidatedDouble(defaultValue: Double, private val minValue: Double, private val maxValue: Double): ValidatedField<Double>(defaultValue) {
-
-        override fun deserializeHeldValue(json: JsonElement): Double {
-            return gson.fromJson(json,Double::class.java)
-        }
-
-        override fun serializeHeldValue(): JsonElement {
-            return JsonPrimitive(storedValue)
-        }
-
-        override fun validateAndCorrectInputs(input: Double): ValidatedField<Double> {
-            if (input < minValue) {
-                errorMessage = "value {$input} is below the minimum bound of {$minValue}."
-                return ValidatedDouble(minValue, minValue, maxValue)
-            }
-            if (input > maxValue) {
-                errorMessage = "value {$input} is above the maximum bound of {$maxValue}."
-                return ValidatedDouble(maxValue, minValue, maxValue)
-            }
-            return ValidatedDouble(input,minValue, maxValue)
-        }
-    }
-
-    open class ValidatedShort(defaultValue: Short, private val minValue: Short, private val maxValue: Short): ValidatedField<Short>(defaultValue) {
-
-        override fun deserializeHeldValue(json: JsonElement): Short {
-            return gson.fromJson(json,Short::class.java)
-        }
-
-        override fun serializeHeldValue(): JsonElement {
-            return JsonPrimitive(storedValue)
-        }
-
-        override fun validateAndCorrectInputs(input: Short): ValidatedField<Short> {
-            if (input < minValue) {
-                errorMessage = "value {$input} is below the minimum bound of {$minValue}."
-                return ValidatedShort(minValue, minValue, maxValue)
-            }
-            if (input > maxValue) {
-                errorMessage = "value {$input} is above the maximum bound of {$maxValue}."
-                return ValidatedShort(maxValue, minValue, maxValue)
-            }
-            return ValidatedShort(input,minValue, maxValue)
-        }
-    }
-
-    open class ValidatedLong(defaultValue: Long, private val minValue: Long, private val maxValue: Long): ValidatedField<Long>(defaultValue) {
-
-        override fun deserializeHeldValue(json: JsonElement): Long {
-            return gson.fromJson(json,Long::class.java)
-        }
-
-        override fun serializeHeldValue(): JsonElement {
-            return JsonPrimitive(storedValue)
-        }
-
-        override fun validateAndCorrectInputs(input: Long): ValidatedField<Long> {
-            if (input < minValue) {
-                errorMessage = "value {$input} is below the minimum bound of {$minValue}."
-                return ValidatedLong(minValue, minValue, maxValue)
-            }
-            if (input > maxValue) {
-                errorMessage = "value {$input} is above the maximum bound of {$maxValue}."
-                return ValidatedLong(maxValue, minValue, maxValue)
-            }
-            return ValidatedLong(input,minValue, maxValue)
-        }
-    }*/
-
 
     open class ValidatedIdentifier(defaultValue: Identifier, private val idValidator: Predicate<Identifier> = Predicate {true}, private val invalidIdMessage: String = ""): ValidatedField<Identifier>(defaultValue) {
 
