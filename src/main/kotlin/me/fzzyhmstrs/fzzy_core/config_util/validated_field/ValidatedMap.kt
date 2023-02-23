@@ -6,7 +6,7 @@ import me.fzzyhmstrs.fzzy_core.config_util.ValidationResult
 import java.util.function.BiPredicate
 import java.util.function.Predicate
 
-open class ValidatedMap<R,T>(
+class ValidatedMap<R,T>(
     defaultValue: Map<R,T>,
     private val lType: TypeToken<Map<R,T>>,
     private val listEntryValidator: BiPredicate<R,T> = BiPredicate{_,_ -> true},

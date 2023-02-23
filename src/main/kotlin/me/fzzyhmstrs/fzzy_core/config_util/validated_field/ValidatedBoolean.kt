@@ -4,7 +4,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import me.fzzyhmstrs.fzzy_core.config_util.ValidationResult
 
-open class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultValue){
+class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultValue){
 
     override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<Boolean> {
         if (!json.isJsonPrimitive) return ValidationResult.error(storedValue,"Boolean value $fieldName couldn't be deserialized. Make sure it is 'true' or 'false'.")

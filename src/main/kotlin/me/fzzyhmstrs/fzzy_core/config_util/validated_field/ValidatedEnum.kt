@@ -4,7 +4,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import me.fzzyhmstrs.fzzy_core.config_util.ValidationResult
 
-open class ValidatedEnum<T:Enum<T>>(defaultValue: T, enum: Class<T>): ValidatedField<T>(defaultValue) {
+class ValidatedEnum<T:Enum<T>>(defaultValue: T, enum: Class<T>): ValidatedField<T>(defaultValue) {
 
     private val valuesMap: Map<String,T>
     init{

@@ -5,7 +5,7 @@ import me.fzzyhmstrs.fzzy_core.config_util.SyncedConfigHelperV1
 import me.fzzyhmstrs.fzzy_core.config_util.ValidationResult
 import java.util.function.Predicate
 
-open class ValidatedList<R>(
+class ValidatedList<R>(
     defaultValue: List<R>,
     private val lType: Class<R>,
     private val listEntryValidator: Predicate<R> = Predicate {true},

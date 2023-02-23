@@ -6,7 +6,7 @@ import me.fzzyhmstrs.fzzy_core.config_util.ValidationResult
 import net.minecraft.util.Identifier
 import java.util.function.Predicate
 
-open class ValidatedIdentifier(defaultValue: Identifier, private val idValidator: Predicate<Identifier> = Predicate {true}, private val invalidIdMessage: String = "None"): ValidatedField<Identifier>(defaultValue) {
+class ValidatedIdentifier(defaultValue: Identifier, private val idValidator: Predicate<Identifier> = Predicate {true}, private val invalidIdMessage: String = "None"): ValidatedField<Identifier>(defaultValue) {
 
     init{
         if (!idValidator.test(defaultValue)){
