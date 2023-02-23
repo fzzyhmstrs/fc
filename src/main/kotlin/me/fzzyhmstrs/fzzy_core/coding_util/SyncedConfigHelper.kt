@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_core.coding_util
 
-import com.google.common.reflect.TypeToken
-import com.google.gson.*
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import me.fzzyhmstrs.fzzy_core.FC
 import me.fzzyhmstrs.fzzy_core.coding_util.SyncedConfigHelper.OldClass
 import me.fzzyhmstrs.fzzy_core.coding_util.SyncedConfigHelper.SyncedConfig
@@ -9,13 +9,8 @@ import me.fzzyhmstrs.fzzy_core.coding_util.SyncedConfigHelper.readOrCreate
 import me.fzzyhmstrs.fzzy_core.coding_util.SyncedConfigHelper.readOrCreateUpdated
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.network.PacketByteBuf
-import net.minecraft.util.Identifier
 import java.io.File
 import java.io.FileWriter
-import java.util.function.Predicate
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.jvm.javaType
 
 /**
  * Helper object for building a server-client synced configuration system. Credits for the basis of this implementation go to Gabriel Henrique de Oliveira (GabrielOlvH)
@@ -41,9 +36,10 @@ import kotlin.reflect.jvm.javaType
  * 6) reference your stored container instance when you are dealing with the relevant information stored within. In Amethyst Cores case, the [flavors][me.fzzyhmstrs.fzzy_core.config.FcConfig.flavors] property is called by the [Flavorful][me.fzzyhmstrs.fzzy_core.item_util.interfaces.Flavorful] interface to determine if it should append tooltip descriptions or not.
  */
 
+@Deprecated("Scheduled for removal; the new config_util validated config system is replacing it")
 object SyncedConfigHelper {
 
-    val gson: Gson = GsonBuilder().create()
+    val gson: Gson = GsonBuilder().setPrettyPrinting().create()
 
     /**
      * basic method for creating and passing the config settings for a particular configuration class to/from json.
@@ -116,99 +112,7 @@ object SyncedConfigHelper {
         }
     }
 
-    ////////////////////////////////////////
-    // Updated config creator methods  /////
-    ////////////////////////////////////////
 
-    /**
-     * Improved basic config serializer/deserializer method that is no longer inline and created validated configs using [ValidatedField]
-     *
-     * incorrect inputs will automatically be corrected where possible, or reverted to default if not, and the validated config re-written to it's file
-     */
-    fun <T : Any> readOrCreateAndValidate(file: String, child: String = "", base: String = FC.MOD_ID, configClass: () -> T): T {
-        val (dir,dirCreated) = makeDir(child, base)
-        if (!dirCreated) {
-            return configClass()
-        }
-        val f = File(dir, file)
-        try {
-            if (f.exists()) {
-                val str = f.readLines().joinToString("")
-                println(">>> Unvalidated config:")
-                println(str)
-                val readConfig = deserializeConfig(configClass(),JsonParser.parseString(str))
-                if (readConfig.isError()) {
-                    FC.LOGGER.warn("Errors found in $file per above log entries, attempting to correct invalid inputs automatically.")
-                    val correctedConfig = serializeConfig(readConfig.get())
-                    println(">>> Corrected config:")
-                    println(correctedConfig)
-                    f.writeText(correctedConfig)
-                }
-                return readConfig.get()
-            } else if (!f.createNewFile()) {
-                println("Failed to create default config file ($file), using default config.")
-            } else {
-                f.writeText(gson.toJson(configClass()))
-            }
-            return configClass()
-        } catch (e: Exception) {
-            println("Failed to read config file $file! Using default values: " + e.message)
-            e.printStackTrace()
-            return configClass()
-        }
-    }
-
-    /**
-     * Improved advanced config serializer/deserializer method that is no longer inline and created validated configs using [ValidatedField], allowing for 1 layer of version control
-     *
-     * incorrect inputs from the new and old config will be automatically corrected where possible, or reverted to default if not, and the validated and updated config written to it's file
-     */
-    fun <T: Any> readOrCreateUpdatedAndValidate(file: String, previous: String, child: String = "", base: String = FC.MOD_ID, configClass: () -> T, previousClass: () -> OldClass<T>): T{
-        val (dir,dirCreated) = makeDir(child, base)
-        if (!dirCreated) {
-            return configClass()
-        }
-        val p = File(dir, previous)
-        try {
-            if (p.exists()) {
-                val pStr = p.readLines().joinToString("")
-                val previousConfig = deserializeConfig(previousClass(),JsonParser.parseString(pStr))
-                if (previousConfig.isError()){
-                    FC.LOGGER.error("Old config $previous had errors, attempted to correct before updating.")
-                }
-                val newClass = previousConfig.get().generateNewClass()
-                    val f = File(dir,file)
-                    if (f.exists()){
-                        p.delete() //attempts to delete the now useless old config version file
-                        val str = f.readLines().joinToString("")
-                        println(">>> Unvalidated config:")
-                        println(str)
-                        val readConfig = deserializeConfig(configClass(),JsonParser.parseString(str))
-                        if (readConfig.isError()){
-                            FC.LOGGER.warn("Errors found in $file per above logs, attempting to correct invalid inputs automatically.")
-                            val correctedConfig = serializeConfig(readConfig.get())
-                            println(">>> Corrected config:")
-                            println(correctedConfig)
-                            f.writeText(correctedConfig)
-                        }
-                        return readConfig.get()
-                    } else if (!f.createNewFile()){
-                        //don't delete old file if the new one can't be generated to take its place
-                        println("Failed to create new config file ($file), using old config with new defaults.")
-                    } else {
-                        p.delete() //attempts to delete the now useless old config version file
-                        f.writeText(gson.toJson(newClass))
-                    }
-                    return newClass
-            } else {
-                return readOrCreateAndValidate(file,child, base, configClass)
-            }
-        } catch (e: Exception) {
-            println("Failed to read config file $file! Using default values: " + e.message)
-            e.printStackTrace()
-            return configClass()
-        }
-    }
     
     /////////////////////////////////////////////
     // basic helper methods and interfaces  /////
@@ -230,6 +134,8 @@ object SyncedConfigHelper {
         return Pair(dir,true)
     }
 
+
+
     /**
      * basic interface for creating a synced configurator as described above
      */
@@ -243,9 +149,7 @@ object SyncedConfigHelper {
      * used to generate backward compatibility with an old version of a config file and a new one. See Amethyst Imbuements config for example implementations.
      */
     interface OldClass<T>{
-
         fun generateNewClass(): T
-
     }
 
     /**
@@ -269,308 +173,5 @@ object SyncedConfigHelper {
 
         fun readmeText(): List<String>
     }
-    
-    open class ReadMeBuilder(file: String, base: String = FC.MOD_ID, headerText: List<String> = listOf()): ReadMeWriter{
-        
-        private val readMeList: MutableList<String> = headerText.toMutableList()
-        
-        override fun readmeText(): List<String>{
-            return readMeList
-        }
-        
-        open fun addToReadMe(list: List<String>){
-            readMeList.addAll(list)
-        }
-    }
-    
-    interface ReadMeTextProvider{
-        readmeText(): String{
-    }
-    
-    annotation class ReadMeText(val decription: String)
 
-    /////////////////////////////////////////////////////////////////////////
-    // Serialization utilities and helpers                           ////////
-    /////////////////////////////////////////////////////////////////////////
-
-    interface ConfigSerializable{
-        fun serialize():JsonElement
-        fun deserialize(json: JsonElement, fieldName: String): ValidationResult<Boolean>
-    }
-
-    //customserializer that utilizes GSON on un-validated properties, and custom serialization on validated ones. Only serializes mutable properties
-    fun serializeConfig(config: Any): String{
-        val json = JsonObject()
-        config.javaClass.kotlin.declaredMemberProperties.forEach {
-            if (it is KMutableProperty<*>){
-                val propVal = it.get(config)
-                val name = it.name
-                val el = if (propVal is ValidatedField<*>){
-                    propVal.serialize()
-                } else {
-                    gson.toJsonTree(propVal,it.returnType.javaType)
-                }
-                json.add(name,el)
-            }
-        }
-        return gson.toJson(json)
-    }
-
-    
-    fun <T: Any> deserializeConfig(config: T, json: JsonElement): ValidationResult<T>{
-        if (!json.isJsonObject) return ValidationResult.error(config,"Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing")
-        val jsonObject = json.asJsonObject
-        var error = false
-        for (it in config.javaClass.kotlin.declaredMemberProperties){
-            if (it is KMutableProperty<*>){
-                val propVal = it.get(config)
-                val name = it.name
-                val jsonElement = jsonObject.get(name) ?: continue
-                if (propVal is ValidatedField<*>){
-                    val result = propVal.deserialize(jsonElement, name)
-                    if(result.isError()){
-                        error = true
-                    }
-                } else {
-                    it.setter.call(config, gson.fromJson(jsonElement,it.returnType.javaType))
-                }
-            }
-        }
-        return if(!error){
-            ValidationResult.success(config)
-        } else {
-            ValidationResult.error(config,"Errors found!")
-        }
-    }
-
-    class ValidationResult<T> private constructor(private val storedVal: T, private val error: String = ""){
-        fun isError(): Boolean{
-            return error.isNotEmpty()
-        }
-        fun getError(): String{
-            return error
-        }
-        fun get(): T{
-            return storedVal
-        }
-        companion object{
-            fun <T>success(storedVal: T): ValidationResult<T>{
-                return ValidationResult(storedVal)
-            }
-            fun <T>error(storedVal: T, error: String): ValidationResult<T>{
-                return ValidationResult(storedVal,error)
-            }
-        }
-    }
-    
-
-    /**
-    * Validated Field Collection - serialization indistinguishable from their wrapped values, but deserialized into a validated wrapper
-    * 
-    * Validated Fields CANNOT be serialized and deserialized by GSON properly. The JSON provided does not provide enough context as the validation is hidden within code only, and not serialized. These fields are not building new classes from scratch, they are updating and validating a pre-existing default class framework.
-    * 
-    * Helper methods are provided to more easily sync configs directly with the PacketByteBuf framework, rather than serializing and then deserializing the entire JSON
-    */
-
-    abstract class ValidatedField<T>(protected var storedValue: T): ConfigSerializable, ReadMeTextProvider {
-
-        protected val gson: Gson = GsonBuilder().create()
-
-        /////// fzzy core serialization ////////
-        override fun deserialize(json: JsonElement, fieldName: String): ValidationResult<Boolean> {
-            val tVal = deserializeHeldValue(json, fieldName)
-            if (tVal.isError()){
-                FC.LOGGER.error("Error deserializing manually entered config entry [$tVal], using default value [${tVal.get()}]")
-                FC.LOGGER.error(">>> Possible reasons: ${tVal.getError()}")
-                return ValidationResult.error(true,tVal.getError())
-            }
-            val tVal2 = validateAndCorrectInputs(tVal.get())
-            storedValue = tVal2.get()
-            if (tVal2.isError()){
-                FC.LOGGER.error("Manually entered config entry [$tVal] had errors, corrected to [${tVal2.get()}]")
-                FC.LOGGER.error(">>> Possible reasons: ${tVal2.getError()}")
-                return ValidationResult.error(true,tVal2.getError())
-            }
-
-            return ValidationResult.success(false)
-        }
-
-        override fun serialize(): JsonElement {
-            return serializeHeldValue()
-        }
-
-        protected abstract fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<T>
-
-        protected abstract fun serializeHeldValue():JsonElement
-
-        protected abstract fun validateAndCorrectInputs(input: T): ValidationResult<T>
-
-        open fun get(): T{
-            return storedValue
-        }
-
-    }
-
-    open class ValidatedNumber<T>(private val numberClass: Class<T>, defaultValue: T, private val minValue: T, private val maxValue: T)  : ValidatedField<T>(defaultValue) where T: Number, T: Comparable<T>{
-
-        init{
-            if (minValue > maxValue){
-                throw IllegalArgumentException("Min value [$minValue] greater than max value [$maxValue] in validated number [${this.javaClass.canonicalName}] in config class [${this.javaClass.enclosingClass?.canonicalName}]")
-            }
-        }
-
-        override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<T> {
-            val i = try{
-                ValidationResult.success(gson.fromJson(json, numberClass))
-            } catch (e: Exception){
-                ValidationResult.error(storedValue,"json [$json] at key $fieldName is not a properly formatted number")
-            }
-            return i
-        }
-
-        override fun serializeHeldValue(): JsonElement {
-            return JsonPrimitive(storedValue)
-        }
-
-        override fun validateAndCorrectInputs(input: T): ValidationResult<T> {
-            if (input < minValue) {
-                val errorMessage = "Value {$input} is below the minimum bound of {$minValue}."
-                return ValidationResult.error(minValue, errorMessage)
-            }
-            if (input > maxValue) {
-                val errorMessage = "Value {$input} is above the maximum bound of {$maxValue}."
-                return ValidationResult.error(maxValue, errorMessage)
-            }
-            return ValidationResult.success(input)
-        }
-        
-        override fun readmeText(): String{
-            return "Number with a default of $storedValue, a minimum of $minValue, and a maximum of $maxValue"
-        }
-
-    }
-
-    open class ValidatedInt(defaultValue: Int,maxValue: Int, minValue:Int = 0): ValidatedNumber<Int>(Int::class.java,defaultValue,minValue,maxValue)
-
-    open class ValidatedFloat(defaultValue: Float,maxValue: Float, minValue:Float = 0f): ValidatedNumber<Float>(Float::class.java,defaultValue,minValue,maxValue)
-
-    open class ValidatedDouble(defaultValue: Double,maxValue: Double, minValue:Double = 0.0): ValidatedNumber<Double>(Double::class.java,defaultValue,minValue,maxValue)
-
-    open class ValidatedLong(defaultValue: Long,maxValue: Long, minValue:Long = 0L): ValidatedNumber<Long>(Long::class.java,defaultValue,minValue,maxValue)
-
-    open class ValidatedShort(defaultValue: Short,maxValue: Short, minValue:Short = 0): ValidatedNumber<Short>(Short::class.java,defaultValue,minValue,maxValue)
-
-    open class ValidatedByte(defaultValue: Byte,maxValue: Byte, minValue:Byte = 0): ValidatedNumber<Byte>(Byte::class.java,defaultValue,minValue,maxValue)
-
-    open class ValidatedIdentifier(defaultValue: Identifier, private val idValidator: Predicate<Identifier> = Predicate {true}, private val invalidIdMessage: String = "None"): ValidatedField<Identifier>(defaultValue) {
-
-        init{
-            if (!idValidator.test(defaultValue)){
-                throw IllegalArgumentException("Default identifier [$defaultValue] not valid per defined idValidator in validated identifier [${this.javaClass.canonicalName}] in config class [${this.javaClass.enclosingClass?.canonicalName}]")
-            }
-        }
-
-        override fun deserializeHeldValue(json: JsonElement,fieldName: String): ValidationResult<Identifier> {
-            return  try {
-                val string = gson.fromJson(json, String::class.java)
-                val id = Identifier.tryParse(string)
-                if (id == null){
-                    ValidationResult.error(storedValue,"Identifier $id couldn't be parsed, resorting to fallback.")
-                } else {
-                    ValidationResult.success(id)
-                }
-            } catch (e: Exception){
-                ValidationResult.error(storedValue,"json [$json] at key $fieldName is not a properly formatted string")
-            }
-        }
-
-        override fun serializeHeldValue(): JsonElement {
-            return JsonPrimitive(storedValue.toString())
-        }
-
-        override fun validateAndCorrectInputs(input: Identifier): ValidationResult<Identifier> {
-            if (!idValidator.test(input)) {
-                val errorMessage = "Config Identifier $input couldn't be validated. Needs to meet the following criteria: $invalidIdMessage"
-                return ValidationResult.error(storedValue,errorMessage)
-            }
-            return ValidationResult.success(input)
-        }
-        
-        overide fun readmeText(): String{
-            return "Identifier stored as a string that needs to meet the following criteria: $invalidIdMessage"
-        }
-    }
-
-    open class ValidatedEnum<T:Enum<T>>(defaultValue: T, private val enum: Class<T>): ValidatedField<T>(defaultValue) {
-
-        private val valuesMap: Map<String,T>
-        init{
-            val map: MutableMap<String,T> = mutableMapOf()
-            enum.enumConstants?.forEach {
-                map[it.name] = it
-            }
-            valuesMap = map
-        }
-
-        override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<T> {
-            return try{
-                val string = gson.fromJson(json, String::class.java)
-                val chkEnum = valuesMap[string]
-                if(chkEnum == null){
-                    ValidationResult.error(storedValue,"Entered value isn't a valid selection from the possible values. Possible values are: ${valuesMap.keys}")
-                } else {
-                    ValidationResult.success(chkEnum)
-                }
-            } catch (e: Exception){
-                ValidationResult.error(storedValue,"json [$json] at key $fieldName is not a properly formatted string")
-            }
-        }
-
-        override fun serializeHeldValue(): JsonElement {
-            return JsonPrimitive(storedValue.name)
-        }
-
-        override fun validateAndCorrectInputs(input: T): ValidationResult<T> {
-            return ValidationResult.success(input)
-        }
-        
-        override fun readmeText(): String{
-            return "Choose from the following options: ${valuesMap.keys}"
-        }
-    }
-
-    open class ValidatedList<R,T:List<R>>(defaultValue: List<R>, private val lType: TypeToken<T>, private val listEntryValidator: Predicate<R>, private val invalidEntryMessage: String = "None"): ValidatedField<List<R>>(defaultValue) {
-
-        override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<List<R>> {
-            return try{
-                ValidationResult.success(gson.fromJson(json,lType.type))
-            } catch(e: Exception){
-                ValidationResult.error(storedValue,"Couldn't deserialize list $json from key $fieldName in config class [${this.javaClass.enclosingClass?.canonicalName}]")
-            }
-        }
-
-        override fun serializeHeldValue(): JsonElement {
-            return gson.toJsonTree(storedValue,lType.type)
-        }
-
-        override fun validateAndCorrectInputs(input: List<R>): ValidationResult<List<R>> {
-            val tempList: MutableList<R> = mutableListOf()
-            val errorList:MutableList<String> = mutableListOf()
-            input.forEach {
-                if(listEntryValidator.test(it)){
-                    tempList.add(it)
-                } else {
-                    errorList.add(it.toString())
-                }
-            }
-            if (errorList.isNotEmpty()){
-                return ValidationResult.error(tempList, "Config list has errors, entries need to follow these constraints: $invalidEntryMessage. The following entries couldn't be validated and were removed: $errorList")
-            }
-            return ValidationResult.success(input)
-        }
-        
-        override fun readmeText(): String{
-            return "List of values that meet the following criteria: $invalidEntryMessage"
-        }
-    }
 }
