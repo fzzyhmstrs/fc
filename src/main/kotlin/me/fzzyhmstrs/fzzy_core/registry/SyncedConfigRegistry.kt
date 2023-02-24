@@ -2,6 +2,7 @@ package me.fzzyhmstrs.fzzy_core.registry
 
 import me.fzzyhmstrs.fzzy_core.FC
 import me.fzzyhmstrs.fzzy_core.coding_util.SyncedConfigHelper
+import me.fzzyhmstrs.fzzy_core.config_util.ReadMeBuilder
 import me.fzzyhmstrs.fzzy_core.config_util.SyncedConfig
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
@@ -65,5 +66,9 @@ object SyncedConfigRegistry {
 
     fun registerConfig(id: String, config: SyncedConfig){
         newConfigs[id] = config
+        if (config is ReadMeBuilder){
+            config.build()
+            config.writeReadMe()
+        }
     }
 }

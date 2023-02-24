@@ -3,6 +3,7 @@ package me.fzzyhmstrs.fzzy_core.config_util.validated_field
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import me.fzzyhmstrs.fzzy_core.config_util.ValidationResult
+import net.minecraft.network.PacketByteBuf
 
 class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultValue){
 
@@ -24,5 +25,13 @@ class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultVa
 
     override fun readmeText(): String {
         return "Boolean value, enter 'true' or 'false'."
+    }
+
+    override fun toBuf(buf: PacketByteBuf) {
+        buf.writeBoolean(storedValue)
+    }
+
+    override fun fromBuf(buf: PacketByteBuf): Boolean {
+        return buf.readBoolean()
     }
 }

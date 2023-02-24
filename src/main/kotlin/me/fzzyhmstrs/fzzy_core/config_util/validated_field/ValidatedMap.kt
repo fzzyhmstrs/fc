@@ -2,7 +2,9 @@ package me.fzzyhmstrs.fzzy_core.config_util.validated_field
 
 import com.google.common.reflect.TypeToken
 import com.google.gson.JsonElement
+import com.google.gson.JsonParser
 import me.fzzyhmstrs.fzzy_core.config_util.ValidationResult
+import net.minecraft.network.PacketByteBuf
 import java.util.function.BiPredicate
 import java.util.function.Predicate
 
@@ -43,5 +45,13 @@ class ValidatedMap<R,T>(
 
     override fun readmeText(): String{
         return "Map of key to values that meet the following criteria: $invalidEntryMessage"
+    }
+
+    override fun toBuf(buf: PacketByteBuf) {
+        buf.writeString(gson.toJson(serializeHeldValue()))
+    }
+
+    override fun fromBuf(buf: PacketByteBuf): Map<R, T> {
+        return deserializeHeldValue(JsonParser.parseString(buf.readString()),"").get()
     }
 }

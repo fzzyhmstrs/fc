@@ -4,6 +4,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import me.fzzyhmstrs.fzzy_core.config_util.SyncedConfigHelperV1
 import me.fzzyhmstrs.fzzy_core.config_util.ValidationResult
+import net.minecraft.network.PacketByteBuf
 
 sealed class ValidatedNumber<T>(private val numberClass: Class<T>, defaultValue: T, private val minValue: T, private val maxValue: T)  : ValidatedField<T>(defaultValue) where T: Number, T: Comparable<T>{
 
@@ -44,14 +45,56 @@ sealed class ValidatedNumber<T>(private val numberClass: Class<T>, defaultValue:
 
 }
 
-class ValidatedInt(defaultValue: Int,maxValue: Int, minValue:Int = 0): ValidatedNumber<Int>(Int::class.java,defaultValue,minValue,maxValue)
+class ValidatedInt(defaultValue: Int,maxValue: Int, minValue:Int = 0): ValidatedNumber<Int>(Int::class.java,defaultValue,minValue,maxValue){
+    override fun toBuf(buf: PacketByteBuf) {
+        buf.writeInt(storedValue)
+    }
+    override fun fromBuf(buf: PacketByteBuf): Int {
+        return buf.readInt()
+    }
+}
 
-class ValidatedFloat(defaultValue: Float,maxValue: Float, minValue:Float = 0f): ValidatedNumber<Float>(Float::class.java,defaultValue,minValue,maxValue)
+class ValidatedFloat(defaultValue: Float,maxValue: Float, minValue:Float = 0f): ValidatedNumber<Float>(Float::class.java,defaultValue,minValue,maxValue){
+    override fun toBuf(buf: PacketByteBuf) {
+        buf.writeFloat(storedValue)
+    }
+    override fun fromBuf(buf: PacketByteBuf): Float {
+        return buf.readFloat()
+    }
+}
 
-class ValidatedDouble(defaultValue: Double,maxValue: Double, minValue:Double = 0.0): ValidatedNumber<Double>(Double::class.java,defaultValue,minValue,maxValue)
+class ValidatedDouble(defaultValue: Double,maxValue: Double, minValue:Double = 0.0): ValidatedNumber<Double>(Double::class.java,defaultValue,minValue,maxValue){
+    override fun toBuf(buf: PacketByteBuf) {
+        buf.writeDouble(storedValue)
+    }
+    override fun fromBuf(buf: PacketByteBuf): Double {
+        return buf.readDouble()
+    }
+}
 
-class ValidatedLong(defaultValue: Long,maxValue: Long, minValue:Long = 0L): ValidatedNumber<Long>(Long::class.java,defaultValue,minValue,maxValue)
+class ValidatedLong(defaultValue: Long,maxValue: Long, minValue:Long = 0L): ValidatedNumber<Long>(Long::class.java,defaultValue,minValue,maxValue){
+    override fun toBuf(buf: PacketByteBuf) {
+        buf.writeLong(storedValue)
+    }
+    override fun fromBuf(buf: PacketByteBuf): Long {
+        return buf.readLong()
+    }
+}
 
-class ValidatedShort(defaultValue: Short,maxValue: Short, minValue:Short = 0): ValidatedNumber<Short>(Short::class.java,defaultValue,minValue,maxValue)
+class ValidatedShort(defaultValue: Short,maxValue: Short, minValue:Short = 0): ValidatedNumber<Short>(Short::class.java,defaultValue,minValue,maxValue){
+    override fun toBuf(buf: PacketByteBuf) {
+        buf.writeShort(storedValue.toInt())
+    }
+    override fun fromBuf(buf: PacketByteBuf): Short {
+        return buf.readShort()
+    }
+}
 
-class ValidatedByte(defaultValue: Byte,maxValue: Byte, minValue:Byte = 0): ValidatedNumber<Byte>(Byte::class.java,defaultValue,minValue,maxValue)
+class ValidatedByte(defaultValue: Byte,maxValue: Byte, minValue:Byte = 0): ValidatedNumber<Byte>(Byte::class.java,defaultValue,minValue,maxValue){
+    override fun toBuf(buf: PacketByteBuf) {
+        buf.writeByte(storedValue.toInt())
+    }
+    override fun fromBuf(buf: PacketByteBuf): Byte {
+        return buf.readByte()
+    }
+}

@@ -1,8 +1,10 @@
 package me.fzzyhmstrs.fzzy_core.config_util.validated_field
 
 import com.google.gson.JsonElement
+import com.google.gson.JsonParser
 import me.fzzyhmstrs.fzzy_core.config_util.SyncedConfigHelperV1
 import me.fzzyhmstrs.fzzy_core.config_util.ValidationResult
+import net.minecraft.network.PacketByteBuf
 import java.util.function.Predicate
 
 class ValidatedList<R>(
@@ -41,7 +43,7 @@ class ValidatedList<R>(
     }
 
     override fun serializeHeldValue(): JsonElement {
-        return gson.toJsonTree(storedValue,lType)
+        return gson.toJsonTree(storedValue,storedValue.javaClass)
     }
 
     override fun validateAndCorrectInputs(input: List<R>): ValidationResult<List<R>> {
@@ -66,5 +68,13 @@ class ValidatedList<R>(
 
     fun interface EntryDeserializer<T>{
         fun deserialize(json: JsonElement): T
+    }
+
+    override fun toBuf(buf: PacketByteBuf) {
+        buf.writeString(gson.toJson(serializeHeldValue()))
+    }
+
+    override fun fromBuf(buf: PacketByteBuf): List<R> {
+        return deserializeHeldValue(JsonParser.parseString(buf.readString()),"").get()
     }
 }

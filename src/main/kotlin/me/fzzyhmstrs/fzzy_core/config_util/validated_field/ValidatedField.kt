@@ -3,10 +3,11 @@ package me.fzzyhmstrs.fzzy_core.config_util.validated_field
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import me.fzzyhmstrs.fzzy_core.FC
-import me.fzzyhmstrs.fzzy_core.config_util.ConfigSerializable
-import me.fzzyhmstrs.fzzy_core.config_util.ReadMeTextProvider
-import me.fzzyhmstrs.fzzy_core.config_util.ValidationResult
+import me.fzzyhmstrs.fzzy_core.config_util.*
+import net.minecraft.network.PacketByteBuf
+import kotlin.reflect.full.hasAnnotation
 
 /**
  * Validated Field Collection - serialization indistinguishable from their wrapped values, but deserialized into a validated wrapper
@@ -16,13 +17,31 @@ import me.fzzyhmstrs.fzzy_core.config_util.ValidationResult
  * Helper methods are provided to more easily sync configs directly with the PacketByteBuf framework, rather than serializing and then deserializing the entire JSON
  */
 
-abstract class ValidatedField<T>(protected var storedValue: T): ConfigSerializable,
+abstract class ValidatedField<T>(protected var storedValue: T):
+    ConfigSerializable,
+    ClientServerSynced,
     ReadMeTextProvider {
 
     protected val gson: Gson = GsonBuilder().setPrettyPrinting().create()
+    private var locked = false
 
     /////// fzzy core deserialization, NOT gson compatible ////////
     override fun deserialize(json: JsonElement, fieldName: String): ValidationResult<Boolean> {
+        if(json.isJsonObject){
+            val jsonObject = json.asJsonObject
+            if (jsonObject.has("lock")){
+                if(!this.javaClass.kotlin.hasAnnotation<Lockable>()){
+                    return ValidationResult.error(true,"Illegal lock found, key $fieldName is not lockable.")
+                }
+                locked = true
+                return serializeAfterLockCheck(jsonObject.get("lock"),fieldName)
+            }
+        }
+        return serializeAfterLockCheck(json,fieldName)
+
+    }
+
+    private fun serializeAfterLockCheck(json: JsonElement, fieldName: String): ValidationResult<Boolean>{
         val tVal = deserializeHeldValue(json, fieldName)
         if (tVal.isError()){
             FC.LOGGER.error("Error deserializing manually entered config entry [$tVal], using default value [${tVal.get()}]")
@@ -41,7 +60,24 @@ abstract class ValidatedField<T>(protected var storedValue: T): ConfigSerializab
     }
 
     override fun serialize(): JsonElement {
-        return serializeHeldValue()
+        return if (locked){
+            val json = JsonObject()
+            json.add("lock",serializeHeldValue())
+            json
+        } else {
+            serializeHeldValue()
+        }
+    }
+
+    override fun writeToClient(buf: PacketByteBuf) {
+        toBuf(buf)
+    }
+
+    override fun readFromServer(buf: PacketByteBuf) {
+        val temp = fromBuf(buf)
+        if (!locked) {
+            storedValue = temp
+        }
     }
 
     protected abstract fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<T>
@@ -49,6 +85,10 @@ abstract class ValidatedField<T>(protected var storedValue: T): ConfigSerializab
     protected abstract fun serializeHeldValue(): JsonElement
 
     protected abstract fun validateAndCorrectInputs(input: T): ValidationResult<T>
+
+    protected abstract fun toBuf(buf: PacketByteBuf)
+
+    protected abstract fun fromBuf(buf: PacketByteBuf): T
 
     open fun get(): T{
         return storedValue

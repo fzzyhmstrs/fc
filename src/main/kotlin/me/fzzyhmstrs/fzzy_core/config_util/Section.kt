@@ -3,7 +3,10 @@ package me.fzzyhmstrs.fzzy_core.config_util
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 
-open class Section(headerText: List<String> = listOf()): ReadMeBuilder("section.txt","",headerText), ConfigSerializable {
+open class Section(headerText: List<String> = listOf()):
+    ReadMeBuilder("section.txt","",headerText),
+    ConfigSerializable,
+    ClientServerSynced {
     override fun serialize(): JsonElement {
         val str = SyncedConfigHelperV1.serializeConfig(this)
         return JsonParser.parseString(str)

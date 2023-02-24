@@ -3,6 +3,7 @@ package me.fzzyhmstrs.fzzy_core.config_util.validated_field
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import me.fzzyhmstrs.fzzy_core.config_util.ValidationResult
+import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 import java.util.function.Predicate
 
@@ -42,5 +43,13 @@ class ValidatedIdentifier(defaultValue: Identifier, private val idValidator: Pre
 
     override fun readmeText(): String{
         return "Identifier stored as a string that needs to meet the following criteria: $invalidIdMessage"
+    }
+
+    override fun toBuf(buf: PacketByteBuf) {
+        buf.writeIdentifier(storedValue)
+    }
+
+    override fun fromBuf(buf: PacketByteBuf): Identifier {
+        return buf.readIdentifier()
     }
 }
