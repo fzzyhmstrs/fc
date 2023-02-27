@@ -7,7 +7,7 @@ import me.fzzyhmstrs.fzzy_core.config_util.ValidationResult
 import net.minecraft.network.PacketByteBuf
 import java.util.function.Predicate
 
-class ValidatedList<R>(
+open class ValidatedList<R>(
     defaultValue: List<R>,
     private val lType: Class<R>,
     private val listEntryValidator: Predicate<R> = Predicate {true},
