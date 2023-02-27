@@ -12,8 +12,10 @@ open class ValidatedList<R>(
     private val lType: Class<R>,
     private val listEntryValidator: Predicate<R> = Predicate {true},
     private val invalidEntryMessage: String = "None",
-    private val entryDeserializer: EntryDeserializer<R> = EntryDeserializer {json ->  SyncedConfigHelperV1.gson.fromJson(json,lType)}
-): ValidatedField<List<R>>(defaultValue) {
+    private val entryDeserializer: EntryDeserializer<R> = EntryDeserializer {json ->  SyncedConfigHelperV1.gson.fromJson(json,lType)})
+    : 
+    ValidatedField<List<R>>(defaultValue) 
+{
 
     override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<List<R>> {
         return try{
