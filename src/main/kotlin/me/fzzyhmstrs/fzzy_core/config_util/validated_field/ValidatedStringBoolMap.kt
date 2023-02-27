@@ -8,8 +8,9 @@ open class ValidatedStringBoolMap(
     mapEntryValidator: BiPredicate<String, Boolean> = BiPredicate{ _, _ -> true},
     invalidEntryMessage: String = "None"
     :
-    ValidatedMap<String, T>(
-        defaultValue,String::class.java,
+    ValidatedMap<String, Boolean>(
+        defaultValue,
+        String::class.java,
         Boolean::class.java,
         mapEntryValidator,
         invalidEntryMessage,
