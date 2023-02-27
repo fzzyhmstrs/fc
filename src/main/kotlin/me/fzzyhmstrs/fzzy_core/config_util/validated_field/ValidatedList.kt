@@ -18,7 +18,7 @@ class ValidatedList<R>(
     override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<List<R>> {
         return try{
             if (!json.isJsonArray) {
-                ValidationResult.error(storedValue,"Couldn't deserialize list $json from key $fieldName in config class [${this.javaClass.enclosingClass?.canonicalName}]")
+                ValidationResult.error(storedValue,"Couldn't deserialize list [$json] from key [$fieldName] in config class [${this.javaClass.enclosingClass?.canonicalName}]")
             } else {
                 val list: MutableList<R> = mutableListOf()
                 val errorList: MutableList<JsonElement> = mutableListOf()
@@ -34,11 +34,11 @@ class ValidatedList<R>(
                 if(errorList.isEmpty()){
                     ValidationResult.success(list)
                 } else {
-                    ValidationResult.error(list,"Errors in list at key $fieldName, the following elements couldn't be deserialized and were skipped: $errorList")
+                    ValidationResult.error(list,"Errors in list at key [$fieldName], the following elements couldn't be deserialized and were skipped: $errorList")
                 }
             }
         } catch(e: Exception){
-            ValidationResult.error(storedValue,"Couldn't deserialize list $json from key $fieldName in config class [${this.javaClass.enclosingClass?.canonicalName}]")
+            ValidationResult.error(storedValue,"Couldn't deserialize list [$json] from key [$fieldName] in config class [${this.javaClass.enclosingClass?.canonicalName}]")
         }
     }
 
@@ -64,10 +64,6 @@ class ValidatedList<R>(
 
     override fun readmeText(): String{
         return "List of values that meet the following criteria: $invalidEntryMessage"
-    }
-
-    fun interface EntryDeserializer<T>{
-        fun deserialize(json: JsonElement): T
     }
 
     override fun toBuf(buf: PacketByteBuf) {

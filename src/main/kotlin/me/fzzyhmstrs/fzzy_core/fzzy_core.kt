@@ -2,6 +2,7 @@ package me.fzzyhmstrs.fzzy_core
 
 import com.llamalad7.mixinextras.MixinExtrasBootstrap
 import me.fzzyhmstrs.fzzy_core.config.FcConfig
+import me.fzzyhmstrs.fzzy_core.config.FcTestConfig
 import me.fzzyhmstrs.fzzy_core.registry.EventRegistry
 import me.fzzyhmstrs.fzzy_core.registry.ItemModelRegistry
 import me.fzzyhmstrs.fzzy_core.registry.LootRegistry
@@ -18,12 +19,13 @@ import org.slf4j.LoggerFactory
 
 object FC: ModInitializer {
     const val MOD_ID = "fzzy_core"
-    val LOGGER = LoggerFactory.getLogger("emi_loot");
+    val LOGGER = LoggerFactory.getLogger("emi_loot")
     val fcRandom = Random(System.currentTimeMillis())
     val fallbackId = Identifier("vanishing_curse")
 
     override fun onInitialize() {
         FcConfig.initConfig()
+        FcTestConfig.initConfig()
         LootRegistry.registerAll()
         EventRegistry.registerAll()
         ModifierRegistry.registerAll()

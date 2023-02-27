@@ -1,13 +1,10 @@
 package me.fzzyhmstrs.fzzy_core.config_util
 
 import net.minecraft.network.PacketByteBuf
-import net.minecraft.util.Identifier
 import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.javaType
 
-interface ClientServerSynced{
+interface ServerClientSynced{
     fun readFromServer(buf: PacketByteBuf){
         val nameMap = this.javaClass.kotlin.declaredMemberProperties.associate { it.name to it }
         val propCount = buf.readInt()
@@ -16,7 +13,7 @@ interface ClientServerSynced{
 
             val prop = nameMap[name]?:throw IllegalStateException("PacketByteBuf reader had a problem resolving member name $name in the deserializing class ${this.javaClass.simpleName}")
             val propVal = prop.get(this)
-            if (propVal is ClientServerSynced){ //ideal scenario is the properties are ValidatedFields or Sections
+            if (propVal is ServerClientSynced){ //ideal scenario is the properties are ValidatedFields or Sections
                 propVal.readFromServer(buf)
             } else if(prop is KMutableProperty<*>){ //fallback is just gson serialization
                 prop.setter.call(this,SyncedConfigHelperV1.gson.fromJson(buf.readString(),prop.returnType.javaClass))
@@ -28,7 +25,7 @@ interface ClientServerSynced{
         buf.writeInt(this.javaClass.kotlin.declaredMemberProperties.size)
         for (it in this.javaClass.kotlin.declaredMemberProperties){
             val propVal = it.get(this)
-            if (propVal is ClientServerSynced){
+            if (propVal is ServerClientSynced){
                 buf.writeString(it.name)
                 propVal.writeToClient(buf)
             } else if (it is KMutableProperty<*> && propVal != null){

@@ -1,11 +1,10 @@
 package me.fzzyhmstrs.fzzy_core.config
 
-import com.google.common.reflect.TypeToken
 import com.google.gson.*
 import me.fzzyhmstrs.fzzy_core.FC
 import me.fzzyhmstrs.fzzy_core.coding_util.SyncedConfigHelper
 import me.fzzyhmstrs.fzzy_core.coding_util.SyncedConfigHelper.gson
-import me.fzzyhmstrs.fzzy_core.config_util.Section
+import me.fzzyhmstrs.fzzy_core.config_util.ConfigSection
 import me.fzzyhmstrs.fzzy_core.config_util.SyncedConfigHelperV1.deserializeConfig
 import me.fzzyhmstrs.fzzy_core.config_util.SyncedConfigHelperV1.readOrCreateAndValidate
 import me.fzzyhmstrs.fzzy_core.config_util.SyncedConfigHelperV1.serializeConfig
@@ -38,7 +37,7 @@ object FcConfig: SyncedConfigHelper.SyncedConfig {
         println("enum: " + FcConfig.test.testEnum.get())
         println("id: " + FcConfig.test.testId.get())
         println("list: " + FcConfig.test.testList.get())
-        println("Section: " + FcConfig.test.testSection)
+        println("ConfigSection: " + FcConfig.test.testSection)
     }
 
     override fun readFromServer(buf: PacketByteBuf) {
@@ -64,7 +63,7 @@ object FcConfig: SyncedConfigHelper.SyncedConfig {
         var testEnum: ValidatedEnum<TestEnum> = ValidatedEnum(TestEnum.DEFAULT,TestEnum::class.java)
         var testId: ValidatedIdentifier = ValidatedIdentifier(Identifier("minecraft","diamond"),{ id -> Registries.ITEM.containsId(id)},"Needs to be a valid registered Item identifier, use advanced tooltips for help with ids in-game.")
         var testList: ValidatedList<String> = ValidatedList(listOf("minecraft:diamond", "minecraft:obsidian", "minecraft:emerald"), String::class.java,{ str -> listIdValidator(str) { id -> Registries.ITEM.containsId(id) } }, "List entries need to be valid identifiers that are in the Item registry.")
-        var testSection: Section = object: Section(){
+        var testSection: ConfigSection = object: ConfigSection(){
             var testSectionInt: ValidatedInt = ValidatedInt(0,10,-10)
             var testSectionBoolean: ValidatedBoolean = ValidatedBoolean(true)
         }

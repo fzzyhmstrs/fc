@@ -19,7 +19,7 @@ import kotlin.reflect.full.hasAnnotation
 
 abstract class ValidatedField<T>(protected var storedValue: T):
     ConfigSerializable,
-    ClientServerSynced,
+    ServerClientSynced,
     ReadMeTextProvider {
 
     protected val gson: Gson = GsonBuilder().setPrettyPrinting().create()
@@ -44,15 +44,15 @@ abstract class ValidatedField<T>(protected var storedValue: T):
     private fun serializeAfterLockCheck(json: JsonElement, fieldName: String): ValidationResult<Boolean>{
         val tVal = deserializeHeldValue(json, fieldName)
         if (tVal.isError()){
-            FC.LOGGER.error("Error deserializing manually entered config entry [$tVal], using default value [${tVal.get()}]")
-            FC.LOGGER.error(">>> Possible reasons: ${tVal.getError()}")
+            FC.LOGGER.error("Error deserializing manually entered config entry [$fieldName], using default value [${tVal.get()}]")
+            FC.LOGGER.error("  >>> Possible reasons: ${tVal.getError()}")
             return ValidationResult.error(true, tVal.getError())
         }
         val tVal2 = validateAndCorrectInputs(tVal.get())
         storedValue = tVal2.get()
         if (tVal2.isError()){
-            FC.LOGGER.error("Manually entered config entry [$tVal] had errors, corrected to [${tVal2.get()}]")
-            FC.LOGGER.error(">>> Possible reasons: ${tVal2.getError()}")
+            FC.LOGGER.error("Manually entered config entry [$fieldName] had errors, corrected to [${tVal2.get()}]")
+            FC.LOGGER.error("  >>> Possible reasons: ${tVal2.getError()}")
             return ValidationResult.error(true, tVal2.getError())
         }
 
@@ -92,6 +92,10 @@ abstract class ValidatedField<T>(protected var storedValue: T):
 
     open fun get(): T{
         return storedValue
+    }
+
+    fun interface EntryDeserializer<T>{
+        fun deserialize(json: JsonElement): T
     }
 
 }

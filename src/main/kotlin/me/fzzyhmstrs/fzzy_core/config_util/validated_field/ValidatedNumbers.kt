@@ -18,7 +18,7 @@ sealed class ValidatedNumber<T>(private val numberClass: Class<T>, defaultValue:
         val i = try{
             ValidationResult.success(SyncedConfigHelperV1.gson.fromJson(json, numberClass))
         } catch (e: Exception){
-            ValidationResult.error(storedValue,"json [$json] at key $fieldName is not a properly formatted number")
+            ValidationResult.error(storedValue,"json [$json] at key [$fieldName] is not a properly formatted number")
         }
         return i
     }
