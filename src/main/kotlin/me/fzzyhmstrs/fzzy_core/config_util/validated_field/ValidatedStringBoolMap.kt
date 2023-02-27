@@ -1,0 +1,18 @@
+package me.fzzyhmstrs.fzzy_core.config_util.validated_field
+
+import me.fzzyhmstrs.fzzy_core.config_util.SyncedConfigHelperV1
+import java.util.function.BiPredicate
+
+open class ValidatedStringBoolMap(
+    defaultValue:Map<String,Boolean>,
+    mapEntryValidator: BiPredicate<String, Boolean> = BiPredicate{ _, _ -> true},
+    invalidEntryMessage: String = "None"
+    :
+    ValidatedMap<String, T>(
+        defaultValue,String::class.java,
+        Boolean::class.java,
+        mapEntryValidator,
+        invalidEntryMessage,
+        KeyDeserializer.STRING
+    ) {
+}
