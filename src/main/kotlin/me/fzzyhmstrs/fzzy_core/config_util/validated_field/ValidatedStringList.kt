@@ -1,0 +1,18 @@
+package me.fzzyhmstrs.fzzy_core.config_util.validated_field
+
+import me.fzzyhmstrs.fzzy_core.config_util.SyncedConfigHelperV1
+import java.util.function.BiPredicate
+
+open class ValidatedStringList(
+    defaultValue:List<String>,
+    listEntryValidator: Predicate<String> = Predicate {true},
+    invalidEntryMessage: String = "None",
+    :
+    ValidatedList<String>(
+        defaultValue,
+        String::class.java,
+        listEntryValidator,
+        invalidEntryMessage
+    ) 
+{
+}
