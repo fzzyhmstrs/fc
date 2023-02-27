@@ -12,7 +12,8 @@ open class ValidatedStringKeyMap<T>(
         EntryDeserializer { json -> SyncedConfigHelperV1.gson.fromJson(json, type) })
     :
     ValidatedMap<String, T>(
-        defaultValue,String::class.java,
+        defaultValue,
+        String::class.java,
         type,
         mapEntryValidator,
         invalidEntryMessage,
