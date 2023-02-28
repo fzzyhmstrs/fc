@@ -4,10 +4,10 @@ import me.fzzyhmstrs.fzzy_core.config_util.SyncedConfigHelperV1
 import net.minecraft.util.Identifier
 import java.util.function.Predicate
 
-open class ValidatedIntList(
+open class ValidatedIdentifierList(
     defaultValue:List<Identifier>,
     listEntryValidator: Predicate<Identifier> = Predicate {true},
-    invalidEntryMessage: String = "None",
+    invalidEntryMessage: String = "None")
     :
     ValidatedList<Identifier>(
         defaultValue,

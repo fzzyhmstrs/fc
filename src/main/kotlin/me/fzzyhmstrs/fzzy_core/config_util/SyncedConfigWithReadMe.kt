@@ -8,7 +8,7 @@ abstract class SyncedConfigWithReadMe(
     file: String,
     base: String = FC.MOD_ID,
     headerText: List<String> = listOf(),
-    decorator: Decorator = Decorator.DEFAULT)
+    decorator: LineDecorator = LineDecorator.DEFAULT)
     :
     ReadMeBuilder(file,base,headerText, decorator),
     SyncedConfig

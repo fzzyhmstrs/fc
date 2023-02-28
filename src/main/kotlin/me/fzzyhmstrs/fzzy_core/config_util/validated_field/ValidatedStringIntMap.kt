@@ -6,7 +6,7 @@ import java.util.function.BiPredicate
 open class ValidatedStringIntMap(
     defaultValue: Map<String,Int>,
     mapEntryValidator: BiPredicate<String, Int> = BiPredicate{ _, _ -> true},
-    invalidEntryMessage: String = "None"
+    invalidEntryMessage: String = "None")
     :
     ValidatedMap<String, Int>(
         defaultValue,

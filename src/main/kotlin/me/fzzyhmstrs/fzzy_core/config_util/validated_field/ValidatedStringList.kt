@@ -6,7 +6,7 @@ import java.util.function.Predicate
 open class ValidatedStringList(
     defaultValue:List<String>,
     listEntryValidator: Predicate<String> = Predicate {true},
-    invalidEntryMessage: String = "None",
+    invalidEntryMessage: String = "None")
     :
     ValidatedList<String>(
         defaultValue,

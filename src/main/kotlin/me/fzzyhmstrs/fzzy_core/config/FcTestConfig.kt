@@ -18,20 +18,19 @@ object FcTestConfig:
             ""
         )) {
 
-    var test: Test = SyncedConfigHelperV1.readOrCreateAndValidate("new_test_v0.json") { Test() }
+    private val testConfigHeader = HeaderBuilder().space().box("TEST CONFIG").space().add("This is a config about testing the new fzz core config system").build()
 
-    class Test: ConfigClass(){
+    class Test: ConfigClass(testConfigHeader){
         var testSection_1 = object: ConfigSection(listOf(
             "",
-            "_____________________",
             "Test Section 1 Header",
-            ""
+            "---------------------"
         )){
             @ReadMeText("Testing creating a custom readme entry for a field")
             var test_Int_1  = ValidatedInt(0,5,-5)
             var test_Int_2 = ValidatedInt(1000,10000000)
             @ReadMeText(header = [" >> Testing a custom header-only annotation"])
-            var innerSection_1 = object: ConfigSection(decorator = Decorator.INNER){
+            var innerSection_1 = object: ConfigSection(){
                 var test_Float_1 = ValidatedFloat(1f,6f)
                 var test_Double = ValidatedDouble(0.0,1.0)
             }
@@ -40,20 +39,16 @@ object FcTestConfig:
         @ReadMeText("Testing overriding a sections readme", ["","Testing an annotated header"])
         var testSection_2 = object: ConfigSection(listOf(
             "",
-            "_____________________",
             "Test Section 2 Header",
-            ""
+            "---------------------"
         )){
             var test_Enum = ValidatedEnum(Testy.BASIC,Testy::class.java)
             var test_Bool = ValidatedBoolean(true)
         }
 
-        var testSection_3 = object: ConfigSection(listOf(
-            "",
-            "_____________________",
-            "Test Section 3 Header",
-            ""
-        )){
+        private val section3Header = HeaderBuilder().space().overscore("Test Section 3 Header").space().build()
+
+        var testSection_3 = object: ConfigSection(section3Header){
             var test_Id = ValidatedIdentifier(Identifier("redstone"), {id -> Registries.ITEM.containsId(id)}, "ID needs to be in the item registry.")
             var test_List = ValidatedList(
                 listOf(1, 3, 5, 7),
@@ -76,6 +71,8 @@ object FcTestConfig:
         )
 
     }
+
+    var test: Test = SyncedConfigHelperV1.readOrCreateAndValidate("new_test_v0.json") { Test() }
 
     enum class Testy{
         OPTION_A,

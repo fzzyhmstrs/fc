@@ -33,7 +33,7 @@ class ValidatedString(
         return JsonPrimitive(storedValue)
     }
 
-    override fun validateAndCorrectInputs(input: Identifier): ValidationResult<String> {
+    override fun validateAndCorrectInputs(input: String): ValidationResult<String> {
         if (!strValidator.test(input)) {
             val errorMessage = "Config string [$input] couldn't be validated. Needs to meet the following criteria: $invalidIdMessage"
             return ValidationResult.error(storedValue,errorMessage)
@@ -49,7 +49,7 @@ class ValidatedString(
         buf.writeString(storedValue)
     }
 
-    override fun fromBuf(buf: PacketByteBuf): Identifier {
+    override fun fromBuf(buf: PacketByteBuf): String {
         return buf.readString()
     }
 }
