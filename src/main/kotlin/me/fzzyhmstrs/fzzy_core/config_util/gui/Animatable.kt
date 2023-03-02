@@ -5,4 +5,5 @@ abstract class Animatable{
     fun unHoveredFrame(): Frame
     fun clickedFrame(): Frame
     fun releasedFrame(): Frame
+    fun init()
 }
