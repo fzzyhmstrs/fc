@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_core.config_util.validated_field
 
 import me.fzzyhmstrs.fzzy_core.config_util.ConfigSection
+import me.fzzyhmstrs.fzzy_core.config_util.ReadMeText
 import me.fzzyhmstrs.fzzy_core.config_util.SyncedConfigHelperV1
 import java.util.function.Predicate
 
@@ -22,9 +23,13 @@ open class ValidatedColor(
         if((defaultA<0 && defaultA!=Int.MIN_VALUE) || defaultA>255) throw IllegalArgumentException("Transparency portion of validated color not provided a default value between 0 and 255")
     }
     
+    @ReadMeText("Red component of an RGBA color; enter an integer between 0 and 255.")
     var r = ValidatedInt(defaultR,0,255)
+    @ReadMeText("Green component of an RGBA color; enter an integer between 0 and 255.")
     var g = ValidatedInt(defaultG,0,255)
+    @ReadMeText("Blue component of an RGBA color; enter an integer between 0 and 255.")
     var b = ValidatedInt(defaultB,0,255)
+    @ReadMeText("Alpha/Transparency component of an RGBA color; enter an integer between 0 and 255. 255 is opaque, 0 is fully transparent. If the mod author has set this as an opaque color, only 255 will pass validation.")
     var a = if(defaultA != Int.MIN_VALUE){ 
         ValidatedInt(defaultA,0,255)
     } else {
