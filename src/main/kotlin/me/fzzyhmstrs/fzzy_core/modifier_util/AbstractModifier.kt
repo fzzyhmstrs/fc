@@ -55,10 +55,14 @@ abstract class AbstractModifier<T: Addable<T>>(val modifierId: Identifier): Adda
     }
     
     /**
-     * defines the lang translation key for [TranslatableText][net.minecraft.text.TranslatableText] of the extended modifier description.
+     * defines the lang translation key for TranslatableText of the extended modifier description.
      */
     open fun getDescTranslationKey(): String{
         return getModifierHelper().getDescTranslationKeyFromIdentifier(modifierId)
+    }
+
+    open fun getAdvancedTooltipLines(stack: ItemStack): List<Text>{
+        return listOf()
     }
 
     fun hasDescendant(): Boolean{
