@@ -1,6 +1,8 @@
 package me.fzzyhmstrs.fzzy_core.config_util
 
 import me.fzzyhmstrs.fzzy_core.FC
+import me.fzzyhmstrs.fzzy_core.coding_util.AcText
+import java.util.function.Function
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
@@ -8,14 +10,14 @@ import kotlin.reflect.full.findAnnotation
 open class ReadMeBuilder(
     private val file: String,
     private val base: String = FC.MOD_ID,
-    headerText: List<String> = listOf(),
+    private val headerText: Header = Header(),
     private val decorator: LineDecorating,
     private val indentIncrement: Int = 0)
     :
     ReadMeWriter
 {
 
-    private val readMeList: MutableList<String> = headerText.toMutableList()
+    private val readMeList: MutableList<String> = mutableListOf()
 
     override fun readmeText(): List<String>{
         return readMeList
@@ -26,6 +28,7 @@ open class ReadMeBuilder(
     }
 
     open fun build(indent: Int = 0): List<String>{
+        readMeList.addAll(headerText.provideHeader())
         val fields = this::class.java.declaredFields
         val orderById = fields.withIndex().associate { it.value.name to it.index }
         for (it in this.javaClass.kotlin.declaredMemberProperties.sortedBy { orderById[it.name] }){
@@ -33,10 +36,15 @@ open class ReadMeBuilder(
                 val propVal = it.get(this)
                 val annotation = it.findAnnotation<ReadMeText>()
                 if(annotation != null){
+                    val translate = annotation.translationKey
                     val desc = annotation.description
                     val header = annotation.header
                     if(header.isNotEmpty()){
                         readMeList.addAll(header)
+                    }
+                    if (translate != ""){
+                        readMeList.add(readMeLineDecorator(AcText.translatable(translate).string, it.name, indent))
+                        continue
                     }
                     if (desc != "") {
                         readMeList.add(readMeLineDecorator(desc, it.name, indent))
@@ -89,49 +97,125 @@ open class ReadMeBuilder(
         fun decorate(rawLine: String, propName: String, indent: Int): String
     }
 
-    class HeaderBuilder(){
-        val list: MutableList<String> = mutableListOf()
+    class Header (private val components: List<HeaderComponent>){
 
-        fun build(): List<String>{
+        constructor(): this(listOf())
+
+        private val list: List<String> by lazy {
+            val listTemp: MutableList<String> = mutableListOf()
+            for (component in components){
+                listTemp.addAll(component.build())
+            }
+            listTemp
+        }
+
+        fun provideHeader(): List<String>{
             return list
         }
 
-        fun space(): HeaderBuilder{
-            list.add("")
-            return this
+        companion object{
+            fun default(input: String): Header{
+                return Builder().literal().space().underscore(input).build()
+            }
         }
 
-        fun add(line: String): HeaderBuilder{
-            list.add(line)
-            return this
+        class Builder{
+            private val list: MutableList<HeaderComponent> = mutableListOf()
+            private var translate = true
+
+            fun build(): Header{
+                return Header(list)
+            }
+
+            fun translate(): Builder{
+                translate = true
+                return this
+            }
+            fun literal(): Builder{
+                translate = false
+                return this
+            }
+
+            fun space(): Builder{
+                list.add(LiteralHeaderComponent(""){str -> listOf(str)})
+                return this
+            }
+
+            fun add(line: String): Builder{
+                if (translate){
+                    list.add(TranslatableHeaderComponent(line){ str -> listOf(str)})
+                } else {
+                    list.add(LiteralHeaderComponent(line) { str -> listOf(str) })
+                }
+                return this
+            }
+
+            fun underscore(input: String): Builder{
+                if (translate) {
+                    list.add(TranslatableHeaderComponent(input){ str -> listOf(str,"-".repeat(str.length))})
+                } else {
+                    list.add(LiteralHeaderComponent(input){ str -> listOf(str,"-".repeat(str.length))})
+                }
+                return this
+            }
+
+            fun overscore(input: String): Builder{
+                if (translate) {
+                    list.add(TranslatableHeaderComponent(input){ str -> listOf("-".repeat(str.length),str)})
+                } else {
+                    list.add(LiteralHeaderComponent(input){ str -> listOf("-".repeat(str.length),str)})
+                }
+                return this
+            }
+
+            fun underoverscore(input: String): Builder{
+                if (translate) {
+                    list.add(TranslatableHeaderComponent(input){ str -> listOf("-".repeat(str.length),str,"-".repeat(str.length))})
+                } else {
+                    list.add(LiteralHeaderComponent(input){ str -> listOf("-".repeat(str.length),str,"-".repeat(str.length))})
+                }
+                return this
+            }
+
+            fun box(input: String): Builder{
+                if (translate) {
+                    list.add(TranslatableHeaderComponent(input){ str -> listOf("#".repeat(str.length+4),"# $str #","#".repeat(str.length+4))})
+                } else {
+                    list.add(LiteralHeaderComponent(input){ str -> listOf("#".repeat(str.length+4),"# $str #","#".repeat(str.length+4))})
+                }
+                return this
+            }
+
+        }
+    }
+
+    class LiteralHeaderComponent(private val input: String, builder: Function<String,List<String>>): HeaderComponent(builder){
+        override fun provideInputString(): String {
+            return input
+        }
+    }
+
+    class TranslatableHeaderComponent(private val key: String, builder: Function<String,List<String>>): HeaderComponent(builder){
+
+        private val translation: String by lazy {
+            AcText.translatable(key).string
         }
 
-        fun underscore(line: String): HeaderBuilder{
-            list.add(line)
-            list.add("-".repeat(line.length))
-            return this
-        }
-
-        fun overscore(line: String): HeaderBuilder{
-            list.add("_".repeat(line.length))
-            list.add(line)
-            return this
-        }
-
-        fun underoverscore(line: String): HeaderBuilder{
-            list.add("-".repeat(line.length))
-            list.add(line)
-            list.add("-".repeat(line.length))
-            return this
-        }
-
-        fun box(line: String): HeaderBuilder{
-            list.add("#".repeat(line.length+4))
-            list.add("# $line #")
-            list.add("#".repeat(line.length+4))
-            return this
+        override fun provideInputString(): String {
+            return translation
         }
 
     }
+
+    abstract class HeaderComponent(private val builder: Function<String,List<String>>){
+
+        abstract fun provideInputString(): String
+
+        fun build(): List<String>{
+            return builder.apply(provideInputString())
+        }
+    }
+
+
 
 }

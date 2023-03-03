@@ -4,7 +4,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 
 open class ConfigSection(
-    headerText: List<String> = listOf(),
+    headerText: Header = Header(),
     decorator: LineDecorator = LineDecorator.DEFAULT)
     :
     ReadMeBuilder("","",headerText, decorator,1),
@@ -12,7 +12,7 @@ open class ConfigSection(
     ServerClientSynced
 {
 
-    constructor(sectionLabel: String): this(listOf(sectionLabel))
+    constructor(sectionLabel: String): this(Header.Builder().literal().add(sectionLabel).build())
 
     override fun serialize(): JsonElement {
         val str = SyncedConfigHelperV1.serializeConfig(this)

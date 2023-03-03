@@ -6,5 +6,5 @@ annotation class Lockable()
 @Target(AnnotationTarget.PROPERTY,AnnotationTarget.CLASS)
 annotation class ClientModifiable()
 
-@Target(AnnotationTarget.PROPERTY)
-annotation class ReadMeText(val description: String = "", val header: Array<String> = [])
+@Target(AnnotationTarget.PROPERTY,AnnotationTarget.CLASS)
+annotation class ReadMeText(val translationKey: String = "",val description: String = "", val header: Array<String> = [])

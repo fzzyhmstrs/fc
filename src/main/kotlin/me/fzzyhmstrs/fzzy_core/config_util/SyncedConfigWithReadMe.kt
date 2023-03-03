@@ -7,7 +7,7 @@ abstract class SyncedConfigWithReadMe(
     private val configName: String,
     file: String,
     base: String = FC.MOD_ID,
-    headerText: List<String> = listOf(),
+    headerText: Header = Header.Builder().add("fc.config.$configName").space().build(),
     decorator: LineDecorator = LineDecorator.DEFAULT)
     :
     ReadMeBuilder(file,base,headerText, decorator),
