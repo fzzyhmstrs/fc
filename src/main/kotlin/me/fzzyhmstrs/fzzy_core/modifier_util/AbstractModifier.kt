@@ -65,6 +65,12 @@ abstract class AbstractModifier<T: Addable<T>>(val modifierId: Identifier): Adda
         return listOf()
     }
 
+    open fun onAdd(stack: ItemStack){
+    }
+
+    open fun onRemove(stack: ItemStack){
+    }
+
     fun hasDescendant(): Boolean{
         return hasDesc
     }

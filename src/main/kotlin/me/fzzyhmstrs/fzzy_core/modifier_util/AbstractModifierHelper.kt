@@ -53,8 +53,8 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
             initializeModifiers(nbt, id)
         }
         val highestModifier = checkDescendant(modifier,stack)
+        val mod = getModifierByType(modifier)
         if (highestModifier != null){
-            val mod = getModifierByType(modifier)
             return if (mod?.hasDescendant() == true){
                 val highestDescendantPresent: Int = checkModifierLineage(mod, stack)
                 if (highestDescendantPresent < 0){
@@ -63,6 +63,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
                     val lineage = mod.getModLineage()
                     val newDescendant = lineage[highestDescendantPresent]
                     val currentGeneration = lineage[max(highestDescendantPresent - 1,0)]
+                    getModifierByType(newDescendant)?.onAdd(stack)
                     modifiers[id]?.add(newDescendant)
                     addModifierToNbt(newDescendant, nbt)
                     removeModifier(stack, currentGeneration, nbt)
@@ -73,6 +74,8 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
                 false
             }
         }
+
+        mod?.onAdd(stack)
         addModifierToNbt(modifier, nbt)
         modifiers[id]?.add(modifier)
         gatherActiveModifiers(stack)
@@ -95,6 +98,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
 
     protected fun removeModifier(stack: ItemStack, modifier: Identifier, nbt: NbtCompound){
         val id = Nbt.getItemStackId(nbt)
+        getModifierByType(modifier)?.onRemove(stack)
         modifiers[id]?.remove(modifier)
         gatherActiveModifiers(stack)
         removeModifierFromNbt(modifier,nbt)
