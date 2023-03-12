@@ -5,6 +5,7 @@ import me.fzzyhmstrs.fzzy_core.coding_util.Addable
 import me.fzzyhmstrs.fzzy_core.modifier_util.AbstractModifier.CompiledModifiers
 import me.fzzyhmstrs.fzzy_core.registry.ModifierRegistry
 import net.minecraft.item.ItemStack
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import java.util.function.Predicate
@@ -61,8 +62,12 @@ abstract class AbstractModifier<T: Addable<T>>(val modifierId: Identifier): Adda
         return getModifierHelper().getDescTranslationKeyFromIdentifier(modifierId)
     }
 
-    open fun getAdvancedTooltipLines(stack: ItemStack): List<Text>{
-        return listOf()
+    open fun getTranslation(): MutableText{
+        return AcText.translatable(getTranslationKey())
+    }
+
+    open fun getDescTranslation(): MutableText{
+        return AcText.translatable(getDescTranslationKey())
     }
 
     open fun onAdd(stack: ItemStack){

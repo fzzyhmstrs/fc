@@ -3,8 +3,10 @@ package me.fzzyhmstrs.fzzy_core.mana_util
 import me.fzzyhmstrs.fzzy_core.coding_util.AcText
 import net.minecraft.enchantment.Enchantment
 import net.minecraft.enchantment.EnchantmentHelper
+import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
@@ -30,7 +32,7 @@ interface ManaItem {
     fun checkCanUse(
         stack: ItemStack,
         world: World,
-        entity: PlayerEntity,
+        entity: LivingEntity,
         amount: Int,
         message: Text = AcText.translatable("augment_damage.check_can_use")
     ): Boolean {
@@ -49,7 +51,7 @@ interface ManaItem {
                     1.0F,
                     1.0F
                 )
-                entity.sendMessage(message,false)
+                entity.sendMessage(message)
             }
             false
         }
@@ -61,7 +63,7 @@ interface ManaItem {
     fun burnOutHandler(
         stack: ItemStack,
         aug: Enchantment,
-        entity: PlayerEntity,
+        entity: LivingEntity,
         message: Text = AcText.translatable("augment_damage.burnout").append(aug.getName(1))) {
         val enchantList = EnchantmentHelper.get(stack)
         val newEnchantList: MutableMap<Enchantment, Int> = mutableMapOf()
@@ -71,7 +73,7 @@ interface ManaItem {
             }
         }
         if (message.toString() != "") {
-            entity.sendMessage(message,false)
+            entity.sendMessage(message)
         }
         EnchantmentHelper.set(newEnchantList, stack)
     }
@@ -82,7 +84,7 @@ interface ManaItem {
     fun manaDamage(
         stack: ItemStack,
         world: World,
-        entity: PlayerEntity,
+        entity: LivingEntity,
         amount: Int,
         message: Text = AcText.translatable("augment_damage.damage"),
         unbreakingFlag: Boolean = false): Boolean {
@@ -112,7 +114,7 @@ interface ManaItem {
                     1.0F
                 )
                 if (message.toString() != "") {
-                    entity.sendMessage(message,false)
+                    entity.sendMessage(message)
                 }
             }
             if (newCurrentDmg == (maxDmg - 1)) {
@@ -150,9 +152,14 @@ interface ManaItem {
         return false
     }
 
-    private fun unbreakingDamage(stack: ItemStack,entity: PlayerEntity, amount: Int){
+    private fun unbreakingDamage(stack: ItemStack,entity: LivingEntity, amount: Int){
+        val player = if(entity is ServerPlayerEntity){
+            entity
+        } else {
+            null
+        }
         for (i in 1..amount){
-            stack.damage(1,entity.random, null)
+            stack.damage(1,entity.random, player)
         }
     }
 }

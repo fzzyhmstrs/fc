@@ -30,7 +30,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         val ids = getModifiersFromNbt(stack)
         for (id in ids){
             val mod = ModifierRegistry.get(id)?:continue
-            tooltip.add(AcText.translatable(mod.getTranslationKey()).append(AcText.literal(" - ")).append(AcText.translatable(mod.getDescTranslationKey())))
+            tooltip.add(mod.getTranslation().append(AcText.literal(" - ")).append(mod.getDescTranslation()))
         }
     }
 
