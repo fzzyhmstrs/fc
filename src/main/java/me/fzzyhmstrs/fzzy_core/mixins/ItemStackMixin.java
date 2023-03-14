@@ -3,6 +3,7 @@ package me.fzzyhmstrs.fzzy_core.mixins;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import me.fzzyhmstrs.fzzy_core.interfaces.Modifiable;
+import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierHelperType;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
@@ -10,7 +11,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,18 +28,16 @@ public abstract class ItemStackMixin {
 
     @Shadow public abstract Item getItem();
 
-    @Shadow public abstract int getMaxDamage();
-
-    @Shadow public @Nullable abstract NbtCompound getNbt();
-
     @Shadow public abstract NbtCompound getOrCreateNbt();
-
 
     @Inject(method = "<init>(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void fzzy_core_initializeFromNbt(NbtCompound nbt, CallbackInfo ci){
         if (getItem() == null) return;
         if (getItem() instanceof Modifiable modifiableItem){
-            modifiableItem.getModifierInitializer().initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers());
+            for (ModifierHelperType type : ModifierHelperType.Companion.getREGISTRY()){
+                if (!modifiableItem.canBeModifiedBy(type)) continue;
+                type.getModifierInitializer().initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers(type));
+            }
         }
     }
 
@@ -47,7 +45,11 @@ public abstract class ItemStackMixin {
     private void fzzy_core_initializeFromItem(ItemConvertible item, int count, CallbackInfo ci){
         if (this.item == null) return;
         if (this.item instanceof Modifiable modifiableItem){
-            modifiableItem.getModifierInitializer().initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers());
+            for (ModifierHelperType type : ModifierHelperType.Companion.getREGISTRY()){
+                if (!modifiableItem.canBeModifiedBy(type)) continue;
+                type.getModifierInitializer().initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers(type));
+            }
+            //modifiableItem.getModifierInitializer().initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers());
         }
     }
 
@@ -55,7 +57,10 @@ public abstract class ItemStackMixin {
     private void fzzy_core_appendModifiersToTooltip(Item instance,ItemStack stack, World world, List<Text> tooltip, TooltipContext context, Operation<Void> operation){
         operation.call(instance,stack, world, tooltip,context);
         if (stack.getItem() instanceof Modifiable modifiable){
-            modifiable.addModifierTooltip(stack, tooltip, context);
+            for (ModifierHelperType type : ModifierHelperType.Companion.getREGISTRY()) {
+                if (!modifiable.canBeModifiedBy(type)) continue;
+                modifiable.addModifierTooltip(stack, tooltip, context, type);
+            }
         }
     }
 

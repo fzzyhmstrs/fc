@@ -3,6 +3,7 @@ package me.fzzyhmstrs.fzzy_core.registry
 import me.fzzyhmstrs.fzzy_core.interfaces.Modifiable
 import me.fzzyhmstrs.fzzy_core.modifier_util.AbstractModifier
 import me.fzzyhmstrs.fzzy_core.modifier_util.AbstractModifierHelper
+import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierHelperType
 import me.fzzyhmstrs.fzzy_core.nbt_util.NbtKeys
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -81,21 +82,21 @@ object ModifierRegistry {
     /**
      * [LootFunction.Builder] usable with loot pool building that will add default modifiers, a provided list of modifiers, or both.
      */
-    fun modifiersLootFunctionBuilder(item: Item, modifiers: List<AbstractModifier<*>> = listOf(), helper: AbstractModifierHelper<*>): LootFunction.Builder{
+    fun modifiersLootFunctionBuilder(item: Item, modifiers: List<AbstractModifier<*>> = listOf(), type: ModifierHelperType): LootFunction.Builder{
         val modList = NbtList()
         if (item is Modifiable) {
-            if (item.defaultModifiers().isEmpty() && modifiers.isEmpty()){
+            if (item.defaultModifiers(type).isEmpty() && modifiers.isEmpty()){
                 return SetEnchantmentsLootFunction.Builder() //empty builder for placehold purposes basically
             } else {
-                item.defaultModifiers().forEach {
+                item.defaultModifiers(type).forEach {
                     val nbtEl = NbtCompound()
-                    nbtEl.putString(NbtKeys.MODIFIER_ID.str(),it.toString())
+                    nbtEl.putString(type.getModifierIdKey(),it.toString())
                     modList.add(nbtEl)
                 }
                 modifiers.forEach {
                     if (it.isAcceptableItem(ItemStack(item))) {
                         val nbtEl = NbtCompound()
-                        nbtEl.putString(NbtKeys.MODIFIER_ID.str(), it.toString())
+                        nbtEl.putString(type.getModifierIdKey(), it.toString())
                         modList.add(nbtEl)
                     }
                 }
@@ -105,12 +106,12 @@ object ModifierRegistry {
         } else {
             modifiers.forEach {
                 val nbtEl = NbtCompound()
-                nbtEl.putString(NbtKeys.MODIFIER_ID.str(),it.toString())
+                nbtEl.putString(type.getModifierIdKey(),it.toString())
                 modList.add(nbtEl)
             }
         }
         val nbt = NbtCompound()
-        nbt.put(NbtKeys.MODIFIERS.str(), modList)
+        nbt.put(type.getModifiersKey(), modList)
         return SetNbtLootFunction.builder(nbt)
     }
 }
