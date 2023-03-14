@@ -24,9 +24,11 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     
     abstract fun getDescTranslationKeyFromIdentifier(id: Identifier): String
 
-    open fun addModifierTooltip(stack: ItemStack, tooltip: MutableList<Text>, context: TooltipContext){
+    abstract fun getType(): ModifierHelperType
+
+    override fun addModifierTooltip(stack: ItemStack, tooltip: MutableList<Text>, context: TooltipContext){
         val nbt = stack.nbt ?: return
-        if (!nbt.contains(NbtKeys.MODIFIERS.str())) return
+        if (!nbt.contains(getType().getModifiersKey())) return
         val ids = getModifiersFromNbt(stack)
         for (id in ids){
             val mod = ModifierRegistry.get(id)?:continue
@@ -111,14 +113,14 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
 
     fun addModifierToNbt(modifier: Identifier, nbt: NbtCompound){
         val newEl = NbtCompound()
-        newEl.putString(NbtKeys.MODIFIER_ID.str(),modifier.toString())
-        Nbt.addNbtToList(newEl, NbtKeys.MODIFIERS.str(),nbt)
+        newEl.putString(getType().getModifierIdKey(),modifier.toString())
+        Nbt.addNbtToList(newEl, getType().getModifiersKey(),nbt)
     }
 
     protected fun removeModifierFromNbt(modifier: Identifier, nbt: NbtCompound){
-        Nbt.removeNbtFromList(NbtKeys.MODIFIERS.str(),nbt) { nbtEl: NbtCompound ->
-            if (nbtEl.contains(NbtKeys.MODIFIER_ID.str())){
-                val chk = Identifier(nbtEl.getString(NbtKeys.MODIFIER_ID.str()))
+        Nbt.removeNbtFromList(getType().getModifiersKey(),nbt) { nbtEl: NbtCompound ->
+            if (nbtEl.contains(getType().getModifierIdKey())){
+                val chk = Identifier(nbtEl.getString(getType().getModifierIdKey()))
                 chk == modifier
             } else {
                 false
@@ -129,7 +131,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     override fun initializeModifiers(stack: ItemStack, nbt: NbtCompound, list: List<Identifier>){
         if (list.isNotEmpty()){
             if (!nbt.contains(NbtKeys.MOD_INIT.str() + stack.translationKey)){
-                if (nbt.contains(NbtKeys.MODIFIERS.str())){
+                if (nbt.contains(getType().getModifiersKey())){
                     list.forEach{
                         addModifier(it,stack,nbt)
                     }
@@ -141,7 +143,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
                 nbt.putBoolean(NbtKeys.MOD_INIT.str() + stack.translationKey,true)
             }
         }
-        if (nbt.contains(NbtKeys.MODIFIERS.str())){
+        if (nbt.contains(getType().getModifiersKey())){
             val id = Nbt.makeItemStackId(stack)
             initializeModifiers(nbt, id)
             gatherActiveModifiers(stack)
@@ -149,12 +151,12 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     }
 
     protected fun initializeModifiers(nbt: NbtCompound, id: Long){
-        val nbtList = nbt.getList(NbtKeys.MODIFIERS.str(),10)
+        val nbtList = nbt.getList(getType().getModifiersKey(),10)
         modifiers[id] = mutableListOf()
         for (el in nbtList){
             val compound = el as NbtCompound
-            if (compound.contains(NbtKeys.MODIFIER_ID.str())){
-                val modifier = compound.getString(NbtKeys.MODIFIER_ID.str())
+            if (compound.contains(getType().getModifierIdKey())){
+                val modifier = compound.getString(getType().getModifierIdKey())
                 modifiers[id]?.add(Identifier(modifier))
             }
         }
@@ -164,7 +166,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         val nbt = stack.orCreateNbt
         val id = Nbt.makeItemStackId(stack)
         if (!modifiers.containsKey(id)) {
-            if (nbt.contains(NbtKeys.MODIFIERS.str())) {
+            if (nbt.contains(getType().getModifiersKey())) {
                 initializeModifiers(nbt, id)
             }
         }
@@ -174,12 +176,12 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     fun getModifiersFromNbt(stack: ItemStack): List<Identifier>{
         val list: MutableList<Identifier> = mutableListOf()
         val nbt = stack.nbt?:return list
-        if (nbt.contains(NbtKeys.MODIFIERS.str())){
-            val nbtList = Nbt.readNbtList(nbt, NbtKeys.MODIFIERS.str())
+        if (nbt.contains(getType().getModifiersKey())){
+            val nbtList = Nbt.readNbtList(nbt, getType().getModifiersKey())
             nbtList.forEach {
                 val nbtCompound = it as NbtCompound
-                if (nbtCompound.contains(NbtKeys.MODIFIER_ID.str())){
-                    list.add(Identifier(nbtCompound.getString(NbtKeys.MODIFIER_ID.str())))
+                if (nbtCompound.contains(getType().getModifierIdKey())){
+                    list.add(Identifier(nbtCompound.getString(getType().getModifierIdKey())))
                 }
             }
         }
@@ -289,6 +291,10 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
 
             override fun getModifierByType(id: Identifier): EmptyModifier? {
                 return null
+            }
+
+            override fun getType(): ModifierHelperType {
+                return ModifierHelperType.EMPTY_TYPE
             }
 
         }

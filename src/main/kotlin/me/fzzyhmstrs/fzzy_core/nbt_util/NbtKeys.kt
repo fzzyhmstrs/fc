@@ -29,16 +29,6 @@ enum class NbtKeys {
         override fun str(): String {
             return "last_used_list"
         }
-    },
-    MODIFIERS{
-        override fun str(): String {
-            return "modifiers"
-        }
-    },
-    MODIFIER_ID{
-        override fun str(): String {
-            return "modifier_id"
-        }
     };
 
     abstract fun str(): String
