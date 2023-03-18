@@ -61,11 +61,11 @@ interface Flavorful<T: Flavorful<T>> {
     }
 
     fun addFlavorText(tooltip: MutableList<Text>, context: TooltipContext){
-        if (flavor != "") {
+        if (flavorText() != AcText.empty()) {
             tooltip.add(flavorText())
         }
         if ((context.isAdvanced && FcConfig.flavors.showFlavorDescOnAdvanced) || FcConfig.flavors.showFlavorDesc){
-            if (flavorDesc != ""){
+            if (flavorDescText() != AcText.empty()){
                 tooltip.add(flavorDescText())
             }
         }
