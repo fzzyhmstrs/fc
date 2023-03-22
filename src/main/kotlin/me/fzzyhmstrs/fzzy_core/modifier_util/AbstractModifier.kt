@@ -118,9 +118,17 @@ abstract class AbstractModifier<T: Addable<T>>(val modifierId: Identifier): Adda
         return mutableListOf()
     }
 
-    class CompiledModifiers<T: Addable<T>>(val modifiers: List<T>, val compiledData: T)
+    class CompiledModifiers<T: Addable<T>>(val modifiers: ArrayList<T>, val compiledData: T){
+        fun combineWith(other: CompiledModifiers<T>): CompiledModifiers<T>{
+            val list = arrayListOf<T>()
+            list.addAll(modifiers)
+            list.addAll(other.modifiers)
+            val compiledData = compiledData.plus(other.compiledData)
+            return CompiledModifiers(list,compiledData)
+        }
+    }
 
-    inner class Compiler(private val modifiers: MutableList<T>, private val compiledData: T){
+    inner class Compiler(private val modifiers: ArrayList<T>, private val compiledData: T){
 
         fun add(modifier: T){
             modifiers.add(modifier)
