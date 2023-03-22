@@ -276,7 +276,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         }
 
         object EmptyModifierHelper: AbstractModifierHelper<EmptyModifier>() {
-            override val fallbackData: AbstractModifier.CompiledModifiers<EmptyModifier> = AbstractModifier.CompiledModifiers(listOf(),EMPTY)
+            override val fallbackData: AbstractModifier.CompiledModifiers<EmptyModifier> = AbstractModifier.CompiledModifiers(arrayListOf(),EMPTY)
 
             override fun gatherActiveModifiers(stack: ItemStack) {
             }
@@ -305,7 +305,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
             }
 
             override fun compiler(): Compiler {
-                return Compiler(mutableListOf(), EmptyModifier())
+                return Compiler(arrayListOf(), EmptyModifier())
             }
 
             override fun getModifierHelper(): AbstractModifierHelper<*> {
