@@ -10,7 +10,7 @@ import net.minecraft.item.ItemStack
 abstract class AbstractUsedActiveAugment(weight: Rarity, mxLvl: Int = 1, vararg slot: EquipmentSlot): AbstractActiveAugment(weight,mxLvl,*slot) {
 
     internal fun baseUseEffect(user: LivingEntity, level: Int, stack: ItemStack = ItemStack.EMPTY){
-        if (!enabled) return
+        if (!checkEnabled()) return
         useEffect(user, level, stack)
     }
 

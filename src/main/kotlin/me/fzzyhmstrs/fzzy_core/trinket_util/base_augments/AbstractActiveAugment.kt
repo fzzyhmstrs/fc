@@ -11,7 +11,7 @@ import net.minecraft.item.ItemStack
 abstract class AbstractActiveAugment(weight: Rarity, mxLvl: Int = 1, vararg slot: EquipmentSlot): BaseAugment(weight,mxLvl,EnchantmentTarget.ARMOR, *slot) {
 
     internal fun baseActivateEffect(user: LivingEntity, level: Int, stack: ItemStack = ItemStack.EMPTY){
-        if (!enabled)return
+        if (!checkEnabled())return
         activateEffect(user, level, stack)
     }
 
@@ -20,7 +20,7 @@ abstract class AbstractActiveAugment(weight: Rarity, mxLvl: Int = 1, vararg slot
     }
 
     internal fun baseDeactivateEffect(user: LivingEntity, level: Int, stack: ItemStack = ItemStack.EMPTY){
-        if (!enabled)return
+        if (!checkEnabled())return
         deactivateEffect(user, level, stack)
     }
 

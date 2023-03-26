@@ -15,7 +15,7 @@ abstract class AbstractPassiveAugment(weight: Rarity, mxLvl: Int = 1, vararg slo
     }
 
     internal fun baseTickEffect(user: LivingEntity, level: Int, stack: ItemStack = ItemStack.EMPTY){
-        if (!enabled) return
+        if (!checkEnabled()) return
         tickEffect(user, level, stack)
     }
 

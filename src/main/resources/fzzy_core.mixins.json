@@ -6,7 +6,6 @@
     "ItemStackMixin"
   ],
   "client": [
-    "ClientPlayNetworkHandlerMixin",
     "ItemRendererMixin"
   ],
   "injectors": {
