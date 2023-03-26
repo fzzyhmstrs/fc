@@ -28,7 +28,7 @@ abstract class BaseAugment(weight: Rarity, val mxLvl: Int = 1, val target: Encha
     }
 
     internal fun baseEquipEffect(user: LivingEntity, level: Int, stack: ItemStack = ItemStack.EMPTY){
-        if (!enabled) return
+        if (!checkEnabled()) return
         equipEffect(user, level, stack)
     }
 
@@ -37,7 +37,7 @@ abstract class BaseAugment(weight: Rarity, val mxLvl: Int = 1, val target: Encha
     }
 
     internal fun baseUnequipEffect(user: LivingEntity, level: Int, stack: ItemStack = ItemStack.EMPTY){
-        if (!enabled) return
+        if (!checkEnabled()) return
         unequipEffect(user, level, stack)
     }
 
@@ -46,7 +46,7 @@ abstract class BaseAugment(weight: Rarity, val mxLvl: Int = 1, val target: Encha
     }
 
     internal fun baseAttributeModifier(stack: ItemStack, uuid: UUID): Pair<EntityAttribute,EntityAttributeModifier>? {
-        if (!enabled) return null
+        if (!checkEnabled()) return null
         return attributeModifier(stack, uuid)
     }
 
