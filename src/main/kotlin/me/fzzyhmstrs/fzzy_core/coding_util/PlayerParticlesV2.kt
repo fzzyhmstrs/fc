@@ -21,7 +21,7 @@ import net.minecraft.util.math.Vec3d
 
 @Environment(value = EnvType.CLIENT)
 object PlayerParticlesV2 {
-    fun scepterParticlePos(client: MinecraftClient, user: LivingEntity): Vec3d {
+    fun scepterParticlePos(client: MinecraftClient, user: LivingEntity, offhand: Boolean = false): Vec3d {
         val perspective = client.options.perspective
         val pos = user.getCameraPosVec(client.tickDelta)
         val rot = getRotVec(user, client, perspective)
@@ -30,13 +30,8 @@ object PlayerParticlesV2 {
         val width = user.width
         val fov = MathHelper.clamp(client.options.fov.value,30,110)
         val offsets = scepterOffset(perspective, fov.toDouble())
-        return playerParticlePos(pos, rot,yaw, pitch, width, offsets)
+        return playerParticlePos(pos, rot,yaw, pitch, width, offsets, offhand)
     }
-
-    /*private fun scepterParticlePos(pos: Vec3d, width: Float, yaw: Float, pitch: Float, perspective: Perspective, fov: Double): Vec3d {
-        val offset: Vec3d = scepterOffset(perspective, fov)
-        return playerParticlePos(pos, width, yaw, pitch, offset)
-    }*/
 
     fun scepterOffset(perspective: Perspective, fov: Double): Pair<Double, Double> {
         return when(perspective){
@@ -53,10 +48,10 @@ object PlayerParticlesV2 {
         }
     }
 
-    fun playerParticlePos(pos: Vec3d, rot: Vec3d, yaw: Float, pitch: Float, width: Float, offsets: Pair<Double,Double>): Vec3d {
+    fun playerParticlePos(pos: Vec3d, rot: Vec3d, yaw: Float, pitch: Float, width: Float, offsets: Pair<Double,Double>, offhand: Boolean = false): Vec3d {
         val perpendicularVector = perpendicularVecFromYaw(yaw)
         val downwardVector = downwardOffsetVec(yaw, pitch, offsets.second.toFloat())
-        return pos.add(rot.multiply(offsets.first)).add(perpendicularVector.multiply(width / 2.0)).add(downwardVector)
+        return pos.add(rot.multiply(offsets.first)).add(perpendicularVector.multiply(width / 2.0 * if (offhand) -1.0 else 1.0)).add(downwardVector)
     }
 
     private fun vecFromYaw(yaw: Float): Vec3d{
