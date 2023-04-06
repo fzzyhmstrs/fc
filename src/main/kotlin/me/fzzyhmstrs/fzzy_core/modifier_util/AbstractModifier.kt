@@ -25,7 +25,7 @@ import java.util.function.Predicate
  *
  * 3) Modifiers are ["Compilable"][CompiledModifiers]. Any number of modifiers of a given type can be compiled together into a set of CompiledModifiers that a single point of contact can use to execute all relevant effects.
  */
-abstract class AbstractModifier<T: Addable<T>>(val modifierId: Identifier): Addable<T> {
+abstract class AbstractModifier<T: AbstractModifier<T>>(val modifierId: Identifier): Addable<T> {
 
     /**
      * Defines the descendant, if any for the modifier, and the lineage of the modifier family.
@@ -118,13 +118,18 @@ abstract class AbstractModifier<T: Addable<T>>(val modifierId: Identifier): Adda
         return mutableListOf()
     }
 
-    class CompiledModifiers<T: Addable<T>>(val modifiers: ArrayList<T>, val compiledData: T){
-        fun combineWith(other: CompiledModifiers<T>): CompiledModifiers<T>{
-            val list = arrayListOf<T>()
+    override fun toString(): String {
+        return "[Modifier: $modifierId]"
+    }
+
+    class CompiledModifiers<T: AbstractModifier<T>>(val modifiers: ArrayList<T>, val compiledData: T){
+        fun combineWith(other: CompiledModifiers<T>, blank: T): CompiledModifiers<T>{
+            val list: ArrayList<T> = arrayListOf()
             list.addAll(modifiers)
             list.addAll(other.modifiers)
-            val compiledData = compiledData.plus(other.compiledData)
-            return CompiledModifiers(list,compiledData)
+            blank.plus(compiledData)
+            blank.plus(other.compiledData)
+            return CompiledModifiers(list,blank)
         }
     }
 
