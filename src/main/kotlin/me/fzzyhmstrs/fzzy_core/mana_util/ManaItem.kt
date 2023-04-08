@@ -42,7 +42,7 @@ interface ManaItem {
         return if (damageLeft >= amount) {
             true
         } else {
-            if (message.toString() != "") {
+            if (message.string != "") {
                 world.playSound(
                     null,
                     entity.blockPos,
