@@ -4,8 +4,8 @@ import me.fzzyhmstrs.fzzy_core.FC
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.registry.Registry
 import net.minecraft.util.Identifier
+import net.minecraft.util.registry.Registry
 
 abstract class ModifierHelperType(val id: Identifier) {
 
