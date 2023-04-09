@@ -46,9 +46,9 @@ dependencies {
     }
 
 
-    implementation("com.github.LlamaLad7:MixinExtras:0.1.1")
-    annotationProcessor("com.github.LlamaLad7:MixinExtras:0.1.1")
-    include("com.github.LlamaLad7:MixinExtras:0.1.1")
+    implementation("com.github.LlamaLad7.mixinextras:mixinextras-fabric:0.2.0-beta.6")
+    annotationProcessor("com.github.LlamaLad7.mixinextras:mixinextras-fabric:0.2.0-beta.6")
+    include("com.github.LlamaLad7.mixinextras:mixinextras-fabric:0.2.0-beta.6")
 
 }
 tasks {
