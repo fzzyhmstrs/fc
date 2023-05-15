@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_core.modifier_util
 
+import kotlinx.coroutines.sync.Mutex
 import me.fzzyhmstrs.fzzy_core.FC
 import me.fzzyhmstrs.fzzy_core.coding_util.AcText
 import me.fzzyhmstrs.fzzy_core.nbt_util.Nbt
@@ -10,12 +11,14 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import java.util.*
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.max
 
 abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitializer{
 
-    private val modifiers: MutableMap<Long ,MutableList<Identifier>> = mutableMapOf()
-    private val activeModifiers: MutableMap<Long, AbstractModifier.CompiledModifiers<T>> = mutableMapOf()
+    private val modifiers = Collections.synchronizedMap(mutableMapOf<Long ,MutableList<Identifier>>())
+    private val activeModifiers = Collections.synchronizedMap(mutableMapOf<Long, AbstractModifier.CompiledModifiers<T>>())
     abstract val fallbackData: AbstractModifier.CompiledModifiers<T>
 
     abstract fun gatherActiveModifiers(stack: ItemStack)
@@ -36,12 +39,54 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         }
     }
 
+    //synchronization for the modifier lists
     fun getModifiersById(itemStackId: Long): List<Identifier>{
-        return modifiers[itemStackId]?: listOf()
+        return synchronized(modifiers){
+            //secondary safety valve, copying the modifier list on creation. This makes back-mutation outside of sync impossible
+            modifiers[itemStackId]?.toMutableList()?: listOf()
+        }
+    }
+    fun checkModifiersKeyById(itemStackId: Long): Boolean{
+        return synchronized(modifiers){
+            modifiers.containsKey(itemStackId)
+        }
+    }
+    fun checkModListContainsById(itemStackId: Long, mod: Identifier): Boolean{
+        return synchronized(modifiers){
+            modifiers[itemStackId]?.contains(mod) == true
+        }
+    }
+    fun setModifiersById(itemStackId: Long,mods: MutableList<Identifier>){
+        synchronized(modifiers){
+            modifiers[itemStackId] = mods
+        }
+    }
+    fun addModifierById(itemStackId: Long, mod: Identifier){
+        synchronized(modifiers){
+            modifiers[itemStackId]?.add(mod)
+        }
+    }
+    fun removeModifierById(itemStackId: Long, mod: Identifier){
+        synchronized(modifiers){
+            modifiers[itemStackId]?.add(mod)
+        }
     }
 
+    //synchronization for active modifiers
     fun setModifiersById(itemStackId: Long, compiledData: AbstractModifier.CompiledModifiers<T>){
-        activeModifiers[itemStackId] = compiledData
+        synchronized(activeModifiers) {
+            activeModifiers[itemStackId] = compiledData
+        }
+    }
+    fun getActiveModifiers(stack: ItemStack): AbstractModifier.CompiledModifiers<T> {
+        val id = Nbt.getItemStackId(stack)
+        /*if (id != -1L && !activeModifiers.containsKey(id)){
+            initializeModifiers(stack, stack.orCreateNbt)
+        }*/
+        return synchronized(activeModifiers) {
+            val compiledData = activeModifiers[id]
+            compiledData ?: fallbackData
+        }
     }
 
     fun addModifier(modifier: Identifier, stack: ItemStack): Boolean{
@@ -51,7 +96,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
 
     protected fun addModifier(modifier: Identifier, stack: ItemStack, nbt: NbtCompound): Boolean{
         val id = Nbt.makeItemStackId(stack)
-        if (!modifiers.containsKey(id)) {
+        if (!checkModifiersKeyById(id)) {
             initializeModifiers(nbt, id)
         }
         val highestModifier = checkDescendant(modifier,stack)
@@ -66,7 +111,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
                     val newDescendant = lineage[highestDescendantPresent]
                     val currentGeneration = lineage[max(highestDescendantPresent - 1,0)]
                     getModifierByType(newDescendant)?.onAdd(stack)
-                    modifiers[id]?.add(newDescendant)
+                    addModifierById(id,newDescendant)
                     addModifierToNbt(newDescendant, nbt)
                     removeModifier(stack, currentGeneration, nbt)
                     gatherActiveModifiers(stack)
@@ -79,7 +124,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
 
         mod?.onAdd(stack)
         addModifierToNbt(modifier, nbt)
-        modifiers[id]?.add(modifier)
+        addModifierById(id,modifier)
         gatherActiveModifiers(stack)
         return true
     }
@@ -91,7 +136,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         val lineage = mod?.getModLineage() ?: return null
         var highestModifier: Identifier? = null
         lineage.forEach { identifier ->
-            if (modifiers[id]?.contains(identifier) == true){
+            if (checkModListContainsById(id,identifier)){
                 highestModifier = identifier
             }
         }
@@ -101,7 +146,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     protected fun removeModifier(stack: ItemStack, modifier: Identifier, nbt: NbtCompound){
         val id = Nbt.getItemStackId(nbt)
         getModifierByType(modifier)?.onRemove(stack)
-        modifiers[id]?.remove(modifier)
+        removeModifierById(id,modifier)
         gatherActiveModifiers(stack)
         removeModifierFromNbt(modifier,nbt)
     }
@@ -152,12 +197,12 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
 
     protected fun initializeModifiers(nbt: NbtCompound, id: Long){
         val nbtList = nbt.getList(getType().getModifiersKey(),10)
-        modifiers[id] = mutableListOf()
+        setModifiersById(id, mutableListOf())
         for (el in nbtList){
             val compound = el as NbtCompound
             if (compound.contains(getType().getModifierIdKey())){
                 val modifier = compound.getString(getType().getModifierIdKey())
-                modifiers[id]?.add(Identifier(modifier))
+                addModifierById(id,Identifier(modifier))
             }
         }
     }
@@ -165,12 +210,14 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     fun getModifiers(stack: ItemStack): List<Identifier>{
         val nbt = stack.orCreateNbt
         val id = Nbt.makeItemStackId(stack)
-        if (!modifiers.containsKey(id)) {
+        if (!checkModifiersKeyById(id)) {
             if (nbt.contains(getType().getModifiersKey())) {
                 initializeModifiers(nbt, id)
             }
         }
-        return modifiers[id] ?: listOf()
+        return synchronized(modifiers){
+            modifiers[id] ?: listOf()
+        }
     }
 
     fun getModifiersFromNbt(stack: ItemStack): List<Identifier>{
@@ -188,15 +235,6 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         return list
     }
 
-    fun getActiveModifiers(stack: ItemStack): AbstractModifier.CompiledModifiers<T> {
-        val id = Nbt.getItemStackId(stack)
-        /*if (id != -1L && !activeModifiers.containsKey(id)){
-            initializeModifiers(stack, stack.orCreateNbt)
-        }*/
-        val compiledData = activeModifiers[id]
-        return  compiledData ?: fallbackData
-    }
-
     fun checkModifierLineage(modifier: Identifier, stack: ItemStack): Boolean{
         val mod = getModifierByType(modifier)
         return if (mod != null){
@@ -212,7 +250,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         val highestOrderDescendant = lineage.size
         var highestDescendantPresent = 0
         lineage.forEachIndexed { index, identifier ->
-            if (modifiers[id]?.contains(identifier) == true){
+            if (checkModListContainsById(id,identifier)){
                 highestDescendantPresent = index + 1
             }
         }
@@ -251,17 +289,21 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         compiler: AbstractModifier<A>.Compiler
     ): AbstractModifier.CompiledModifiers<A> {
         val id = Nbt.getItemStackId(stack)
-        getModifiersById(id).forEach { identifier ->
-            val modifier = ModifierRegistry.getByType<A>(identifier)
-            if (modifier != null) {
-                if (!modifier.hasObjectToAffect()) {
-                    compiler.add(modifier)
-                } else {
-                    if (modifier.checkObjectsToAffect(objectToAffect)) {
+        try {
+            getModifiersById(id).forEach { identifier ->
+                val modifier = ModifierRegistry.getByType<A>(identifier)
+                if (modifier != null) {
+                    if (!modifier.hasObjectToAffect()) {
                         compiler.add(modifier)
+                    } else {
+                        if (modifier.checkObjectsToAffect(objectToAffect)) {
+                            compiler.add(modifier)
+                        }
                     }
                 }
             }
+        } catch (e: Exception){
+            e.printStackTrace()
         }
         return compiler.compile()
     }
