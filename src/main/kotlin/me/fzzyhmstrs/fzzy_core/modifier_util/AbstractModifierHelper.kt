@@ -68,7 +68,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     }
     fun removeModifierById(itemStackId: Long, mod: Identifier){
         synchronized(modifiers){
-            modifiers[itemStackId]?.add(mod)
+            modifiers[itemStackId]?.remove(mod)
         }
     }
 
