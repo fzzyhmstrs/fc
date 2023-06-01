@@ -43,6 +43,7 @@ object EventRegistry {
         registerTickUppable(ticker_40)
         registerServerTick()
         SyncedConfigRegistry.registerServer()
+        PersistentEffectHelper.registerServer()
         //PlaceItemAugment.registerServer()
     }
 
