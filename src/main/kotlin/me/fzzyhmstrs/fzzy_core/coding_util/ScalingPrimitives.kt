@@ -15,6 +15,9 @@ data class PerLvlI(val base: Int = 0, val perLevel: Int = 0, val percent: Int = 
     fun plus(ldi: PerLvlI): PerLvlI {
         return PerLvlI(base + ldi.base, perLevel + ldi.perLevel, percent + ldi.percent)
     }
+    fun plus(base: Int = 0, perLevel: Int = 0, percent: Int = 0): PerLvlI {
+        return PerLvlI(this.base + base, this.perLevel + perLevel, this.percent + percent)
+    }
 }
 
 data class PerLvlL(val base: Long = 0, val perLevel: Long = 0, val percent: Long = 0){
@@ -23,6 +26,9 @@ data class PerLvlL(val base: Long = 0, val perLevel: Long = 0, val percent: Long
     }
     fun plus(ldl: PerLvlL): PerLvlL {
         return PerLvlL(base + ldl.base, perLevel + ldl.perLevel, percent + ldl.percent)
+    }
+    fun plus(base: Long = 0, perLevel: Long = 0, percent: Long = 0): PerLvlL {
+        return PerLvlL(this.base + base, this.perLevel + perLevel, this.percent + percent)
     }
 }
 
@@ -33,6 +39,9 @@ data class PerLvlF(val base: Float = 0.0F, val perLevel: Float = 0.0F, val perce
     fun plus(ldf: PerLvlF): PerLvlF {
         return PerLvlF(base + ldf.base, perLevel + ldf.perLevel, percent + ldf.percent)
     }
+    fun plus(base: Float = 0f, perLevel: Float = 0f, percent: Float = 0f): PerLvlF {
+        return PerLvlF(this.base + base, this.perLevel + perLevel, this.percent + percent)
+    }
 }
 
 data class PerLvlD(val base: Double = 0.0, val perLevel: Double = 0.0, val percent: Double = 0.0){
@@ -41,5 +50,8 @@ data class PerLvlD(val base: Double = 0.0, val perLevel: Double = 0.0, val perce
     }
     fun plus(ldd: PerLvlD): PerLvlD {
         return PerLvlD(base + ldd.base, perLevel + ldd.perLevel, percent + ldd.percent)
+    }
+    fun plus(base: Double = 0.0, perLevel: Double = 0.0, percent: Double = 0.0): PerLvlD {
+        return PerLvlD(this.base + base, this.perLevel + perLevel, this.percent + percent)
     }
 }
