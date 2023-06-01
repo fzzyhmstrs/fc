@@ -3,7 +3,8 @@
   "package": "me.fzzyhmstrs.fzzy_core.mixins",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "ItemStackMixin"
+    "ItemStackMixin",
+    "LivingEntityMixin"
   ],
   "client": [
     "ItemRendererMixin"

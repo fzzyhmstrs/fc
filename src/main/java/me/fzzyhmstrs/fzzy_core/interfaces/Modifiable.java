@@ -1,9 +1,6 @@
 package me.fzzyhmstrs.fzzy_core.interfaces;
 
-
-import me.fzzyhmstrs.fzzy_core.modifier_util.AbstractModifierHelper;
 import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierHelperType;
-import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierInitializer;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
