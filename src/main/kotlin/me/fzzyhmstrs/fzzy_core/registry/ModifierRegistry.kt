@@ -4,7 +4,6 @@ import me.fzzyhmstrs.fzzy_core.interfaces.Modifiable
 import me.fzzyhmstrs.fzzy_core.modifier_util.AbstractModifier
 import me.fzzyhmstrs.fzzy_core.modifier_util.AbstractModifierHelper
 import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierHelperType
-import me.fzzyhmstrs.fzzy_core.nbt_util.NbtKeys
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.loot.function.LootFunction

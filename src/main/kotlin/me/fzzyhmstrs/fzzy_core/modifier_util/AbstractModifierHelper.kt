@@ -1,8 +1,9 @@
 package me.fzzyhmstrs.fzzy_core.modifier_util
 
-import kotlinx.coroutines.sync.Mutex
 import me.fzzyhmstrs.fzzy_core.FC
 import me.fzzyhmstrs.fzzy_core.coding_util.AcText
+import me.fzzyhmstrs.fzzy_core.coding_util.PerLvlI
+import me.fzzyhmstrs.fzzy_core.coding_util.PersistentEffectHelper
 import me.fzzyhmstrs.fzzy_core.interfaces.StackHolding
 import me.fzzyhmstrs.fzzy_core.nbt_util.Nbt
 import me.fzzyhmstrs.fzzy_core.nbt_util.NbtKeys
@@ -11,10 +12,10 @@ import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.LivingEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtElement
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import java.util.*
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.max
 
 abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitializer{
@@ -102,23 +103,30 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
 
     ////////////////////////////////////////
 
-    fun addModifier(entity: LivingEntity,modifier: Identifier, uniqueOnly: Boolean = true): Boolean{
+    fun addModifier(entity: LivingEntity,modifier: Identifier, uniqueOnly: Boolean = true, temporary: Boolean = false): Boolean{
         val stack = (entity as StackHolding).stack
-        return addModifier(modifier, stack, uniqueOnly)
+        return addModifier(modifier, stack, uniqueOnly,temporary)
     }
 
-    fun addModifier(modifier: Identifier, stack: ItemStack, uniqueOnly: Boolean = true): Boolean{
+    fun addTemporaryModifier(modifier: Identifier, entity: LivingEntity, duration: Int, uniqueOnly: Boolean = true){
+        if (addModifier(entity, modifier, uniqueOnly,true)){
+            val data = TemporaryModifiers.TemporaryModifierData(this, modifier, entity)
+            PersistentEffectHelper.setPersistentTickerNeed(TemporaryModifiers,duration,duration,data)
+        }
+    }
+
+    fun addModifier(modifier: Identifier, stack: ItemStack, uniqueOnly: Boolean = true, temporary: Boolean = false): Boolean{
         val nbt = stack.orCreateNbt
-        return addModifier(modifier, stack, nbt)
+        return addModifier(modifier, stack, nbt,uniqueOnly,temporary)
     }
 
-    protected fun addModifier(modifier: Identifier, stack: ItemStack, nbt: NbtCompound, uniqueOnly: Boolean = true): Boolean{
+    protected fun addModifier(modifier: Identifier, stack: ItemStack, nbt: NbtCompound, uniqueOnly: Boolean = true, temporary: Boolean = false): Boolean{
         val id = Nbt.makeItemStackId(stack)
         if (!checkModifiersKeyById(id)) {
             initializeModifiers(nbt, id)
         }
-        val highestModifier = checkDescendant(modifier,stack)
         val mod = getModifierByType(modifier)
+        val highestModifier = checkDescendant(modifier,stack)
         if (highestModifier != null){
             return if (mod?.hasDescendant() == true){
                 val highestDescendantPresent: Int = checkModifierLineage(mod, stack)
@@ -135,8 +143,8 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
                     val currentGeneration = lineage[max(highestDescendantPresent - 1,0)]
                     getModifierByType(newDescendant)?.onAdd(stack)
                     addModifierById(id,newDescendant)
-                    addModifierToNbt(newDescendant, nbt)
-                    removeModifier(stack, currentGeneration, nbt)
+                    addModifierToNbt(newDescendant, nbt, temporary)
+                    removeModifierWithoutCheck(id, stack, currentGeneration, nbt)
                     gatherActiveModifiers(stack)
                     true
                 }
@@ -144,12 +152,16 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
                 false
             }
         }
+        addModifierWithoutChecking(id, modifier, stack, nbt, temporary)
+        return true
+    }
 
+    protected fun addModifierWithoutChecking(id: Long,modifier: Identifier, stack: ItemStack, nbt: NbtCompound, temporary: Boolean = false){
+        val mod = getModifierByType(modifier)
         mod?.onAdd(stack)
-        addModifierToNbt(modifier, nbt)
+        addModifierToNbt(modifier, nbt, temporary)
         addModifierById(id,modifier)
         gatherActiveModifiers(stack)
-        return true
     }
 
     protected fun checkDescendant(modifier: Identifier, stack: ItemStack): Identifier?{
@@ -178,20 +190,48 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
 
     protected fun removeModifier(stack: ItemStack, modifier: Identifier, nbt: NbtCompound){
         val id = Nbt.getItemStackId(nbt)
+        if (!checkModifiersKeyById(id)) return
+        if (checkModListContainsById(id,modifier)){
+            removeModifierWithoutCheck(id, stack, modifier, nbt)
+        } else {
+            val highestDescendant = checkDescendant(modifier,stack)?:return
+            val highestMod = getModifierByType(highestDescendant)
+            val highestModAncestor = if (highestMod?.hasAncestor() == true){
+                highestMod.getAncestor()
+            } else if(highestMod != null) {
+                null
+            } else {
+                return
+            }
+            removeModifierWithoutCheck(id,stack, highestDescendant,nbt)
+            if (highestModAncestor != null){
+                addModifierWithoutChecking(id,highestModAncestor, stack, nbt)
+            }
+        }
+    }
+
+    protected fun removeModifierWithoutCheck(id: Long, stack: ItemStack, modifier: Identifier, nbt: NbtCompound){
         getModifierByType(modifier)?.onRemove(stack)
         removeModifierById(id,modifier)
         gatherActiveModifiers(stack)
         removeModifierFromNbt(modifier,nbt)
     }
 
-    fun addModifierToNbt(modifier: Identifier, stack: ItemStack){
-        val nbt = stack.orCreateNbt
-        addModifierToNbt(modifier, nbt)
+    fun addModifierToNbt(modifier: Identifier, nbt: NbtCompound){
+        addModifierToNbt(modifier, nbt, false)
     }
 
-    fun addModifierToNbt(modifier: Identifier, nbt: NbtCompound){
+    fun addModifierToNbt(modifier: Identifier, stack: ItemStack, temporary: Boolean = false){
+        val nbt = stack.orCreateNbt
+        addModifierToNbt(modifier, nbt, temporary)
+    }
+
+    fun addModifierToNbt(modifier: Identifier, nbt: NbtCompound, temporary: Boolean = false){
         val newEl = NbtCompound()
         newEl.putString(getType().getModifierIdKey(),modifier.toString())
+        if (temporary){
+            newEl.putBoolean(NbtKeys.TEMPORARY_MODIFIER.str(),true)
+        }
         Nbt.addNbtToList(newEl, getType().getModifiersKey(),nbt)
     }
 
@@ -339,6 +379,38 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
             e.printStackTrace()
         }
         return compiler.compile()
+    }
+
+    object TemporaryModifiers: PersistentEffectHelper.PersistentEffect {
+        override val delay: PerLvlI
+            get() = PerLvlI()
+        override fun persistentEffect(data: PersistentEffectHelper.PersistentEffectData) {
+            if(data is TemporaryModifierData){
+                val helper = data.helper
+                helper.removeModifier(data.entity,data.modifier)
+            }
+        }
+        fun removeTemporaryModifiersFromNbt(stack: ItemStack){
+            val nbt = stack.nbt?:return
+            for (type in ModifierHelperType.REGISTRY) {
+                val list = Nbt.readNbtList(nbt, type.getModifiersKey())
+                val toRemove: MutableSet<NbtElement> = mutableSetOf()
+                for (nbtEl in list) {
+                    if (nbtEl is NbtCompound) {
+                        if (nbtEl.contains(type.getModifierIdKey())) {
+                            toRemove.add(nbtEl)
+                        }
+                    }
+                }
+                list.removeAll(toRemove)
+            }
+        }
+        class TemporaryModifierData(
+            val helper: AbstractModifierHelper<*>,
+            val modifier: Identifier,
+            val entity: LivingEntity)
+            :
+            PersistentEffectHelper.PersistentEffectData
     }
 
     companion object{

@@ -2,6 +2,7 @@ package me.fzzyhmstrs.fzzy_core.mixins;
 
 import me.fzzyhmstrs.fzzy_core.FC;
 import me.fzzyhmstrs.fzzy_core.interfaces.StackHolding;
+import me.fzzyhmstrs.fzzy_core.modifier_util.AbstractModifierHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -26,6 +27,7 @@ public class LivingEntityMixin implements StackHolding {
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void fzzy_core_writeStackToNbt(NbtCompound nbt, CallbackInfo ci){
         if (!fzzy_core_modifierHolder.isEmpty()){
+            AbstractModifierHelper.TemporaryModifiers.INSTANCE.removeTemporaryModifiersFromNbt(fzzy_core_modifierHolder);
             NbtCompound nbtCompound = new NbtCompound();
             fzzy_core_modifierHolder.writeNbt(nbtCompound);
             nbt.put("modifier_holder",nbtCompound);

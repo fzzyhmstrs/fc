@@ -33,12 +33,14 @@ abstract class AbstractModifier<T: AbstractModifier<T>>(val modifierId: Identifi
      * See the [wiki](https://github.com/fzzyhmstrs/ac/wiki/Modifier-Framework) for details.
      */
     private var descendant: Identifier = AbstractModifierHelper.BLANK
+    private var ancestor: Identifier = AbstractModifierHelper.BLANK
     private val lineage: List<Identifier> by lazy { generateLineage() }
 
 
     private var objectsToAffect: Predicate<Identifier>? = null
 
     private var hasDesc: Boolean = false
+    private var hasAnc: Boolean = false
     private var hasObjectToAffect: Boolean = false
 
     /**
@@ -79,9 +81,17 @@ abstract class AbstractModifier<T: AbstractModifier<T>>(val modifierId: Identifi
     fun hasDescendant(): Boolean{
         return hasDesc
     }
+    fun hasAncestor(): Boolean{
+        return hasAnc
+    }
+    fun getAncestor(): Identifier{
+        return ancestor
+    }
     fun addDescendant(modifier: AbstractModifier<T>){
         val id = modifier.modifierId
         descendant = id
+        modifier.ancestor = this.modifierId
+        modifier.hasAnc = true
         hasDesc = true
     }
     fun getModLineage(): List<Identifier>{

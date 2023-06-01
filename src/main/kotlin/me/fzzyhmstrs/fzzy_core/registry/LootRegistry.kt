@@ -1,7 +1,6 @@
 package me.fzzyhmstrs.fzzy_core.registry
 
 import me.fzzyhmstrs.fzzy_core.item_util.AbstractModLoot
-import net.fabricmc.fabric.api.loot.v2.FabricLootTableBuilder
 import net.fabricmc.fabric.api.loot.v2.LootTableEvents
 
 /**
