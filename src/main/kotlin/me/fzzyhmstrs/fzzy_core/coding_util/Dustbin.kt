@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_core.coding_util
 
 import me.fzzyhmstrs.fzzy_core.registry.EventRegistry
+import java.util.*
 import java.util.function.Consumer
 
 /**
@@ -8,7 +9,7 @@ import java.util.function.Consumer
  */
 open class Dustbin<T>(private val consumer: Consumer<T>){
     private var dirty: Boolean = false
-    private val dust: MutableList<T> = mutableListOf()
+    private val dust: Vector<T> = Vector()
     private var needsRemoval: Boolean = false
     fun markDirty(newDust: T){
         if (needsRemoval){
