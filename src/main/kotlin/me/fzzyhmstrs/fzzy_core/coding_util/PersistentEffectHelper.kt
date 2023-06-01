@@ -34,11 +34,11 @@ object PersistentEffectHelper {
 
     fun registerServer(){
         ServerLifecycleEvents.SERVER_STOPPING.register {
-            clearPersistentEffects()
+            flushPersistentEffects()
         }
     }
 
-    private fun clearPersistentEffects(){
+    private fun flushPersistentEffects(){
         while(persistentEffectsFlag.get()){
             persistentEffectTicker()
         }

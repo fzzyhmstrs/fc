@@ -10,6 +10,11 @@ enum class NbtKeys {
             return "item_stack_id"
         }
     },
+    TEMPORARY_MODIFIER{
+        override fun str(): String {
+            return "temporary_modifier"
+        }
+    },
     ACTIVE_ENCHANT{
         override fun str(): String {
             return "active_enchant_id"
