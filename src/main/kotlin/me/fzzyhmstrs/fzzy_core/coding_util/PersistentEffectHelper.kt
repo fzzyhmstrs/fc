@@ -24,11 +24,11 @@ object PersistentEffectHelper {
      * Successful runtime can be achieved with a simple type check on the persistentEffect call.
      */
     fun setPersistentTickerNeed(
-        augment: PersistentEffect,
+        effect: PersistentEffect,
         delay: Int, duration: Int,
         data: PersistentEffectData
     ){
-        persistentEffects.add(PersistentEffectInstance(EventRegistry.Ticker(delay), delay, duration, augment, data))
+        persistentEffects.add(PersistentEffectInstance(EventRegistry.Ticker(delay), delay, duration, effect, data))
         persistentEffectsFlag.set(true)
     }
 
