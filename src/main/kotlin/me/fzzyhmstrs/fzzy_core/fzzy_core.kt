@@ -10,9 +10,8 @@ import me.fzzyhmstrs.fzzy_core.registry.ModifierRegistry
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint
-import net.minecraft.registry.Registries
-import net.minecraft.registry.Registry
 import net.minecraft.util.Identifier
+import net.minecraft.util.registry.Registry
 import kotlin.random.Random
 
 
@@ -21,7 +20,7 @@ object FC: ModInitializer {
     val fcRandom = Random(System.currentTimeMillis())
     val fallbackId = Identifier("vanishing_curse")
 
-    val MODIFIER_HOLDER = Registry.register(Registries.ITEM, Identifier(MOD_ID,"modifier_holder"),ModifierHolderItem())
+    val MODIFIER_HOLDER = Registry.register(Registry.ITEM, Identifier(MOD_ID,"modifier_holder"),ModifierHolderItem())
 
     override fun onInitialize() {
         FcConfig.initConfig()
