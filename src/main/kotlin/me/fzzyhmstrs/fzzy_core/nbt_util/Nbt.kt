@@ -81,7 +81,7 @@ object Nbt {
      * utility for providing an [ItemStack] with a unique and relatively immutable identifier. This allows for an ItemStack to be uniquely tracked even across crafting, enchanting, etc. etc.
      */
     fun getItemStackId(stack: ItemStack): Long{
-        val nbt = stack.orCreateNbt
+        val nbt = stack.nbt ?: return -1L
         return if (nbt.contains(NbtKeys.ITEM_STACK_ID.str())){
             nbt.getLong(NbtKeys.ITEM_STACK_ID.str())
         } else {

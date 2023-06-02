@@ -91,6 +91,12 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
             compiledData ?: fallbackData
         }
     }
+    fun removeActiveModifiersById(id: Long){
+        synchronized(activeModifiers) {
+            activeModifiers.remove(id)
+        }
+    }
+
     fun getModifiers(entity: LivingEntity): List<Identifier>{
         val stack = (entity as StackHolding).stack
         return getModifiers(stack)
@@ -215,6 +221,14 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         removeModifierById(id,modifier)
         gatherActiveModifiers(stack)
         removeModifierFromNbt(modifier,nbt)
+    }
+
+    fun removeAllModifiers(stack: ItemStack){
+        val nbt = stack.nbt ?: return
+        val id = Nbt.getItemStackId(nbt)
+        setModifiersById(id, mutableListOf())
+        removeActiveModifiersById(id)
+        nbt.remove(getType().getModifiersKey())
     }
 
     fun addModifierToNbt(modifier: Identifier, nbt: NbtCompound){
