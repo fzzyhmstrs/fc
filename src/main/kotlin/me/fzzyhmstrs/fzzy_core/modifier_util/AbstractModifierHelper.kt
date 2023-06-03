@@ -229,6 +229,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         setModifiersById(id, mutableListOf())
         removeActiveModifiersById(id)
         nbt.remove(getType().getModifiersKey())
+        gatherActiveModifiers(stack)
     }
 
     fun addModifierToNbt(modifier: Identifier, nbt: NbtCompound){
@@ -295,7 +296,27 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     }
 
     fun getModifiers(stack: ItemStack): List<Identifier>{
-        val nbt = stack.orCreateNbt
+        val nbt = stack.nbt?:return listOf()
+        var id = Nbt.getItemStackId(stack)
+        if (id == -1L){
+            if (nbt.contains(getType().getModifiersKey())) {
+                id = Nbt.makeItemStackId(stack)
+                initializeModifiers(nbt, id)
+            } else{
+                return listOf()
+            }
+        } else if (!checkModifiersKeyById(id)) {
+            if (nbt.contains(getType().getModifiersKey())) {
+                id = Nbt.makeItemStackId(stack)
+                initializeModifiers(nbt, id)
+            } else{
+                return listOf()
+            }
+        }
+        return synchronized(modifiers){
+            modifiers[id] ?: listOf()
+        }
+        /*val nbt = stack.orCreateNbt
         val id = Nbt.makeItemStackId(stack)
         if (!checkModifiersKeyById(id)) {
             if (nbt.contains(getType().getModifiersKey())) {
@@ -304,7 +325,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         }
         return synchronized(modifiers){
             modifiers[id] ?: listOf()
-        }
+        }*/
     }
 
     fun getModifiersFromNbt(stack: ItemStack): List<Identifier>{
@@ -370,15 +391,15 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
 
     abstract fun getModifierByType(id: Identifier): T?
 
-    inline fun <reified A : AbstractModifier<A>> gatherActiveAbstractModifiers(
+    inline fun <reified T : AbstractModifier<T>> gatherActiveAbstractModifiers(
         stack: ItemStack,
         objectToAffect: Identifier,
-        compiler: AbstractModifier<A>.Compiler
-    ): AbstractModifier.CompiledModifiers<A> {
+        compiler: AbstractModifier<T>.Compiler
+    ): AbstractModifier.CompiledModifiers<T> {
         val id = Nbt.getItemStackId(stack)
         try {
             getModifiersById(id).forEach { identifier ->
-                val modifier = ModifierRegistry.getByType<A>(identifier)
+                val modifier = ModifierRegistry.getByType<T>(identifier)
                 if (modifier != null) {
                     if (!modifier.hasObjectToAffect()) {
                         compiler.add(modifier)
