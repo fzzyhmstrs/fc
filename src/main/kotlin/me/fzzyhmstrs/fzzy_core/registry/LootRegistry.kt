@@ -15,7 +15,7 @@ object LootRegistry {
         LootTableEvents.MODIFY.register { _, _, id, tableBuilder, _ ->
             if (modLoots.isEmpty()) return@register
             for (modLoot in modLoots) {
-                if (modLoot.lootBuilder(id, tableBuilder)) break
+                modLoot.lootBuilder(id, tableBuilder)
             }
         }
     }
