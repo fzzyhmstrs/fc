@@ -121,6 +121,10 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         }
     }
 
+    fun addModifier(modifier: Identifier, stack: ItemStack): Boolean{
+        return addModifier(modifier, stack, uniqueOnly = true, temporary = false)
+    }
+
     fun addModifier(modifier: Identifier, stack: ItemStack, uniqueOnly: Boolean = true, temporary: Boolean = false): Boolean{
         val nbt = stack.orCreateNbt
         return addModifier(modifier, stack, nbt,uniqueOnly,temporary)
