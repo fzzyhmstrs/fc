@@ -20,8 +20,8 @@ object FzzyBlockSettings {
      */
     
     fun air(): FabricBlockSettings { return FabricBlockSettings.of(Material.AIR) }
-    fun nonSolidBarrier(): FabricBlockSettings { return FabricBlockSettings.of(Material.PORTAL)}
-    fun nonSolidBurn(): FabricBlockSettings { return FabricBlockSettings.of(Material.CARPET)}
+    fun nonSolidLightMoveBarrier(): FabricBlockSettings { return FabricBlockSettings.of(Material.PORTAL)}
+    fun nonSolidBurnLightMove(): FabricBlockSettings { return FabricBlockSettings.of(Material.CARPET)}
     fun nonSolidLightDestroyMove(): FabricBlockSettings { return FabricBlockSettings.of(Material.PLANT)}
     fun nonSolidLightDestroyMoveReplace(): FabricBlockSettings { return FabricBlockSettings.of(Material.REPLACEABLE_UNDERWATER_PLANT)}
     fun nonSolidBurnLightDestroyMoveReplace(): FabricBlockSettings { return FabricBlockSettings.of(Material.REPLACEABLE_PLANT)}
