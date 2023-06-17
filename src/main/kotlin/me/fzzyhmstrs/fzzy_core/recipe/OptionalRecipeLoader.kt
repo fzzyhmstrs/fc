@@ -9,12 +9,12 @@ import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
 import net.minecraft.recipe.Recipe
 import net.minecraft.recipe.RecipeManager
 import net.minecraft.recipe.RecipeType
-import net.minecraft.registry.Registries
 import net.minecraft.resource.JsonDataLoader
 import net.minecraft.resource.ResourceManager
 import net.minecraft.util.Identifier
 import net.minecraft.util.JsonHelper
 import net.minecraft.util.profiler.Profiler
+import net.minecraft.util.registry.Registry
 
 object OptionalRecipeLoader: JsonDataLoader(GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create(),"optional_recipes"),IdentifiableResourceReloadListener {
 
@@ -50,7 +50,7 @@ object OptionalRecipeLoader: JsonDataLoader(GsonBuilder().setPrettyPrinting().di
                 val recipeJson = JsonHelper.asObject(entry.value,"top element")
                 val typeString = JsonHelper.getString(recipeJson, "type")
                 val typeStringId = Identifier(typeString)
-                if(!Registries.RECIPE_SERIALIZER.containsId(typeStringId)) {
+                if(!Registry.RECIPE_SERIALIZER.containsId(typeStringId)) {
                     skipped++
                     continue
                 }
