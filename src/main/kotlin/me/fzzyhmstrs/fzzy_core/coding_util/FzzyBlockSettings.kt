@@ -1,13 +1,13 @@
 package me.fzzyhmstrs.fzzy_core.coding_util
 
 import net.fabricmc.fabric.api.`object`.builder.v1.block.FabricBlockSettings
-import net.minecraft.block.Material
+import net.minecraft.block.piston.PistonBehavior
 
 object FzzyBlockSettings {
     /**
      * For basic materials with no special properties, just a color. Modder should specify their own color in most cases anyways
      */
-    fun basic(): FabricBlockSettings {return FabricBlockSettings.of(Material.SOIL)}
+    fun basic(): FabricBlockSettings {return FabricBlockSettings.create()}
 
     /*
     nonsold
@@ -19,8 +19,8 @@ object FzzyBlockSettings {
     blocksPistins
      */
     
-    fun air(): FabricBlockSettings { return FabricBlockSettings.of(Material.AIR) }
-    fun nonSolidBarrier(): FabricBlockSettings { return FabricBlockSettings.of(Material.PORTAL)}
+    fun air(): FabricBlockSettings { return FabricBlockSettings.create().replaceable().noCollision().dropsNothing().air() }
+    fun nonSolidBarrier(): FabricBlockSettings { return FabricBlockSettings.create().noCollision().pistonBehavior(PistonBehavior.BLOCK)}
     fun nonSolidBurn(): FabricBlockSettings { return FabricBlockSettings.of(Material.CARPET)}
     fun nonSolidLightDestroyMove(): FabricBlockSettings { return FabricBlockSettings.of(Material.PLANT)}
     fun nonSolidLightDestroyMoveReplace(): FabricBlockSettings { return FabricBlockSettings.of(Material.REPLACEABLE_UNDERWATER_PLANT)}
