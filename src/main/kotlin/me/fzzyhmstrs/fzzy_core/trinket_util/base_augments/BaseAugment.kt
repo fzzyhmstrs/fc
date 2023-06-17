@@ -1,14 +1,21 @@
 package me.fzzyhmstrs.fzzy_core.trinket_util.base_augments
 
+import com.ibm.icu.impl.locale.XCldrStub
 import me.fzzyhmstrs.fzzy_core.coding_util.AbstractConfigDisableEnchantment
 import me.fzzyhmstrs.fzzy_core.item_util.AcceptableItemStacks
+import net.minecraft.enchantment.Enchantment
+import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.enchantment.EnchantmentTarget
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.attribute.EntityAttribute
 import net.minecraft.entity.attribute.EntityAttributeModifier
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import java.util.*
+import java.util.function.Predicate
 
 /**
  * the base class for Trinket- or other equipment-based augments.
@@ -101,6 +108,25 @@ abstract class BaseAugment(weight: Rarity, val mxLvl: Int = 1, val target: Encha
                 }
             }
             return 0
+        }
+
+        fun getEquipmentWithAugment(augment: Enchantment, inventory: PlayerInventory, predicate: Predicate<Item>): net.minecraft.util.Pair<ItemStack,Int>{
+            for (stack in inventory.main) {
+                if (predicate.test(stack.item)) {
+                    EnchantmentHelper.getLevel(augment,stack).also { if (it > 0) return net.minecraft.util.Pair(stack,it) }
+                }
+            }
+            for (stack in inventory.offHand) {
+                if (predicate.test(stack.item)) {
+                    EnchantmentHelper.getLevel(augment,stack).also { if (it > 0) return net.minecraft.util.Pair(stack,it) }
+                }
+            }
+            for (stack in inventory.armor) {
+                if (predicate.test(stack.item)) {
+                    EnchantmentHelper.getLevel(augment,stack).also { if (it > 0) return net.minecraft.util.Pair(stack,it) }
+                }
+            }
+            return net.minecraft.util.Pair(ItemStack.EMPTY,0)
         }
     }
 }
