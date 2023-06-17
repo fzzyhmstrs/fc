@@ -140,7 +140,7 @@ object AcceptableItemStacks {
             EnchantmentTarget.WEARABLE->{
                 for (entry in entries){
                     val item = entry.value()
-                    if (item is Wearable || Block.getBlockFromItem(item) is Wearable){
+                    if (item is Equipment || Block.getBlockFromItem(item) is Equipment){
                         list.add(ItemStack(item,1))
                     }
                 }
