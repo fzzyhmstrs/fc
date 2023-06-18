@@ -41,9 +41,11 @@ dependencies {
     val fabricKotlinVersion: String by project
     modImplementation("net.fabricmc:fabric-language-kotlin:$fabricKotlinVersion")
 
-    modImplementation("dev.emi:trinkets:3.4.0"){
+    modImplementation("dev.emi:trinkets:3.7.0"){
         exclude("net.fabricmc.fabric-api")
     }
+    modCompileOnly("dev.onyxstudios.cardinal-components-api:cardinal-components-base:5.2.0")
+    modCompileOnly("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:5.2.0")
 
 
     implementation("com.github.LlamaLad7.mixinextras:mixinextras-fabric:0.2.0-beta.6")

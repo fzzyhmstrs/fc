@@ -11,7 +11,7 @@ import java.util.function.Predicate
  */
 object TrinketUtil {
 
-    val trinketCheck: Predicate<ItemStack> = Predicate { stack: ItemStack -> stack.item is Trinket}
+    val trinketCheck: Predicate<ItemStack> = Predicate { stack: ItemStack -> stack.item is Trinket }
 
     fun getTrinketStacks(user: LivingEntity): List<ItemStack>{
         val comp = TrinketsApi.getTrinketComponent(user)
