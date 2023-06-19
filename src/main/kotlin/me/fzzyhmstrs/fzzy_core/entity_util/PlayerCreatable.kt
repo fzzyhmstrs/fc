@@ -11,7 +11,7 @@ interface PlayerCreatable {
 
     var maxAge: Int
     var createdBy: UUID?
-    var owner: LivingEntity?
+    var entityOwner: LivingEntity?
 
     fun isPlayerCreated(): Boolean {
         return (maxAge > 0) || createdBy != null
@@ -32,15 +32,15 @@ interface PlayerCreatable {
             if (world is ServerWorld) {
                 val chkEntity = world.getEntity(createdBy)
                 if (chkEntity is LivingEntity) {
-                    owner = chkEntity
+                    entityOwner = chkEntity
                 }
             }
         }
     }
 
     fun tickOwnerAttacked(entity: Angerable){
-        if (owner != null){
-            val attacker = owner?.recentDamageSource?.attacker
+        if (entityOwner != null){
+            val attacker = entityOwner?.recentDamageSource?.attacker
             if (attacker != null && attacker is LivingEntity){
                 entity.target = attacker
                 entity.angryAt = attacker.uuid
