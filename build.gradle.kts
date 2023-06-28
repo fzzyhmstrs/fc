@@ -24,9 +24,6 @@ repositories {
         name = "Jitpack"
         url = uri("https://jitpack.io")
     }
-    flatDir {
-        dirs("F:\\Documents\\Mod Development\\ai\\build\\libs")
-    }
 
 }
 dependencies {
