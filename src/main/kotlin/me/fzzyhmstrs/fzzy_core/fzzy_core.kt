@@ -3,18 +3,15 @@ package me.fzzyhmstrs.fzzy_core
 import com.llamalad7.mixinextras.MixinExtrasBootstrap
 import me.fzzyhmstrs.fzzy_core.config.FcConfig
 import me.fzzyhmstrs.fzzy_core.item_util.ModifierHolderItem
-import me.fzzyhmstrs.fzzy_core.recipe.OptionalRecipeLoader
 import me.fzzyhmstrs.fzzy_core.registry.EventRegistry
 import me.fzzyhmstrs.fzzy_core.registry.ItemModelRegistry
 import me.fzzyhmstrs.fzzy_core.registry.LootRegistry
 import me.fzzyhmstrs.fzzy_core.registry.ModifierRegistry
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
-import net.minecraft.resource.ResourceType
 import net.minecraft.util.Identifier
 import kotlin.random.Random
 
@@ -31,7 +28,6 @@ object FC: ModInitializer {
         LootRegistry.registerAll()
         EventRegistry.registerAll()
         ModifierRegistry.registerAll()
-        ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(OptionalRecipeLoader)
     }
 }
 

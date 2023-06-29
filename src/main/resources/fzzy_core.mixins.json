@@ -4,8 +4,7 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "ItemStackMixin",
-    "LivingEntityMixin",
-    "RecipeManagerMixin"
+    "LivingEntityMixin"
   ],
   "client": [
     "ItemRendererMixin"
