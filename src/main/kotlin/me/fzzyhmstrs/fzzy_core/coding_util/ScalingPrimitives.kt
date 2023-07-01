@@ -1,5 +1,8 @@
 package me.fzzyhmstrs.fzzy_core.coding_util
 
+import net.minecraft.nbt.NbtCompound
+import java.lang.IllegalStateException
+
 /**
  * simple data classes that store various primitives as well as scaling factors, and return the result of scaling the base value by the defined number of scaling levels.
  *
@@ -8,7 +11,77 @@ package me.fzzyhmstrs.fzzy_core.coding_util
  * these classes can be added together with the plus method.
  */
 
-data class PerLvlI(val base: Int = 0, val perLevel: Int = 0, val percent: Int = 0){
+object ScalingPrimitivesHelper {
+    fun writeNbt(primitive: ScalingPrimitives): NbtCompound{
+        val nbtCompound = NbtCompound()
+        when (primitive){
+            is PerLvlI ->{
+                nbtCompound.putString("type","i")
+                nbtCompound.putInt("base",primitive.base)
+                nbtCompound.putInt("perLevel",primitive.perLevel)
+                nbtCompound.putInt("percent",primitive.percent)
+            }
+            is PerLvlF ->{
+                nbtCompound.putString("type","f")
+                nbtCompound.putFloat("base",primitive.base)
+                nbtCompound.putFloat("perLevel",primitive.perLevel)
+                nbtCompound.putFloat("percent",primitive.percent)
+            }
+            is PerLvlD ->{
+                nbtCompound.putString("type","d")
+                nbtCompound.putDouble("base",primitive.base)
+                nbtCompound.putDouble("perLevel",primitive.perLevel)
+                nbtCompound.putDouble("percent",primitive.percent)
+            }
+            is PerLvlL ->{
+                nbtCompound.putString("type","l")
+                nbtCompound.putLong("base",primitive.base)
+                nbtCompound.putLong("perLevel",primitive.perLevel)
+                nbtCompound.putLong("percent",primitive.percent)
+            }
+        }
+        return nbtCompound
+    }
+
+    fun readNbt(nbtCompound: NbtCompound): ScalingPrimitives{
+        when(nbtCompound.getString("type")){
+            "i" -> {
+                return PerLvlI(
+                    nbtCompound.getInt("base"),
+                    nbtCompound.getInt("perLevel"),
+                    nbtCompound.getInt("percent")
+                )
+            }
+            "f" -> {
+                return PerLvlF(
+                    nbtCompound.getFloat("base"),
+                    nbtCompound.getFloat("perLevel"),
+                    nbtCompound.getFloat("percent")
+                )
+            }
+            "d" -> {
+                return PerLvlD(
+                    nbtCompound.getDouble("base"),
+                    nbtCompound.getDouble("perLevel"),
+                    nbtCompound.getDouble("percent")
+                )
+            }
+            "l" -> {
+                return PerLvlL(
+                    nbtCompound.getLong("base"),
+                    nbtCompound.getLong("perLevel"),
+                    nbtCompound.getLong("percent")
+                )
+            }
+        }
+        throw IllegalStateException("Scaling Primitive couldn't be read from NbtCompound: $nbtCompound")
+    }
+
+}
+
+interface ScalingPrimitives
+
+data class PerLvlI(val base: Int = 0, val perLevel: Int = 0, val percent: Int = 0): ScalingPrimitives{
     fun value(level: Int): Int{
         return (base + perLevel * level) * (100 + percent) / 100
     }
@@ -20,7 +93,7 @@ data class PerLvlI(val base: Int = 0, val perLevel: Int = 0, val percent: Int = 
     }
 }
 
-data class PerLvlL(val base: Long = 0, val perLevel: Long = 0, val percent: Long = 0){
+data class PerLvlL(val base: Long = 0, val perLevel: Long = 0, val percent: Long = 0): ScalingPrimitives{
     fun value(level: Long): Long{
         return (base + perLevel * level) * (100 + percent) / 100
     }
@@ -32,7 +105,7 @@ data class PerLvlL(val base: Long = 0, val perLevel: Long = 0, val percent: Long
     }
 }
 
-data class PerLvlF(val base: Float = 0.0F, val perLevel: Float = 0.0F, val percent: Float = 0.0F){
+data class PerLvlF(val base: Float = 0.0F, val perLevel: Float = 0.0F, val percent: Float = 0.0F): ScalingPrimitives{
     fun value(level: Int): Float{
         return (base + perLevel * level) * (100 + percent) / 100
     }
@@ -44,7 +117,7 @@ data class PerLvlF(val base: Float = 0.0F, val perLevel: Float = 0.0F, val perce
     }
 }
 
-data class PerLvlD(val base: Double = 0.0, val perLevel: Double = 0.0, val percent: Double = 0.0){
+data class PerLvlD(val base: Double = 0.0, val perLevel: Double = 0.0, val percent: Double = 0.0): ScalingPrimitives{
     fun value(level: Int): Double{
         return (base + perLevel * level) * (100 + percent) / 100
     }
