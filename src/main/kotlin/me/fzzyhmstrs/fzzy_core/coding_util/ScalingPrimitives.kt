@@ -79,7 +79,9 @@ object ScalingPrimitivesHelper {
 
 }
 
-interface ScalingPrimitives
+interface ScalingPrimitives{
+    fun isZero(): Boolean
+}
 
 data class PerLvlI(val base: Int = 0, val perLevel: Int = 0, val percent: Int = 0): ScalingPrimitives{
     fun value(level: Int): Int{
@@ -90,6 +92,10 @@ data class PerLvlI(val base: Int = 0, val perLevel: Int = 0, val percent: Int = 
     }
     fun plus(base: Int = 0, perLevel: Int = 0, percent: Int = 0): PerLvlI {
         return PerLvlI(this.base + base, this.perLevel + perLevel, this.percent + percent)
+    }
+
+    override fun isZero(): Boolean {
+        return base == 0 && perLevel == 0
     }
 }
 
@@ -103,6 +109,9 @@ data class PerLvlL(val base: Long = 0, val perLevel: Long = 0, val percent: Long
     fun plus(base: Long = 0, perLevel: Long = 0, percent: Long = 0): PerLvlL {
         return PerLvlL(this.base + base, this.perLevel + perLevel, this.percent + percent)
     }
+    override fun isZero(): Boolean {
+        return base == 0L && perLevel == 0L
+    }
 }
 
 data class PerLvlF(val base: Float = 0.0F, val perLevel: Float = 0.0F, val percent: Float = 0.0F): ScalingPrimitives{
@@ -115,6 +124,9 @@ data class PerLvlF(val base: Float = 0.0F, val perLevel: Float = 0.0F, val perce
     fun plus(base: Float = 0f, perLevel: Float = 0f, percent: Float = 0f): PerLvlF {
         return PerLvlF(this.base + base, this.perLevel + perLevel, this.percent + percent)
     }
+    override fun isZero(): Boolean {
+        return base == 0f && perLevel == 0f
+    }
 }
 
 data class PerLvlD(val base: Double = 0.0, val perLevel: Double = 0.0, val percent: Double = 0.0): ScalingPrimitives{
@@ -126,5 +138,8 @@ data class PerLvlD(val base: Double = 0.0, val perLevel: Double = 0.0, val perce
     }
     fun plus(base: Double = 0.0, perLevel: Double = 0.0, percent: Double = 0.0): PerLvlD {
         return PerLvlD(this.base + base, this.perLevel + perLevel, this.percent + percent)
+    }
+    override fun isZero(): Boolean {
+        return base == 0.0 && perLevel == 0.0
     }
 }
