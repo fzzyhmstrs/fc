@@ -17,6 +17,7 @@ import net.minecraft.util.Identifier
  *
  * Consider using a [CustomFlavorItem][me.fzzyhmstrs.fzzy_core.item_util.CustomFlavorItem] or [CustomFlavorToolItem][me.fzzyhmstrs.fzzy_core.item_util.CustomFlavorToolItem] for simple items with flavor text, otherwise use it as an example implementation.
  */
+@Deprecated("Deprecated due to implementation of the FlavorHelper class. Use that for flavor item impl, this is kept for compatibility.")
 interface Flavorful<T: Flavorful<T>> {
 
     var glint: Boolean
@@ -27,6 +28,11 @@ interface Flavorful<T: Flavorful<T>> {
      * required when extended. Most of the time return "this" of the extending class. See [CustomFlavorItem][me.fzzyhmstrs.fzzy_core.item_util.CustomFlavorItem]
      */
     fun getFlavorItem():T
+
+    fun withGlint(): T{
+        getFlavorItem().glint = true
+        return getFlavorItem()
+    }
 
     fun withFlavor(flavorPath: String): T {
         getFlavorItem().flavor = flavorPath
@@ -45,11 +51,6 @@ interface Flavorful<T: Flavorful<T>> {
 
     fun withFlavorDescDefaultPath(id: Identifier): T {
         getFlavorItem().flavorDesc = "item.${id.namespace}.${id.path}.flavor.desc"
-        return getFlavorItem()
-    }
-
-    fun withGlint(): T {
-        getFlavorItem().glint = true
         return getFlavorItem()
     }
 

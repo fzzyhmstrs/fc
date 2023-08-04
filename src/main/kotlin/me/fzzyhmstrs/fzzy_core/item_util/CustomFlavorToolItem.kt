@@ -10,6 +10,7 @@ import net.minecraft.registry.Registries
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import net.minecraft.util.Identifier
 import net.minecraft.world.World
 
 /**
@@ -22,7 +23,31 @@ open class CustomFlavorToolItem(material: ToolMaterial,settings: Settings) : Too
     override var glint: Boolean = false
     override var flavor: String = ""
     override var flavorDesc: String = ""
-    
+
+    override fun withGlint(): CustomFlavorToolItem {
+        return super.withGlint()
+    }
+
+    override fun withFlavor(flavorPath: String): CustomFlavorToolItem {
+        return super.withFlavor(flavorPath)
+    }
+
+    override fun withFlavorDesc(flavorPath: String): CustomFlavorToolItem {
+        return super.withFlavorDesc(flavorPath)
+    }
+
+    override fun withFlavorDefaultPath(id: Identifier): CustomFlavorToolItem {
+        return super.withFlavorDefaultPath(id)
+    }
+
+    override fun withFlavorDescDefaultPath(id: Identifier): CustomFlavorToolItem {
+        return super.withFlavorDescDefaultPath(id)
+    }
+
+    override fun addFlavorText(tooltip: MutableList<Text>, context: TooltipContext) {
+        super.addFlavorText(tooltip, context)
+    }
+
     private val flavorText: MutableText by lazy{
         makeFlavorText()
     }
