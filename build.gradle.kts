@@ -62,7 +62,7 @@ tasks {
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
             jvmTarget = javaVersion.toString()
-            freeCompilerArgs = listOf("-Xjvm-default=all")
+            freeCompilerArgs = listOf("-Xjvm-default=all-compatibility")
         }
         sourceCompatibility = javaVersion.toString()
         targetCompatibility = javaVersion.toString()
