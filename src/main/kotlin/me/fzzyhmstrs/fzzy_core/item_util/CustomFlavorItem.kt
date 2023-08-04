@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import net.minecraft.util.Identifier
 import net.minecraft.util.registry.Registry
 import net.minecraft.world.World
 
@@ -21,7 +22,31 @@ open class CustomFlavorItem(settings: Settings) : Item(settings), Flavorful<Cust
     override var glint = false
     override var flavor: String = ""
     override var flavorDesc: String = ""
-    
+
+    override fun withGlint(): CustomFlavorItem {
+        return super.withGlint()
+    }
+
+    override fun withFlavor(flavorPath: String): CustomFlavorItem {
+        return super.withFlavor(flavorPath)
+    }
+
+    override fun withFlavorDesc(flavorPath: String): CustomFlavorItem {
+        return super.withFlavorDesc(flavorPath)
+    }
+
+    override fun withFlavorDefaultPath(id: Identifier): CustomFlavorItem {
+        return super.withFlavorDefaultPath(id)
+    }
+
+    override fun withFlavorDescDefaultPath(id: Identifier): CustomFlavorItem {
+        return super.withFlavorDescDefaultPath(id)
+    }
+
+    override fun addFlavorText(tooltip: MutableList<Text>, context: TooltipContext) {
+        super.addFlavorText(tooltip, context)
+    }
+
     private val flavorText: MutableText by lazy{
         makeFlavorText()
     }
