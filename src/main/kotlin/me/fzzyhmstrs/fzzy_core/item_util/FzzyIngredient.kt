@@ -42,44 +42,53 @@ class FzzyIngredient private constructor(private val checks: List<Checker>){
         fun fromJson(json: JsonElement): SetIngredient{                
             if (json.isJsonObject){
                 val jsonObject = json.asJsonObject
-                if (jsonObject.has("item")){
-                    val itemString = json.getAsJsonPrimitive("item").asString
-                    val itemId = Identifier.tryParse(itemString) ?: IllegalStateException("Invalid Identifier string in the 'item' member of a SetIngredient object.")
-                    if jsonObject.has("nbt"){
-                        val nbtString = json.getAsJsonPrimitive("nbt").asString
-                        
-                    }
-                    return SetIngredient(listOf(ItemChecker(itemId)))
-                }else if (json.has("tag")){
-                    val tagString = json.getAsJsonPrimitive("tag").asString
-                    val tagId = Identifier.tryParse(tagString) ?: IllegalStateException("Invalid Identifier string in the 'tag' member of a SetIngredient object.")
-                    return SetIngredient(listOf(), listOf(tagId), listOf())
-                } else {
-                    throw IllegalStateException("Expecting 'item' or 'tag' member in the SetIngredient object")
-                }          
+                return FzzyIngredient(listOf(checkerFromObject(jsonObject)))  
             } else if (json.isJsonArray){
                 val jsonArray = json.asJsonArray
-                val items: MutableList<Identifier> = mutableListOf()
-                val tags: MutableList<Identifier> = mutableListOf()
+                val checks: MutableList<Checker> = mutableListOf()
                 for (jsonEl in jsonArray){
-                    if (!jsonEl.isJsonObject) throw IllegalStateException("Improperly formatted SetIngredient array member. Needs to be a JsonObject: $jsonEl")
-                    val jsonObject = jsonEl.asJsonObject
-                    if (jsonObject.has("item")){
-                        val itemString = json.getAsJsonPrimitive("item").asString
-                        val itemId = Identifier.tryParse(itemString) ?: IllegalStateException("Invalid Identifier string in the 'item' member of a SetIngredient object.")
-                        items.add(itemId)
-                    } else if (json.has("tag")){
-                        val tagString = json.getAsJsonPrimitive("tag").asString
-                        val tagId = Identifier.tryParse(tagString) ?: IllegalStateException("Invalid Identifier string in the 'tag' member of a SetIngredient object.")
-                        tags.add(tagId)
+                    if (jsonEl.isJsonObject) {
+                        val jsonObject = jsonEl.asJsonObject
+                        checks.add(checkerFromObject(jsonObject))
+                    } else if (jsonEl.isJsonPrimitive){
+                        val jsonPrimitive = jsonEl.asJsonPrimitive
+                        checks.add(checkerFromPrimitive(jsonPrimitive))
                     } else {
-                        throw IllegalStateException("Expecting 'item' or 'tag' member in the SetIngredient object")
+                        throw TODO()
                     }
                 }
-                return SetIngredient(items,tags, listOf())
+                return FzzyIngredient(checks)
+            } else if (json.isJsonPrimitive){
+                val jsonPrimitive = json.asJsonPrimitive
+                return FzzyIngredient(listOf(checkerFromPrimitive(jsonObject)))  
             }
             throw IllegalStateException("Improperly formatted SetIngredient. Needs to be a JsonObject or JsonArray: $json")
         }
+    }
+
+    private fun checkerFromObject(json: JsonObject): Checker{
+        if (jsonObject.has("item")){
+            val itemString = json.getAsJsonPrimitive("item").asString
+            val itemId = Identifier.tryParse(itemString) ?: IllegalStateException("Invalid Identifier string in the 'item' member of a SetIngredient object.")
+            if jsonObject.has("nbt"){
+                val nbtString = json.getAsJsonPrimitive("nbt").asString
+                TODO()
+            }
+            return SetIngredient(listOf(ItemChecker(itemId)))
+        }else if (json.has("tag")){
+            val tagString = json.getAsJsonPrimitive("tag").asString
+            val tagId = Identifier.tryParse(tagString) ?: IllegalStateException("Invalid Identifier string in the 'tag' member of a SetIngredient object.")
+            if jsonObject.has("nbt"){
+                val nbtString = json.getAsJsonPrimitive("nbt").asString
+                TODO()
+            }
+        } else {
+            throw IllegalStateException("Expecting 'item' or 'tag' member in the SetIngredient object")
+        }        
+    }
+
+    private fun checkerFromPrimitive(json: JsonPrimitive): Checker{
+        TODO()
     }
 
     private class ItemChecker(private val item: Identifier, private val nbt: NbtCompound){
