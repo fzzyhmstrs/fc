@@ -37,6 +37,15 @@ class FzzyIngredient private constructor(private val checks: List<Checker>){
         return false
     }
 
+    override toString(): String{
+        var result = "FzzyIngredient["
+        for (check in checks){
+            result = result + "{" + check.toString + "}"
+        }
+        result = result + "]"
+        return result
+    }
+
     companion object{
 
         fun fromJson(json: JsonElement): SetIngredient{                
@@ -54,7 +63,7 @@ class FzzyIngredient private constructor(private val checks: List<Checker>){
                         val jsonPrimitive = jsonEl.asJsonPrimitive
                         checks.add(checkerFromPrimitive(jsonPrimitive))
                     } else {
-                        throw TODO()
+                        throw IllegalStateException("Improperly formatted FzzyIngredient. JsonArray has illegal member type, needs to be a string or a JsonObject: $jsonArray")
                     }
                 }
                 return FzzyIngredient(checks)
@@ -62,7 +71,7 @@ class FzzyIngredient private constructor(private val checks: List<Checker>){
                 val jsonPrimitive = json.asJsonPrimitive
                 return FzzyIngredient(listOf(checkerFromPrimitive(jsonObject)))  
             }
-            throw IllegalStateException("Improperly formatted SetIngredient. Needs to be a JsonObject or JsonArray: $json")
+            throw IllegalStateException("Improperly formatted FzzyIngredient. Needs to be a JsonObject, JsonArray, or Identifier string: $json")
         }
     }
 
@@ -88,22 +97,15 @@ class FzzyIngredient private constructor(private val checks: List<Checker>){
     }
 
     private fun checkerFromPrimitive(json: JsonPrimitive): Checker{
-        TODO()
-    }
-
-    private class ItemChecker(private val item: Identifier, private val nbt: NbtCompound){
-
-        private val itemCached: Item by Lazy{
-            Registries.ITEM.get(item)
-        }
-        
-        override fun check(stack: ItemStack){
-            if(!stack.isOf(itemCached)) return false
-            val stackNbt = stack.nbt ?: return nbt.isEmpty
-            for (key in nbt.getKeys){
-                if (stackNbt.get(key) != stackNbt.get(key)) return false
-            }
-            return true
+        val jsonString = json.asString
+        if (jsonString.length == 0) throw IllegalStateException("Error in FzzyIngredient: Empty item or tag string")
+        if (jsonString[0] == '#'){
+            val tagString = jsonString.subString(1)
+            val tagId = Identifier.tryParse(tagString) ?: IllegalStateException("Error in FzzyIngredient: Unparseable tag identifier: $tagString")
+            return TagChecker(tagId,NbtCompound())
+        } else {
+            val itemId = Identifier.tryParse(jsonString) ?: IllegalStateException("Error in FzzyIngredient: Unparseable item identifier: $itemString")
+            return ItemChecker(tagId,NbtCompound())
         }
     }
 
@@ -120,6 +122,10 @@ class FzzyIngredient private constructor(private val checks: List<Checker>){
                 if (stackNbt.get(key) != stackNbt.get(key)) return false
             }
             return true
+        }
+
+        override toString(): String{
+            return "ItemChecker[item: $item, nbt: $nbt]
         }
     }
 
@@ -136,6 +142,10 @@ class FzzyIngredient private constructor(private val checks: List<Checker>){
                 if (stackNbt.get(key) != nbt.get(key)) return false
             }
             return true
+        }
+
+        override toString(): String{
+            return "TagChecker[tag: $tag, nbt: $nbt]
         }
     }
                 
