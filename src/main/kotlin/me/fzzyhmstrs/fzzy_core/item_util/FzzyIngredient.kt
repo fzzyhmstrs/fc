@@ -1,54 +1,40 @@
 package me.fzzyhmstrs.fzzy_core.item_util
 
-import com.google.common.collect.ArrayListMultimap
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import com.google.gson.JsonSyntaxException
-import me.fzzyhmstrs.fzzy_core.coding_util.AcText
-import me.fzzyhmstrs.fzzy_core.modifier_util.AbstractModifier
-import me.fzzyhmstrs.fzzy_core.registry.ModifierRegistry
-import me.fzzyhmstrs.gear_core.modifier_util.EquipmentModifier
-import me.fzzyhmstrs.gear_core.modifier_util.EquipmentModifierHelper
-import net.minecraft.block.BlockState
-import net.minecraft.client.item.TooltipContext
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.attribute.EntityAttribute
-import net.minecraft.entity.attribute.EntityAttributeModifier
-import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.entity.damage.DamageSource
-import net.minecraft.entity.player.PlayerEntity
+import com.google.gson.JsonPrimitive
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.recipe.Ingredient
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtHelper
+import net.minecraft.nbt.NbtOps
+import net.minecraft.nbt.StringNbtReader
 import net.minecraft.registry.Registries
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
-import net.minecraft.util.Hand
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import java.util.*
 
 class FzzyIngredient private constructor(private val checks: List<Checker>){
     
-    fun test(stack: ItemStack){
+    fun test(stack: ItemStack): Boolean{
         for (check in checks){
             if (check.check(stack)) return true
         }
         return false
     }
 
-    override toString(): String{
+    override fun toString(): String{
         var result = "FzzyIngredient["
         for (check in checks){
-            result = result + "{" + check.toString + "}"
+            result = "$result{$check}"
         }
-        result = result + "]"
+        result = "$result]"
         return result
     }
 
     companion object{
 
-        fun fromJson(json: JsonElement): SetIngredient{                
+        fun fromJson(json: JsonElement): FzzyIngredient{
             if (json.isJsonObject){
                 val jsonObject = json.asJsonObject
                 return FzzyIngredient(listOf(checkerFromObject(jsonObject)))  
@@ -69,83 +55,80 @@ class FzzyIngredient private constructor(private val checks: List<Checker>){
                 return FzzyIngredient(checks)
             } else if (json.isJsonPrimitive){
                 val jsonPrimitive = json.asJsonPrimitive
-                return FzzyIngredient(listOf(checkerFromPrimitive(jsonObject)))  
+                return FzzyIngredient(listOf(checkerFromPrimitive(jsonPrimitive)))
             }
             throw IllegalStateException("Improperly formatted FzzyIngredient. Needs to be a JsonObject, JsonArray, or Identifier string: $json")
         }
-    }
 
-    private fun checkerFromObject(json: JsonObject): Checker{
-        if (jsonObject.has("item")){
-            val itemString = json.getAsJsonPrimitive("item").asString
-            val itemId = Identifier.tryParse(itemString) ?: IllegalStateException("Invalid Identifier string in the 'item' member of a SetIngredient object.")
-            if jsonObject.has("nbt"){
-                val nbtString = json.getAsJsonPrimitive("nbt").asString
-                TODO()
+        private fun checkerFromObject(jsonObject: JsonObject): Checker{
+            if (jsonObject.has("item")){
+                val itemString = jsonObject.getAsJsonPrimitive("item").asString
+                val itemId = Identifier.tryParse(itemString) ?: throw IllegalStateException("Invalid Identifier string in the 'item' member of a SetIngredient object.")
+                if (jsonObject.has("nbt")){
+                    val nbtString = jsonObject.getAsJsonPrimitive("nbt").asString
+                    val nbt = StringNbtReader.parse(nbtString)
+                    return ItemChecker(itemId,nbt)
+                }
+                return ItemChecker(itemId, NbtCompound())
+            }else if (jsonObject.has("tag")){
+                val tagString = jsonObject.getAsJsonPrimitive("tag").asString
+                val tagId = Identifier.tryParse(tagString) ?: throw IllegalStateException("Invalid Identifier string in the 'tag' member of a SetIngredient object.")
+                if (jsonObject.has("nbt")){
+                    val nbtString = jsonObject.getAsJsonPrimitive("nbt").asString
+                    val nbt = StringNbtReader.parse(nbtString)
+                    return TagChecker(tagId, nbt)
+                }
+                return TagChecker(tagId,NbtCompound())
+            } else {
+                throw IllegalStateException("Expecting 'item' or 'tag' member in the SetIngredient object")
             }
-            return SetIngredient(listOf(ItemChecker(itemId)))
-        }else if (json.has("tag")){
-            val tagString = json.getAsJsonPrimitive("tag").asString
-            val tagId = Identifier.tryParse(tagString) ?: IllegalStateException("Invalid Identifier string in the 'tag' member of a SetIngredient object.")
-            if jsonObject.has("nbt"){
-                val nbtString = json.getAsJsonPrimitive("nbt").asString
-                TODO()
-            }
-        } else {
-            throw IllegalStateException("Expecting 'item' or 'tag' member in the SetIngredient object")
-        }        
-    }
+        }
 
-    private fun checkerFromPrimitive(json: JsonPrimitive): Checker{
-        val jsonString = json.asString
-        if (jsonString.length == 0) throw IllegalStateException("Error in FzzyIngredient: Empty item or tag string")
-        if (jsonString[0] == '#'){
-            val tagString = jsonString.subString(1)
-            val tagId = Identifier.tryParse(tagString) ?: IllegalStateException("Error in FzzyIngredient: Unparseable tag identifier: $tagString")
-            return TagChecker(tagId,NbtCompound())
-        } else {
-            val itemId = Identifier.tryParse(jsonString) ?: IllegalStateException("Error in FzzyIngredient: Unparseable item identifier: $itemString")
-            return ItemChecker(tagId,NbtCompound())
+        private fun checkerFromPrimitive(json: JsonPrimitive): Checker{
+            val jsonString = json.asString
+            if (jsonString.isEmpty()) throw IllegalStateException("Error in FzzyIngredient: Empty item or tag string")
+            return if (jsonString[0] == '#'){
+                val tagString = jsonString.substring(1)
+                val tagId = Identifier.tryParse(tagString) ?: throw IllegalStateException("Error in FzzyIngredient: Unparseable tag identifier: $tagString")
+                TagChecker(tagId, NbtCompound())
+            } else {
+                val itemId = Identifier.tryParse(jsonString) ?: throw IllegalStateException("Error in FzzyIngredient: Unparseable item identifier: $jsonString")
+                ItemChecker(itemId,NbtCompound())
+            }
         }
     }
 
-    private class ItemChecker(private val item: Identifier, private val nbt: NbtCompound){
+    private class ItemChecker(private val item: Identifier, private val nbt: NbtCompound): Checker{
 
-        private val itemCached: Item by Lazy{
+        private val itemCached: Item by lazy{
             Registries.ITEM.get(item)
         }
         
-        override fun check(stack: ItemStack){
+        override fun check(stack: ItemStack): Boolean{
             if(!stack.isOf(itemCached)) return false
             val stackNbt = stack.nbt ?: return nbt.isEmpty
-            for (key in nbt.getKeys){
-                if (stackNbt.get(key) != stackNbt.get(key)) return false
-            }
-            return true
+            return NbtHelper.matches(nbt,stackNbt,true)
         }
 
-        override toString(): String{
-            return "ItemChecker[item: $item, nbt: $nbt]
+        override fun toString(): String{
+            return "ItemChecker[item: $item, nbt: $nbt]"
         }
     }
 
-    private class TagChecker(private val tag: Identifier, private val nbt: NbtCompound){
+    private class TagChecker(private val tag: Identifier, private val nbt: NbtCompound): Checker{
 
-        private val tagCached: TagKey<Item> by Lazy{
+        private val tagCached: TagKey<Item> by lazy{
             TagKey.of(RegistryKeys.ITEM,tag)
         }
         
-        override fun check(stack: ItemStack){
+        override fun check(stack: ItemStack): Boolean{
             if(!stack.isIn(tagCached)) return false
             val stackNbt = stack.nbt ?: return nbt.isEmpty
-            for (key in nbt.getKeys){
-                if (stackNbt.get(key) != nbt.get(key)) return false
-            }
-            return true
+            return NbtHelper.matches(nbt,stackNbt,true)
         }
 
-        override toString(): String{
-            return "TagChecker[tag: $tag, nbt: $nbt]
+        override fun toString(): String{
+            return "TagChecker[tag: $tag, nbt: $nbt]"
         }
     }
                 
