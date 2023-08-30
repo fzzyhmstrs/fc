@@ -53,6 +53,11 @@ object JsonReader {
             ?: throw IllegalStateException("Modifier Json has a bonus with a modifier value [$json] that can't be found in the modifier registry.")
     }
 
+    fun readModifier(json: JsonElement, ): AbstractModifier<*>{
+        return ModifierRegistry.get(readIdentifier(json))
+            ?: throw IllegalStateException("Modifier Json has a bonus with a modifier value [$json] that can't be found in the modifier registry.")
+    }
+
     fun readFormatting(json: JsonObject,name: String, fallback: List<Formatting>): List<Formatting>{
         return if (json.has(name)) {
             try {
