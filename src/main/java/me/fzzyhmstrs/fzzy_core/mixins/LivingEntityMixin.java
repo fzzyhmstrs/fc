@@ -17,11 +17,16 @@ public class LivingEntityMixin implements StackHolding {
     private ItemStack fzzy_core_modifierHolder = ItemStack.EMPTY;
 
     @Override
-    public ItemStack getStack() {
+    public ItemStack fzzy_core_getStack() {
         if (fzzy_core_modifierHolder.isEmpty()){
             fzzy_core_modifierHolder = new ItemStack(FC.INSTANCE.getMODIFIER_HOLDER());
         }
         return fzzy_core_modifierHolder;
+    }
+
+    @Override
+    public void fzzy_core_setStack(ItemStack stack) {
+        fzzy_core_modifierHolder = stack.copy();
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))

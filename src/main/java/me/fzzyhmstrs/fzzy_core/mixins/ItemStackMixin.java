@@ -1,13 +1,19 @@
 package me.fzzyhmstrs.fzzy_core.mixins;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import me.fzzyhmstrs.fzzy_core.enchantment_util.AttributeProviding;
 import me.fzzyhmstrs.fzzy_core.interfaces.Modifiable;
 import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierHelperType;
 import net.minecraft.client.item.TooltipContext;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemStack;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
@@ -32,11 +38,11 @@ public abstract class ItemStackMixin {
 
     @Inject(method = "<init>(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void fzzy_core_initializeFromNbt(NbtCompound nbt, CallbackInfo ci){
-        if (getItem() == null) return;
-        if (getItem() instanceof Modifiable modifiableItem){
+        if (this.item == null) return;
+        if (this.item instanceof Modifiable modifiableItem){
             for (ModifierHelperType type : ModifierHelperType.Companion.getREGISTRY()){
                 if (!modifiableItem.canBeModifiedBy(type)) continue;
-                type.getModifierInitializer().initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers(type));
+                type.initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers(type));
             }
         }
     }
@@ -47,7 +53,7 @@ public abstract class ItemStackMixin {
         if (this.item instanceof Modifiable modifiableItem){
             for (ModifierHelperType type : ModifierHelperType.Companion.getREGISTRY()){
                 if (!modifiableItem.canBeModifiedBy(type)) continue;
-                type.getModifierInitializer().initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers(type));
+                type.initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers(type));
             }
             //modifiableItem.getModifierInitializer().initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers());
         }
@@ -62,6 +68,22 @@ public abstract class ItemStackMixin {
                 modifiable.addModifierTooltip(stack, tooltip, context, type);
             }
         }
+    }
+
+    @ModifyReturnValue(method = "getAttributeModifiers", at = @At("RETURN"))
+    private Multimap<EntityAttribute, EntityAttributeModifier> amethyst_imbuement_addResilientAttributesToModifiers(Multimap<EntityAttribute, EntityAttributeModifier> original, EquipmentSlot slot){
+        if (getItem() instanceof EnchantedBookItem) return original;
+        if (getItem() instanceof Equipment equipment && equipment.getSlotType() != slot) return original;
+        Multimap<EntityAttribute, EntityAttributeModifier> newMap = null;
+        boolean modified = false;
+        for (var entry: EnchantmentHelper.get((ItemStack) (Object) this).entrySet()){
+            if (entry.getKey() instanceof AttributeProviding attributeProvidingEnchant){
+                if (newMap == null) newMap = ArrayListMultimap.create(original);
+                attributeProvidingEnchant.modifyAttributeMap(newMap,slot, entry.getValue());
+                modified = true;
+            }
+        }
+        return modified ? newMap : original;
     }
 
 }

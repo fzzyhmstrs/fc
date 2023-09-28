@@ -98,11 +98,11 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     }
 
     fun getModifiers(entity: LivingEntity): List<Identifier>{
-        val stack = (entity as StackHolding).stack
+        val stack = (entity as StackHolding).fzzy_core_getStack()
         return getModifiers(stack)
     }
     fun getActiveModifiers(entity: LivingEntity): AbstractModifier.CompiledModifiers<T> {
-        val stack = (entity as StackHolding).stack
+        val stack = (entity as StackHolding).fzzy_core_getStack()
         return getActiveModifiers(stack)
     }
 
@@ -110,7 +110,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     ////////////////////////////////////////
 
     fun addModifier(entity: LivingEntity,modifier: Identifier, uniqueOnly: Boolean = true, temporary: Boolean = false): Boolean{
-        val stack = (entity as StackHolding).stack
+        val stack = (entity as StackHolding).fzzy_core_getStack()
         return addModifier(modifier, stack, uniqueOnly,temporary)
     }
 
@@ -189,7 +189,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     }
 
     fun removeModifier(entity: LivingEntity, modifier: Identifier){
-        val stack = (entity as StackHolding).stack
+        val stack = (entity as StackHolding).fzzy_core_getStack()
         removeModifier(stack, modifier)
     }
 
