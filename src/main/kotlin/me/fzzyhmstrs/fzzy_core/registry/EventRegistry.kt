@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_core.registry
 
 import me.fzzyhmstrs.fzzy_core.FC
 import me.fzzyhmstrs.fzzy_core.coding_util.PersistentEffectHelper
-import me.fzzyhmstrs.fzzy_core.interfaces.StackHolding
+import me.fzzyhmstrs.fzzy_core.interfaces.ModifierHolding
 import me.fzzyhmstrs.fzzy_core.item_util.interfaces.ParticleEmitting
 import me.fzzyhmstrs.fzzy_core.registry.EventRegistry.Ticker
 import me.fzzyhmstrs.fzzy_core.trinket_util.EffectQueue
@@ -47,8 +47,8 @@ object EventRegistry {
         SyncedConfigRegistry.registerServer()
         PersistentEffectHelper.registerServer()
         ServerPlayerEvents.COPY_FROM.register{old, new, _ ->
-            val stack = (old as StackHolding).fzzy_core_getStack()
-            (new as StackHolding).fzzy_core_setStack(stack)
+            val container = (old as ModifierHolding).fzzy_core_getModifierContainer()
+            (new as ModifierHolding).fzzy_core_setModifierContainer(container)
         }
     }
 

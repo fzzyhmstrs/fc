@@ -39,16 +39,12 @@ abstract class AbstractModifier<T: AbstractModifier<T>>(val modifierId: Identifi
 
     private var objectsToAffect: Predicate<Identifier>? = null
 
-    private var hasDesc: Boolean = false
-    private var hasAnc: Boolean = false
-    private var hasObjectToAffect: Boolean = false
-
     /**
      * called to access a type-specific compiler.
      */
     abstract fun compiler(): Compiler
 
-    abstract fun getModifierHelper(): AbstractModifierHelper<*>
+    abstract fun getModifierHelper(): AbstractModifierHelper<T>
 
     /**
      * defines the lang translation key for [TranslatableText][net.minecraft.text.Text.translatable].
@@ -79,36 +75,39 @@ abstract class AbstractModifier<T: AbstractModifier<T>>(val modifierId: Identifi
     }
 
     fun hasDescendant(): Boolean{
-        return hasDesc
+        return descendant != AbstractModifierHelper.BLANK
     }
-    fun hasAncestor(): Boolean{
-        return hasAnc
+    fun hasAncestor(): Boolean {
+        return ancestor != AbstractModifierHelper.BLANK
     }
-    fun getAncestor(): Identifier{
+    /*fun getAncestor(): Identifier{
         return ancestor
+    }*/
+    fun getAncestor(): AbstractModifier<T>?{
+        return getModifierHelper().getModifierByType(ancestor)
+    }
+    fun getDescendant(): AbstractModifier<T>?{
+        return getModifierHelper().getModifierByType(descendant)
     }
     fun addDescendant(modifier: AbstractModifier<T>){
-        val id = modifier.modifierId
-        descendant = id
+        descendant = modifier.modifierId
         modifier.ancestor = this.modifierId
-        modifier.hasAnc = true
-        hasDesc = true
     }
     fun getModLineage(): List<Identifier>{
         return lineage
     }
     private fun generateLineage(): List<Identifier>{
-        val nextInLineage = ModifierRegistry.get(descendant)
+
         val lineage: MutableList<Identifier> = mutableListOf(this.modifierId)
-        lineage.addAll(nextInLineage?.getModLineage() ?: listOf())
+        val nextInLineage = ModifierRegistry.get(descendant) ?: return lineage
+        lineage.addAll(nextInLineage.getModLineage())
         return lineage
     }
     open fun hasObjectToAffect(): Boolean{
-        return hasObjectToAffect
+        return objectsToAffect != null
     }
     open fun addObjectToAffect(predicate: Predicate<Identifier>){
         objectsToAffect = predicate
-        hasObjectToAffect = true
     }
     open fun checkObjectsToAffect(id: Identifier): Boolean{
         return objectsToAffect?.test(id) ?: return false
@@ -130,6 +129,16 @@ abstract class AbstractModifier<T: AbstractModifier<T>>(val modifierId: Identifi
 
     override fun toString(): String {
         return "[Modifier: $modifierId]"
+    }
+
+    override fun hashCode(): Int {
+        return modifierId.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other !is AbstractModifier<*>) return false
+        return other.modifierId == modifierId
     }
 
     class CompiledModifiers<T: AbstractModifier<T>>(val modifiers: ArrayList<T>, val compiledData: T){

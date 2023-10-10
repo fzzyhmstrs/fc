@@ -11,13 +11,13 @@ import java.util.List;
 
 public interface Modifiable {
 
-    default List<Identifier> defaultModifiers(ModifierHelperType type){return Collections.emptyList();}
+    default List<Identifier> defaultModifiers(ModifierHelperType<?> type){return Collections.emptyList();}
 
-    default void addModifierTooltip(ItemStack stack, List<Text> tooltip, TooltipContext context, ModifierHelperType type){
+    default void addModifierTooltip(ItemStack stack, List<Text> tooltip, TooltipContext context, ModifierHelperType<?> type){
         type.getModifierInitializer().addModifierTooltip(stack, tooltip, context);
     }
 
-    default boolean canBeModifiedBy(ModifierHelperType type){
+    default boolean canBeModifiedBy(ModifierHelperType<?> type){
         return true;
     }
 }

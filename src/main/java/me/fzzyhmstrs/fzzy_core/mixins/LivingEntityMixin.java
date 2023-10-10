@@ -1,49 +1,66 @@
 package me.fzzyhmstrs.fzzy_core.mixins;
 
-import me.fzzyhmstrs.fzzy_core.FC;
-import me.fzzyhmstrs.fzzy_core.interfaces.StackHolding;
-import me.fzzyhmstrs.fzzy_core.modifier_util.AbstractModifierHelper;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import me.fzzyhmstrs.fzzy_core.interfaces.ModifierHolding;
+import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierContainer;
+import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierHelperType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LivingEntity.class)
-public class LivingEntityMixin implements StackHolding {
+public class LivingEntityMixin implements ModifierHolding {
 
-    private ItemStack fzzy_core_modifierHolder = ItemStack.EMPTY;
+    @Unique
+    private ModifierContainer fzzy_core_modifierHolder = null;
 
     @Override
-    public ItemStack fzzy_core_getStack() {
-        if (fzzy_core_modifierHolder.isEmpty()){
-            fzzy_core_modifierHolder = new ItemStack(FC.INSTANCE.getMODIFIER_HOLDER());
+    public ModifierContainer fzzy_core_getModifierContainer() {
+        if (fzzy_core_modifierHolder == null){
+            fzzy_core_modifierHolder = new ModifierContainer();
         }
         return fzzy_core_modifierHolder;
     }
 
     @Override
-    public void fzzy_core_setStack(ItemStack stack) {
-        fzzy_core_modifierHolder = stack.copy();
+    public void fzzy_core_setModifierContainer(ModifierContainer container) {
+        fzzy_core_modifierHolder = container;
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void fzzy_core_writeStackToNbt(NbtCompound nbt, CallbackInfo ci){
-        if (!fzzy_core_modifierHolder.isEmpty()){
-            AbstractModifierHelper.TemporaryModifiers.INSTANCE.removeTemporaryModifiersFromNbt(fzzy_core_modifierHolder);
+        if (fzzy_core_modifierHolder!= null){
             NbtCompound nbtCompound = new NbtCompound();
-            fzzy_core_modifierHolder.writeNbt(nbtCompound);
-            nbt.put("modifier_holder",nbtCompound);
+            fzzy_core_modifierHolder.save(nbtCompound);
+            nbt.put("modifier_container",nbtCompound);
         }
     }
 
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void fzzy_core_readStackFromNbt(NbtCompound nbt, CallbackInfo ci){
-        if (nbt.contains("modifier_holder")){
-            NbtCompound nbtCompound = nbt.getCompound("modifier_holder");
-            fzzy_core_modifierHolder = ItemStack.fromNbt(nbtCompound);
+        if (nbt.contains("modifier_container")){
+            NbtCompound nbtCompound = nbt.getCompound("modifier_container");
+            fzzy_core_modifierHolder = ModifierContainer.load(nbtCompound);
         }
+    }
+
+    @WrapOperation(method = "getEquipmentChanges", at = @At(value = "INVOKE", target = "net/minecraft/entity/LivingEntity.areItemsDifferent (Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z"))
+    private boolean fzzy_core_applyModifierChanges(LivingEntity instance, ItemStack old, ItemStack young, Operation<Boolean> operation){
+        boolean bl = operation.call(instance, old, young);
+        if (bl){
+            if (!old.isEmpty()){
+                ModifierHelperType.Companion.remove(old, fzzy_core_getModifierContainer());
+            }
+            if (!young.isEmpty()){
+                ModifierHelperType.Companion.add(young, fzzy_core_getModifierContainer());
+            }
+        }
+        return bl;
     }
 }

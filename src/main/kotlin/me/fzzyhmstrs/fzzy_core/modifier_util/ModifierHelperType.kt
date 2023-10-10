@@ -3,25 +3,47 @@ package me.fzzyhmstrs.fzzy_core.modifier_util
 import me.fzzyhmstrs.fzzy_core.FC
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.Registry
+import net.minecraft.registry.RegistryKey
 import net.minecraft.util.Identifier
 
-abstract class ModifierHelperType(val id: Identifier) {
+abstract class ModifierHelperType <T: AbstractModifier<T>> (val id: Identifier, val helper: AbstractModifierHelper<T>) {
 
-    abstract fun getModifierInitializer(): ModifierInitializer
-    
+    open fun getModifierInitializer(): ModifierInitializer {
+        return helper
+    }
+
+    open fun helper(): AbstractModifierHelper<T>{
+        return helper
+    }
+
+    open fun compile(input: List<Identifier>?): AbstractModifier.CompiledModifiers<T> {
+        return helper.compile(input)
+    }
+
+    open fun add(stack: ItemStack, modifierContainer: ModifierContainer){
+        for (mod in helper.modifiersFromNbt(stack)){
+            modifierContainer.addModifier(mod, this)
+        }
+    }
+
+    open fun remove(stack: ItemStack, modifierContainer: ModifierContainer){
+        for (mod in helper.modifiersFromNbt(stack)){
+            modifierContainer.removeModifier(mod, this)
+        }
+    }
+
     abstract fun getModifierIdKey(): String
 
     abstract fun getModifiersKey(): String
 
-    open fun initializeModifiers(stack: ItemStack, nbt: NbtCompound, defaultMods: List<Identifier>){
-        getModifierInitializer().initializeModifiers(stack,nbt,defaultMods)
+    open fun initializeModifiers(stack: ItemStack){
+        getModifierInitializer().initializeModifiers(stack)
     }
 
     override fun equals(other: Any?): Boolean {
         if (other == null) return false
-        if (other !is ModifierHelperType) return false
+        if (other !is ModifierHelperType<*>) return false
         return other.id == id
     }
 
@@ -30,15 +52,25 @@ abstract class ModifierHelperType(val id: Identifier) {
     }
 
     companion object{
-        val REGISTRY = FabricRegistryBuilder.createDefaulted(ModifierHelperType::class.java, Identifier(FC.MOD_ID,"modifier_helper_type"),
-            EmptyType.id).buildAndRegister()
+        val REGISTRY = FabricRegistryBuilder.createSimple(RegistryKey.ofRegistry<ModifierHelperType<*>>(Identifier(FC.MOD_ID,"modifier_helper_type"))).buildAndRegister()
         val EMPTY_TYPE = Registry.register(REGISTRY,EmptyType.id,EmptyType)
 
-        fun register(type: ModifierHelperType): ModifierHelperType{
+        fun<T: AbstractModifier<T>> register(type: ModifierHelperType<T>): ModifierHelperType<T>{
             return Registry.register(REGISTRY,type.id,type)
         }
 
-        object EmptyType: ModifierHelperType(Identifier(FC.MOD_ID,"empty_helper")){
+        fun add(stack: ItemStack, modifierContainer: ModifierContainer){
+            for (type in REGISTRY){
+                type.add(stack, modifierContainer)
+            }
+        }
+        fun remove(stack: ItemStack, modifierContainer: ModifierContainer){
+            for (type in REGISTRY){
+                type.remove(stack, modifierContainer)
+            }
+        }
+
+        object EmptyType: ModifierHelperType<AbstractModifierHelper.Companion.EmptyModifier>(Identifier(FC.MOD_ID,"empty_helper"), AbstractModifierHelper.getEmptyHelper()){
             override fun getModifierInitializer(): ModifierInitializer {
                 return AbstractModifierHelper.getEmptyHelper()
             }

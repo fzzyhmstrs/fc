@@ -81,7 +81,7 @@ object ModifierRegistry {
     /**
      * [LootFunction.Builder] usable with loot pool building that will add default modifiers, a provided list of modifiers, or both.
      */
-    fun modifiersLootFunctionBuilder(item: Item, modifiers: List<AbstractModifier<*>> = listOf(), type: ModifierHelperType): LootFunction.Builder{
+    fun<T: AbstractModifier<T>> modifiersLootFunctionBuilder(item: Item, modifiers: List<AbstractModifier<T>> = listOf(), type: ModifierHelperType<T>): LootFunction.Builder{
         val modList = NbtList()
         if (item is Modifiable) {
             if (item.defaultModifiers(type).isEmpty() && modifiers.isEmpty()){

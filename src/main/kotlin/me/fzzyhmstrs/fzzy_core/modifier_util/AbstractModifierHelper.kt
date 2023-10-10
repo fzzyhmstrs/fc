@@ -4,7 +4,8 @@ import me.fzzyhmstrs.fzzy_core.FC
 import me.fzzyhmstrs.fzzy_core.coding_util.AcText
 import me.fzzyhmstrs.fzzy_core.coding_util.PerLvlI
 import me.fzzyhmstrs.fzzy_core.coding_util.PersistentEffectHelper
-import me.fzzyhmstrs.fzzy_core.interfaces.StackHolding
+import me.fzzyhmstrs.fzzy_core.interfaces.Modifiable
+import me.fzzyhmstrs.fzzy_core.interfaces.ModifierHolding
 import me.fzzyhmstrs.fzzy_core.nbt_util.Nbt
 import me.fzzyhmstrs.fzzy_core.nbt_util.NbtKeys
 import me.fzzyhmstrs.fzzy_core.registry.ModifierRegistry
@@ -15,14 +16,23 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtElement
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import java.util.*
-import kotlin.math.max
 
-abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitializer{
+abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitializer {
 
-    private val modifiers = Collections.synchronizedMap(mutableMapOf<Long ,MutableList<Identifier>>())
-    private val activeModifiers = Collections.synchronizedMap(mutableMapOf<Long, AbstractModifier.CompiledModifiers<T>>())
+    //private val modifiers = Collections.synchronizedMap(mutableMapOf<Long ,MutableList<Identifier>>())
+    //private val activeModifiers = Collections.synchronizedMap(mutableMapOf<Long, AbstractModifier.CompiledModifiers<T>>())
     abstract val fallbackData: AbstractModifier.CompiledModifiers<T>
+
+    open fun compile(input: List<Identifier>?): AbstractModifier.CompiledModifiers<T>{
+        val modList = input?.mapNotNull { getModifierByType(it) } ?: return fallbackData
+        val compiler = compiler()
+        for (mod in modList){
+            compiler.add(mod)
+        }
+        return compiler.compile()
+    }
+
+    abstract fun compiler(): AbstractModifier<T>.Compiler
 
     abstract fun gatherActiveModifiers(stack: ItemStack)
 
@@ -30,7 +40,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     
     abstract fun getDescTranslationKeyFromIdentifier(id: Identifier): String
 
-    abstract fun getType(): ModifierHelperType
+    abstract fun getType(): ModifierHelperType<T>
 
     override fun addModifierTooltip(stack: ItemStack, tooltip: MutableList<Text>, context: TooltipContext){
         val nbt = stack.nbt ?: return
@@ -42,102 +52,131 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         }
     }
 
-    //synchronization for the modifier lists
+    /*//synchronization for the modifier lists
     fun getModifiersById(itemStackId: Long): List<Identifier>{
         return synchronized(modifiers){
             //secondary safety valve, copying the modifier list on creation. This makes back-mutation outside of sync impossible
             modifiers[itemStackId]?.toMutableList()?: listOf()
         }
-    }
-    fun checkModifiersKeyById(itemStackId: Long): Boolean{
+    }*/
+    /*fun checkModifiersKeyById(itemStackId: Long): Boolean{
         return synchronized(modifiers){
             modifiers.containsKey(itemStackId)
         }
-    }
-    fun checkModListContainsById(itemStackId: Long, mod: Identifier): Boolean{
+    }*/
+    /*fun checkModListContainsById(itemStackId: Long, mod: Identifier): Boolean{
         return synchronized(modifiers){
             modifiers[itemStackId]?.contains(mod) == true
         }
-    }
-    fun setModifiersById(itemStackId: Long,mods: MutableList<Identifier>){
+    }*/
+    /*fun setModifiersById(itemStackId: Long,mods: MutableList<Identifier>){
         synchronized(modifiers){
             modifiers[itemStackId] = mods
         }
-    }
-    fun addModifierById(itemStackId: Long, mod: Identifier){
+    }*/
+    /*fun addModifierById(itemStackId: Long, mod: Identifier){
         synchronized(modifiers){
             modifiers[itemStackId]?.add(mod)
         }
-    }
-    fun removeModifierById(itemStackId: Long, mod: Identifier){
+    }*/
+    /*fun removeModifierById(itemStackId: Long, mod: Identifier){
         synchronized(modifiers){
             modifiers[itemStackId]?.remove(mod)
         }
-    }
+    }*/
 
     //synchronization for active modifiers
-    fun setModifiersById(itemStackId: Long, compiledData: AbstractModifier.CompiledModifiers<T>){
+    /*fun setModifiersById(itemStackId: Long, compiledData: AbstractModifier.CompiledModifiers<T>){
         synchronized(activeModifiers) {
             activeModifiers[itemStackId] = compiledData
         }
-    }
-    fun getActiveModifiers(stack: ItemStack): AbstractModifier.CompiledModifiers<T> {
+    }*/
+    /*fun getActiveModifiers(stack: ItemStack): AbstractModifier.CompiledModifiers<T> {
         val id = Nbt.getItemStackId(stack)
-        /*if (id != -1L && !activeModifiers.containsKey(id)){
+        *//*if (id != -1L && !activeModifiers.containsKey(id)){
             initializeModifiers(stack, stack.orCreateNbt)
-        }*/
+        }*//*
         return synchronized(activeModifiers) {
             val compiledData = activeModifiers[id]
             compiledData ?: fallbackData
         }
-    }
-    fun removeActiveModifiersById(id: Long){
+    }*/
+    /*fun removeActiveModifiersById(id: Long){
         synchronized(activeModifiers) {
             activeModifiers.remove(id)
         }
-    }
+    }*/
+    /*fun hasActiveModifiers(stack: ItemStack): Boolean{
+        val id = Nbt.getItemStackId(stack)
+        return synchronized(activeModifiers) {
+            activeModifiers.containsKey(id)
+        }
+    }*/
 
     fun getModifiers(entity: LivingEntity): List<Identifier>{
-        val stack = (entity as StackHolding).fzzy_core_getStack()
-        return getModifiers(stack)
+        val container = (entity as ModifierHolding).fzzy_core_getModifierContainer()
+        return container.getModifiers(getType(),ModifierContainer.EntryType.ALL)
     }
     fun getActiveModifiers(entity: LivingEntity): AbstractModifier.CompiledModifiers<T> {
-        val stack = (entity as StackHolding).fzzy_core_getStack()
-        return getActiveModifiers(stack)
+        val container = (entity as ModifierHolding).fzzy_core_getModifierContainer()
+        return container.getCompiledModifiers(getType()) ?: fallbackData
     }
 
 
     ////////////////////////////////////////
 
-    fun addModifier(entity: LivingEntity,modifier: Identifier, uniqueOnly: Boolean = true, temporary: Boolean = false): Boolean{
-        val stack = (entity as StackHolding).fzzy_core_getStack()
-        return addModifier(modifier, stack, uniqueOnly,temporary)
+    fun addModifier(entity: LivingEntity, modifier: Identifier, uniqueOnly: Boolean = true): Boolean {
+        val mod = getModifierByType(modifier) ?: return false
+        val container = (entity as ModifierHolding).fzzy_core_getModifierContainer()
+        val mods = container.getModifiers(getType(),ModifierContainer.EntryType.INNATE)
+        if (uniqueOnly && mods.contains(modifier)){
+            val descendant = mod.getDescendant() ?: return false
+            container.removeModifier(mod,getType(),ModifierContainer.EntryType.INNATE)
+            container.addModifier(descendant, getType(), ModifierContainer.EntryType.INNATE)
+            return true
+        }
+        container.addModifier(mod, getType(), ModifierContainer.EntryType.INNATE)
+        return true
     }
 
-    fun addTemporaryModifier(modifier: Identifier, entity: LivingEntity, duration: Int, uniqueOnly: Boolean = true){
-        if (addModifier(entity, modifier, uniqueOnly,true)){
+    fun addTemporaryModifier(modifier: Identifier, entity: LivingEntity, duration: Int){
+        if (addModifier(entity, modifier, false)){
             val data = TemporaryModifiers.TemporaryModifierData(this, modifier, entity)
             PersistentEffectHelper.setPersistentTickerNeed(TemporaryModifiers,duration,duration,data)
         }
     }
 
     fun addModifier(modifier: Identifier, stack: ItemStack): Boolean{
-        return addModifier(modifier, stack, uniqueOnly = true, temporary = false)
+        return addModifier(modifier, stack, uniqueOnly = true)
     }
 
-    fun addModifier(modifier: Identifier, stack: ItemStack, uniqueOnly: Boolean = true, temporary: Boolean = false): Boolean{
+    fun addModifier(modifier: Identifier, stack: ItemStack, uniqueOnly: Boolean = true): Boolean{
         val nbt = stack.orCreateNbt
-        return addModifier(modifier, stack, nbt,uniqueOnly,temporary)
+        return addModifier(modifier, stack, nbt,uniqueOnly)
     }
 
-    protected fun addModifier(modifier: Identifier, stack: ItemStack, nbt: NbtCompound, uniqueOnly: Boolean = true, temporary: Boolean = false): Boolean{
-        val id = Nbt.makeItemStackId(stack)
-        if (!checkModifiersKeyById(id)) {
-            initializeModifiers(nbt, id)
+    protected fun addModifier(modifier: Identifier, stack: ItemStack, nbt: NbtCompound, uniqueOnly: Boolean = true): Boolean {
+        //val id = Nbt.makeItemStackId(stack)
+        val mods = if (!modifiersInitialized(stack, nbt)) {
+            initializeModifiers(stack)
+        } else {
+            getModifiersFromNbt(nbt)
         }
-        val mod = getModifierByType(modifier)
-        val highestModifier = checkDescendant(modifier,stack)
-        if (highestModifier != null){
+        val mod = getModifierByType(modifier) ?: return false
+        val descendant = mod.getDescendant()
+        return if (uniqueOnly && mods.contains(modifier)) {
+            if (descendant == null) {
+                false
+            }else{
+                removeModifierWithoutCheck(stack, modifier, nbt)
+                addModifierToNbt(descendant.modifierId,nbt)
+                true
+            }
+        } else {
+            addModifierToNbt(modifier,nbt)
+            true
+        }
+        /*if (highestModifier != null){
             return if (mod?.hasDescendant() == true){
                 val highestDescendantPresent: Int = checkModifierLineage(mod, stack)
                 if (highestDescendantPresent < 0){
@@ -163,18 +202,18 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
             }
         }
         addModifierWithoutChecking(id, modifier, stack, nbt, temporary)
-        return true
+        return true*/
     }
 
-    protected fun addModifierWithoutChecking(id: Long,modifier: Identifier, stack: ItemStack, nbt: NbtCompound, temporary: Boolean = false){
+    protected fun addModifierWithoutChecking(modifier: Identifier, stack: ItemStack, nbt: NbtCompound){
         val mod = getModifierByType(modifier)
         mod?.onAdd(stack)
-        addModifierToNbt(modifier, nbt, temporary)
-        addModifierById(id,modifier)
-        gatherActiveModifiers(stack)
+        addModifierToNbt(modifier, nbt)
+        //addModifierById(id,modifier)
+        //gatherActiveModifiers(stack)
     }
 
-    protected fun checkDescendant(modifier: Identifier, stack: ItemStack): Identifier?{
+    /*protected fun checkDescendant(modifier: Identifier, stack: ItemStack): Identifier?{
         val id = Nbt.getItemStackId(stack)
         if (id == -1L) return null
         val mod = getModifierByType(modifier)
@@ -188,106 +227,125 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         return highestModifier
     }
 
-    fun removeModifier(entity: LivingEntity, modifier: Identifier){
-        val stack = (entity as StackHolding).fzzy_core_getStack()
-        removeModifier(stack, modifier)
-    }
+    protected fun checkDescendant(modifier: Identifier, stack: ItemStack): Identifier?{
+        val mod = getModifierByType(modifier)
+        val lineage = mod?.getModLineage() ?: return null
+        val list = getModifiersFromNbt(stack)
 
-    fun removeModifier(stack: ItemStack, modifier: Identifier){
-        val nbt = stack.nbt?:return
-        removeModifier(stack, modifier, nbt)
-    }
-
-    protected fun removeModifier(stack: ItemStack, modifier: Identifier, nbt: NbtCompound){
-        val id = Nbt.getItemStackId(nbt)
-        if (!checkModifiersKeyById(id)) return
-        if (checkModListContainsById(id,modifier)){
-            removeModifierWithoutCheck(id, stack, modifier, nbt)
-        } else {
-            val highestDescendant = checkDescendant(modifier,stack)?:return
-            val highestMod = getModifierByType(highestDescendant)
-            val highestModAncestor = if (highestMod?.hasAncestor() == true){
-                highestMod.getAncestor()
-            } else if(highestMod != null) {
-                null
-            } else {
-                return
-            }
-            removeModifierWithoutCheck(id,stack, highestDescendant,nbt)
-            if (highestModAncestor != null){
-                addModifierWithoutChecking(id,highestModAncestor, stack, nbt)
+        var highestModifier: Identifier? = null
+        lineage.forEach { identifier ->
+            if (checkModListContainsById(id,identifier)){
+                highestModifier = identifier
             }
         }
+        return highestModifier
+    }*/
+
+    fun removeModifier(entity: LivingEntity, modifier: Identifier, uniqueOnly: Boolean = true){
+        val mod = getModifierByType(modifier) ?: return
+        val container = (entity as ModifierHolding).fzzy_core_getModifierContainer()
+        val mods = container.getModifiers(getType(),ModifierContainer.EntryType.INNATE)
+        if (mods.contains(modifier) && uniqueOnly){
+            val ancestor = mod.getAncestor()
+            if (ancestor != null)
+                container.addModifier(ancestor,getType(),ModifierContainer.EntryType.INNATE)
+        }
+        container.removeModifier(mod,getType(),ModifierContainer.EntryType.INNATE)
     }
 
-    protected fun removeModifierWithoutCheck(id: Long, stack: ItemStack, modifier: Identifier, nbt: NbtCompound){
+    fun removeModifier(stack: ItemStack, modifier: Identifier, uniqueOnly: Boolean = true){
+        val nbt = stack.nbt?:return
+        removeModifier(stack, modifier, nbt, uniqueOnly)
+    }
+
+    protected fun removeModifier(stack: ItemStack, modifier: Identifier, nbt: NbtCompound, uniqueOnly: Boolean = true){
+        //val id = Nbt.getItemStackId(nbt)
+        if (!modifiersInitialized(stack, nbt)) return
+        val mod = getModifierByType(modifier) ?: return
+        val mods = getModifiersFromNbt(nbt)
+        if (mods.contains(modifier) && uniqueOnly){
+            val ancestor = mod.getAncestor()
+            if (ancestor != null)
+                addModifierWithoutChecking(ancestor.modifierId,stack,nbt)
+        }
+        removeModifierWithoutCheck(stack, modifier, nbt)
+    }
+
+    protected fun removeModifierWithoutCheck(stack: ItemStack, modifier: Identifier, nbt: NbtCompound){
         getModifierByType(modifier)?.onRemove(stack)
-        removeModifierById(id,modifier)
-        gatherActiveModifiers(stack)
+        //removeModifierById(id,modifier)
+        //gatherActiveModifiers(stack)
         removeModifierFromNbt(modifier,nbt)
     }
 
     fun removeAllModifiers(stack: ItemStack){
         val nbt = stack.nbt ?: return
-        val id = Nbt.getItemStackId(nbt)
-        setModifiersById(id, mutableListOf())
-        removeActiveModifiersById(id)
+        //val id = Nbt.getItemStackId(nbt)
+        //setModifiersById(id, mutableListOf())
+        //removeActiveModifiersById(id)
+        val list = nbt.getList(getType().getModifiersKey(), NbtElement.COMPOUND_TYPE.toInt())
+        for (el in list){
+            val modId = Identifier((el as NbtCompound).getString(getType().getModifierIdKey()))
+            getModifierByType(modId)?.onRemove(stack)
+        }
         nbt.remove(getType().getModifiersKey())
-        gatherActiveModifiers(stack)
+        //gatherActiveModifiers(stack)
+    }
+
+
+    fun addModifierToNbt(modifier: Identifier, stack: ItemStack){
+        val nbt = stack.orCreateNbt
+        addModifierWithoutChecking(modifier, stack, nbt)
     }
 
     fun addModifierToNbt(modifier: Identifier, nbt: NbtCompound){
-        addModifierToNbt(modifier, nbt, false)
-    }
-
-    fun addModifierToNbt(modifier: Identifier, stack: ItemStack, temporary: Boolean = false){
-        val nbt = stack.orCreateNbt
-        addModifierToNbt(modifier, nbt, temporary)
-    }
-
-    fun addModifierToNbt(modifier: Identifier, nbt: NbtCompound, temporary: Boolean = false){
         val newEl = NbtCompound()
         newEl.putString(getType().getModifierIdKey(),modifier.toString())
-        if (temporary){
-            newEl.putBoolean(NbtKeys.TEMPORARY_MODIFIER.str(),true)
-        }
         Nbt.addNbtToList(newEl, getType().getModifiersKey(),nbt)
     }
 
     protected fun removeModifierFromNbt(modifier: Identifier, nbt: NbtCompound){
         Nbt.removeNbtFromList(getType().getModifiersKey(),nbt) { nbtEl: NbtCompound ->
             if (nbtEl.contains(getType().getModifierIdKey())){
-                val chk = Identifier(nbtEl.getString(getType().getModifierIdKey()))
-                chk == modifier
+                modifier.toString() == nbtEl.getString(getType().getModifierIdKey())
             } else {
                 false
             }
         }
     }
 
-    override fun initializeModifiers(stack: ItemStack, nbt: NbtCompound, list: List<Identifier>){
+    fun modifiersInitialized(stack: ItemStack, nbt: NbtCompound): Boolean{
+        return nbt.contains(NbtKeys.MOD_INIT.str() + stack.translationKey)
+    }
+
+    fun modifiersInitialized(stack: ItemStack): Boolean{
+        return if (stack.nbt == null) {
+            false
+        } else {
+            modifiersInitialized(stack, stack.orCreateNbt)
+        }
+    }
+
+    override fun initializeModifiers(stack: ItemStack): List<Identifier>{
+        val item = stack.item
+        val list = if(item is Modifiable){
+            item.defaultModifiers(getType())
+        } else {
+            listOf()
+        }
         if (list.isNotEmpty()){
+            val nbt = stack.orCreateNbt
             if (!nbt.contains(NbtKeys.MOD_INIT.str() + stack.translationKey)){
-                if (nbt.contains(getType().getModifiersKey())){
-                    list.forEach{
-                        addModifier(it,stack,nbt)
-                    }
-                } else{
-                    list.forEach{
-                        addModifierToNbt(it,nbt)
-                    }
+                for (mod in list) {
+                    addModifierToNbt(mod,nbt)
                 }
                 nbt.putBoolean(NbtKeys.MOD_INIT.str() + stack.translationKey,true)
             }
         }
-        if (nbt.contains(getType().getModifiersKey())){
-            val id = Nbt.makeItemStackId(stack)
-            initializeModifiers(nbt, id)
-            gatherActiveModifiers(stack)
-        }
+        return list
     }
 
-    protected fun initializeModifiers(nbt: NbtCompound, id: Long){
+    /*protected fun initializeModifiers(nbt: NbtCompound, id: Long){
         val nbtList = nbt.getList(getType().getModifiersKey(),10)
         setModifiersById(id, mutableListOf())
         for (el in nbtList){
@@ -297,29 +355,24 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
                 addModifierById(id,Identifier(modifier))
             }
         }
-    }
+    }*/
 
     fun getModifiers(stack: ItemStack): List<Identifier>{
         val nbt = stack.nbt?:return listOf()
-        var id = Nbt.getItemStackId(stack)
-        if (id == -1L){
+        //var id = Nbt.getItemStackId(stack)
+        /*if (id == -1L){
             if (nbt.contains(getType().getModifiersKey())) {
                 id = Nbt.makeItemStackId(stack)
                 initializeModifiers(nbt, id)
             } else{
                 return listOf()
             }
-        } else if (!checkModifiersKeyById(id)) {
-            if (nbt.contains(getType().getModifiersKey())) {
-                id = Nbt.makeItemStackId(stack)
-                initializeModifiers(nbt, id)
-            } else{
-                return listOf()
-            }
-        }
-        return synchronized(modifiers){
-            modifiers[id] ?: listOf()
-        }
+        } else*/
+        if (!modifiersInitialized(stack, nbt))
+            return initializeModifiers(stack)
+
+        return getModifiersFromNbt(stack)
+
         /*val nbt = stack.orCreateNbt
         val id = Nbt.makeItemStackId(stack)
         if (!checkModifiersKeyById(id)) {
@@ -333,8 +386,11 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     }
 
     fun getModifiersFromNbt(stack: ItemStack): List<Identifier>{
+        val nbt = stack.nbt?:return listOf()
+        return getModifiersFromNbt(nbt)
+    }
+    fun getModifiersFromNbt(nbt: NbtCompound): List<Identifier>{
         val list: MutableList<Identifier> = mutableListOf()
-        val nbt = stack.nbt?:return list
         if (nbt.contains(getType().getModifiersKey())){
             val nbtList = Nbt.readNbtList(nbt, getType().getModifiersKey())
             nbtList.forEach {
@@ -347,50 +403,8 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         return list
     }
 
-    fun checkModifierLineage(modifier: Identifier, stack: ItemStack): Boolean{
-        val mod = getModifierByType(modifier)
-        return if (mod != null){
-            checkModifierLineage(mod, stack) >= 0
-        } else {
-            false
-        }
-    }
-
-    protected fun checkModifierLineage(mod: T, stack: ItemStack): Int{
-        val id = Nbt.getItemStackId(stack)
-        val lineage = mod.getModLineage()
-        val highestOrderDescendant = lineage.size
-        var highestDescendantPresent = 0
-        lineage.forEachIndexed { index, identifier ->
-            if (checkModListContainsById(id,identifier)){
-                highestDescendantPresent = index + 1
-            }
-        }
-        return if(highestDescendantPresent < highestOrderDescendant){
-            highestDescendantPresent
-        } else {
-            -1
-        }
-    }
-
-    fun getNextInLineage(modifier: Identifier, stack: ItemStack): Identifier{
-        val mod = getModifierByType(modifier)
-        return if (mod != null){
-            val lineage = mod.getModLineage()
-            val nextInLineIndex = checkModifierLineage(mod, stack)
-            if (nextInLineIndex == -1){
-                modifier
-            } else {
-                lineage[nextInLineIndex]
-            }
-        } else {
-            modifier
-        }
-    }
-
-    fun getMaxInLineage(modifier: Identifier): Identifier{
-        val mod = getModifierByType(modifier)
-        return mod?.getModLineage()?.last() ?: return modifier
+    fun modifiersFromNbt(stack: ItemStack): List<T>{
+        return getModifiersFromNbt(stack).mapNotNull { getModifierByType(it) }
     }
 
     abstract fun getModifierByType(id: Identifier): T?
@@ -400,9 +414,8 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         objectToAffect: Identifier,
         compiler: AbstractModifier<T>.Compiler
     ): AbstractModifier.CompiledModifiers<T> {
-        val id = Nbt.getItemStackId(stack)
         try {
-            getModifiersById(id).forEach { identifier ->
+            getModifiersFromNbt(stack).forEach { identifier ->
                 val modifier = ModifierRegistry.getByType<T>(identifier)
                 if (modifier != null) {
                     if (!modifier.hasObjectToAffect()) {
@@ -426,24 +439,10 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         override fun persistentEffect(data: PersistentEffectHelper.PersistentEffectData) {
             if(data is TemporaryModifierData){
                 val helper = data.helper
-                helper.removeModifier(data.entity,data.modifier)
+                helper.removeModifier(data.entity,data.modifier, false)
             }
         }
-        fun removeTemporaryModifiersFromNbt(stack: ItemStack){
-            val nbt = stack.nbt?:return
-            for (type in ModifierHelperType.REGISTRY) {
-                val list = Nbt.readNbtList(nbt, type.getModifiersKey())
-                val toRemove: MutableSet<NbtElement> = mutableSetOf()
-                for (nbtEl in list) {
-                    if (nbtEl is NbtCompound) {
-                        if (nbtEl.contains(type.getModifierIdKey())) {
-                            toRemove.add(nbtEl)
-                        }
-                    }
-                }
-                list.removeAll(toRemove)
-            }
-        }
+
         class TemporaryModifierData(
             val helper: AbstractModifierHelper<*>,
             val modifier: Identifier,
@@ -464,6 +463,14 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         object EmptyModifierHelper: AbstractModifierHelper<EmptyModifier>() {
             override val fallbackData: AbstractModifier.CompiledModifiers<EmptyModifier> = AbstractModifier.CompiledModifiers(arrayListOf(),EMPTY)
 
+            override fun compile(input: List<Identifier>?): AbstractModifier.CompiledModifiers<EmptyModifier> {
+                return fallbackData
+            }
+
+            override fun compiler(): AbstractModifier<EmptyModifier>.Compiler {
+                return EMPTY.compiler()
+            }
+
             override fun gatherActiveModifiers(stack: ItemStack) {
             }
 
@@ -479,7 +486,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
                 return null
             }
 
-            override fun getType(): ModifierHelperType {
+            override fun getType(): ModifierHelperType<EmptyModifier> {
                 return ModifierHelperType.EMPTY_TYPE
             }
 
@@ -494,7 +501,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
                 return Compiler(arrayListOf(), EmptyModifier())
             }
 
-            override fun getModifierHelper(): AbstractModifierHelper<*> {
+            override fun getModifierHelper(): AbstractModifierHelper<EmptyModifier> {
                 return EmptyModifierHelper
             }
 

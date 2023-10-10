@@ -34,15 +34,13 @@ public abstract class ItemStackMixin {
 
     @Shadow public abstract Item getItem();
 
-    @Shadow public abstract NbtCompound getOrCreateNbt();
-
     @Inject(method = "<init>(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void fzzy_core_initializeFromNbt(NbtCompound nbt, CallbackInfo ci){
         if (this.item == null) return;
         if (this.item instanceof Modifiable modifiableItem){
-            for (ModifierHelperType type : ModifierHelperType.Companion.getREGISTRY()){
+            for (ModifierHelperType<?> type : ModifierHelperType.Companion.getREGISTRY()){
                 if (!modifiableItem.canBeModifiedBy(type)) continue;
-                type.initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers(type));
+                type.initializeModifiers((ItemStack) (Object) this);
             }
         }
     }
@@ -51,9 +49,9 @@ public abstract class ItemStackMixin {
     private void fzzy_core_initializeFromItem(ItemConvertible item, int count, CallbackInfo ci){
         if (this.item == null) return;
         if (this.item instanceof Modifiable modifiableItem){
-            for (ModifierHelperType type : ModifierHelperType.Companion.getREGISTRY()){
+            for (ModifierHelperType<?> type : ModifierHelperType.Companion.getREGISTRY()){
                 if (!modifiableItem.canBeModifiedBy(type)) continue;
-                type.initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers(type));
+                type.initializeModifiers((ItemStack) (Object) this);
             }
             //modifiableItem.getModifierInitializer().initializeModifiers((ItemStack) (Object) this, getOrCreateNbt(), modifiableItem.defaultModifiers());
         }
@@ -63,7 +61,7 @@ public abstract class ItemStackMixin {
     private void fzzy_core_appendModifiersToTooltip(Item instance,ItemStack stack, World world, List<Text> tooltip, TooltipContext context, Operation<Void> operation){
         operation.call(instance,stack, world, tooltip,context);
         if (stack.getItem() instanceof Modifiable modifiable){
-            for (ModifierHelperType type : ModifierHelperType.Companion.getREGISTRY()) {
+            for (ModifierHelperType<?> type : ModifierHelperType.Companion.getREGISTRY()) {
                 if (!modifiable.canBeModifiedBy(type)) continue;
                 modifiable.addModifierTooltip(stack, tooltip, context, type);
             }
