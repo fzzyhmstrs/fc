@@ -22,13 +22,13 @@ abstract class ModifierHelperType <T: AbstractModifier<T>> (val id: Identifier, 
     }
 
     open fun add(stack: ItemStack, modifierContainer: ModifierContainer){
-        for (mod in helper.modifiersFromNbt(stack)){
+        for (mod in helper.getRelevantModifiers(stack)){
             modifierContainer.addModifier(mod, this)
         }
     }
 
     open fun remove(stack: ItemStack, modifierContainer: ModifierContainer){
-        for (mod in helper.modifiersFromNbt(stack)){
+        for (mod in helper.getRelevantModifiers(stack)){
             modifierContainer.removeModifier(mod, this)
         }
     }
