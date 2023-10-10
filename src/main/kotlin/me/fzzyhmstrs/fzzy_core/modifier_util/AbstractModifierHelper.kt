@@ -34,7 +34,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
 
     abstract fun compiler(): AbstractModifier<T>.Compiler
 
-    abstract fun gatherActiveModifiers(stack: ItemStack)
+    //abstract fun gatherActiveModifiers(stack: ItemStack)
 
     abstract fun getTranslationKeyFromIdentifier(id: Identifier): String
     
@@ -169,11 +169,11 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
                 false
             }else{
                 removeModifierWithoutCheck(stack, modifier, nbt)
-                addModifierToNbt(descendant.modifierId,nbt)
+                addModifierToNbt(stack,descendant.modifierId,nbt)
                 true
             }
         } else {
-            addModifierToNbt(modifier,nbt)
+            addModifierToNbt(stack,modifier,nbt)
             true
         }
         /*if (highestModifier != null){
@@ -208,7 +208,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     protected fun addModifierWithoutChecking(modifier: Identifier, stack: ItemStack, nbt: NbtCompound){
         val mod = getModifierByType(modifier)
         mod?.onAdd(stack)
-        addModifierToNbt(modifier, nbt)
+        addModifierToNbt(stack, modifier, nbt)
         //addModifierById(id,modifier)
         //gatherActiveModifiers(stack)
     }
@@ -275,7 +275,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         getModifierByType(modifier)?.onRemove(stack)
         //removeModifierById(id,modifier)
         //gatherActiveModifiers(stack)
-        removeModifierFromNbt(modifier,nbt)
+        removeModifierFromNbt(stack,modifier,nbt)
     }
 
     fun removeAllModifiers(stack: ItemStack){
@@ -283,10 +283,11 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         //val id = Nbt.getItemStackId(nbt)
         //setModifiersById(id, mutableListOf())
         //removeActiveModifiersById(id)
-        val list = nbt.getList(getType().getModifiersKey(), NbtElement.COMPOUND_TYPE.toInt())
+        val list = nbt.getList(getType().getModifiersKey(), NbtElement.COMPOUND_TYPE.toInt()).copy()
         for (el in list){
             val modId = Identifier((el as NbtCompound).getString(getType().getModifierIdKey()))
             getModifierByType(modId)?.onRemove(stack)
+            removeModifierFromNbt(stack, modId, nbt)
         }
         nbt.remove(getType().getModifiersKey())
         //gatherActiveModifiers(stack)
@@ -298,13 +299,13 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         addModifierWithoutChecking(modifier, stack, nbt)
     }
 
-    fun addModifierToNbt(modifier: Identifier, nbt: NbtCompound){
+    protected open fun addModifierToNbt(stack: ItemStack, modifier: Identifier, nbt: NbtCompound){
         val newEl = NbtCompound()
         newEl.putString(getType().getModifierIdKey(),modifier.toString())
         Nbt.addNbtToList(newEl, getType().getModifiersKey(),nbt)
     }
 
-    protected fun removeModifierFromNbt(modifier: Identifier, nbt: NbtCompound){
+    protected open fun removeModifierFromNbt(stack: ItemStack, modifier: Identifier, nbt: NbtCompound){
         Nbt.removeNbtFromList(getType().getModifiersKey(),nbt) { nbtEl: NbtCompound ->
             if (nbtEl.contains(getType().getModifierIdKey())){
                 modifier.toString() == nbtEl.getString(getType().getModifierIdKey())
@@ -337,7 +338,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
             val nbt = stack.orCreateNbt
             if (!nbt.contains(NbtKeys.MOD_INIT.str() + stack.translationKey)){
                 for (mod in list) {
-                    addModifierToNbt(mod,nbt)
+                    addModifierToNbt(stack,mod,nbt)
                 }
                 nbt.putBoolean(NbtKeys.MOD_INIT.str() + stack.translationKey,true)
             }
@@ -471,8 +472,8 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
                 return EMPTY.compiler()
             }
 
-            override fun gatherActiveModifiers(stack: ItemStack) {
-            }
+            /*override fun gatherActiveModifiers(stack: ItemStack) {
+            }*/
 
             override fun getTranslationKeyFromIdentifier(id: Identifier): String {
                 return ""
