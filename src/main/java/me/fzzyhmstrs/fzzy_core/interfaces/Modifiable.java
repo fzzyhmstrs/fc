@@ -20,4 +20,8 @@ public interface Modifiable {
     default boolean canBeModifiedBy(ModifierHelperType<?> type){
         return true;
     }
+
+    default Identifier modifierObjectPredicate(ItemStack stack){
+        return AbstractModifierHelper.Companion.BLANK;
+    }
 }
