@@ -7,7 +7,7 @@ import net.minecraft.registry.Registry
 import net.minecraft.registry.RegistryKey
 import net.minecraft.util.Identifier
 
-abstract class ModifierHelperType <T: AbstractModifier<T>> (val id: Identifier, val helper: AbstractModifierHelper<T>) {
+abstract class ModifierHelperType <T: AbstractModifier<T>> (val id: Identifier, private val helper: AbstractModifierHelper<T>) {
 
     open fun getModifierInitializer(): ModifierInitializer {
         return helper
