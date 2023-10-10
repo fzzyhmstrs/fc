@@ -42,6 +42,8 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
 
     abstract fun getType(): ModifierHelperType<T>
 
+    abstract fun getModifierByType(id: Identifier): T?
+
     override fun addModifierTooltip(stack: ItemStack, tooltip: MutableList<Text>, context: TooltipContext){
         val nbt = stack.nbt ?: return
         if (!nbt.contains(getType().getModifiersKey())) return
@@ -386,6 +388,25 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         }*/
     }
 
+    fun getRelevantModifiers(stack): List<Identifier>{
+        val item = stack.item
+        val mods = getModifiersFromNbt(stack)
+        if (item is Modifiable){
+            val list: MutableList<Identifier> = mutableListOf()
+            val predicateId = item.modifierObjectPredicate(stack)
+            for (modId in mods){
+                val mod = getModifierByType(modId) ?: continue
+                if (!mod.hasObjectToAffect()) {
+                    list.add(modId)
+                } else if (mod.checkObjectsToAffect(predicateId)) {
+                    list.add(modId)
+                }
+            }
+            return list
+        }
+        return mods
+    }
+    
     fun getModifiersFromNbt(stack: ItemStack): List<Identifier>{
         val nbt = stack.nbt?:return listOf()
         return getModifiersFromNbt(nbt)
@@ -407,8 +428,6 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     fun modifiersFromNbt(stack: ItemStack): List<T>{
         return getModifiersFromNbt(stack).mapNotNull { getModifierByType(it) }
     }
-
-    abstract fun getModifierByType(id: Identifier): T?
 
     inline fun <reified T : AbstractModifier<T>> gatherActiveAbstractModifiers(
         stack: ItemStack,
