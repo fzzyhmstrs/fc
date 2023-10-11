@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_core.mixins;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import me.fzzyhmstrs.fzzy_core.interfaces.ModifierHolding;
@@ -23,7 +24,7 @@ public class LivingEntityMixin implements ModifierHolding {
     @Override
     public ModifierContainer fzzy_core_getModifierContainer() {
         if (fzzy_core_modifierHolder == null){
-            fzzy_core_modifierHolder = new ModifierContainer();
+            fzzy_core_modifierHolder = new ModifierContainer((LivingEntity) (Object) this, ArrayListMultimap.create());
         }
         return fzzy_core_modifierHolder;
     }
@@ -46,7 +47,7 @@ public class LivingEntityMixin implements ModifierHolding {
     private void fzzy_core_readStackFromNbt(NbtCompound nbt, CallbackInfo ci){
         if (nbt.contains("modifier_container")){
             NbtCompound nbtCompound = nbt.getCompound("modifier_container");
-            fzzy_core_modifierHolder = ModifierContainer.load(nbtCompound);
+            fzzy_core_modifierHolder = ModifierContainer.load((LivingEntity) (Object) this, nbtCompound);
         }
     }
 

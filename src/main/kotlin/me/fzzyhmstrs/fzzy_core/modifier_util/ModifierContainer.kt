@@ -1,18 +1,34 @@
 package me.fzzyhmstrs.fzzy_core.modifier_util
 
 import com.google.common.collect.ArrayListMultimap
+import net.minecraft.entity.LivingEntity
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
 import net.minecraft.util.Identifier
 
-class ModifierContainer(innateModifiers: ArrayListMultimap<ModifierHelperType<*>, Identifier> = ArrayListMultimap.create()) {
+class ModifierContainer(val livingEntity: LivingEntity, innateModifiers: ArrayListMultimap<ModifierHelperType<*>, Identifier> = ArrayListMultimap.create()) {
 
     private val compiledMap: MutableMap<ModifierHelperType<*>, AbstractModifier.CompiledModifiers<*>> = mutableMapOf()
+    private val predicateInstanceMap: MutableMap<ModifierHelperType<*>, MutableMap<Identifier,AbstractModifier.CompiledModifiers<*>>> = mutableMapOf()
     private val normalMultimap: ArrayListMultimap<ModifierHelperType<*>, Identifier> = ArrayListMultimap.create()
     private val innateMultimap: ArrayListMultimap<ModifierHelperType<*>, Identifier> = innateModifiers
     private val dirtyTypes: MutableSet<ModifierHelperType<*>> = mutableSetOf()
+
+    fun<T: AbstractModifier<T>> compileSpecialModifier(predicateId: Identifier, type: ModifierHelperType<T>): AbstractModifier.CompiledModifiers<T>? {
+        return predicateInstanceMap
+            .computeIfAbsent(type) { mutableMapOf()}
+                .computeIfAbsent(predicateId) {compileSpecial(predicateId, type)} as? AbstractModifier.CompiledModifiers<T>
+    }
+
+    private fun <T: AbstractModifier<T>> compileSpecial(predicateId: Identifier, type: ModifierHelperType<T>): AbstractModifier.CompiledModifiers<T>{
+        val list: MutableList<Identifier> = mutableListOf()
+        list.addAll(normalMultimap.get(type) ?: listOf())
+        list.addAll(innateMultimap.get(type) ?: listOf())
+        return type.compile(list,predicateId)
+    }
 
     fun getModifiers(type: ModifierHelperType<*>, entryType: EntryType): List<Identifier>{
         return when(entryType){
@@ -33,6 +49,7 @@ class ModifierContainer(innateModifiers: ArrayListMultimap<ModifierHelperType<*>
         else
             innateMultimap.put(type, modifier.modifierId)
         dirtyTypes.add(type)
+        predicateInstanceMap.remove(type) //reset special instances here, as the baseline compiled instance has changed
     }
     fun<T: AbstractModifier<T>> removeModifier(modifier: AbstractModifier<T>, type: ModifierHelperType<T>, entryType: EntryType = EntryType.NORMAL){
         if (entryType == EntryType.NORMAL)
@@ -40,6 +57,7 @@ class ModifierContainer(innateModifiers: ArrayListMultimap<ModifierHelperType<*>
         else
             innateMultimap.remove(type, modifier.modifierId)
         dirtyTypes.add(type)
+        predicateInstanceMap.remove(type) //reset special instances here, as the baseline compiled instance has changed
     }
 
     fun<T: AbstractModifier<T>> getCompiledModifiers(type: ModifierHelperType<T>): AbstractModifier.CompiledModifiers<T>?{
@@ -48,7 +66,7 @@ class ModifierContainer(innateModifiers: ArrayListMultimap<ModifierHelperType<*>
             val list: MutableList<Identifier> = mutableListOf()
             list.addAll(normalMultimap.get(type) ?: listOf())
             list.addAll(innateMultimap.get(type) ?: listOf())
-            compiledMap.put(type, type.compile(list)) as AbstractModifier.CompiledModifiers<T>
+            compiledMap.put(type, type.compile(list, null)) as AbstractModifier.CompiledModifiers<T>
         } else {
             compiledMap[type] as? AbstractModifier.CompiledModifiers<T>
         }
@@ -68,7 +86,7 @@ class ModifierContainer(innateModifiers: ArrayListMultimap<ModifierHelperType<*>
 
     companion object{
         @JvmStatic
-        fun load(nbtCompound: NbtCompound): ModifierContainer{
+        fun load(livingEntity: LivingEntity, nbtCompound: NbtCompound): ModifierContainer{
             val innateModifiers: ArrayListMultimap<ModifierHelperType<*>, Identifier> = ArrayListMultimap.create()
             for (key in nbtCompound.keys){
                 val type = ModifierHelperType.REGISTRY.get(Identifier(key)) ?: continue
@@ -78,7 +96,7 @@ class ModifierContainer(innateModifiers: ArrayListMultimap<ModifierHelperType<*>
                     innateModifiers.put(type, mod)
                 }
             }
-            return ModifierContainer(innateModifiers)
+            return ModifierContainer(livingEntity,innateModifiers)
         }
     }
 

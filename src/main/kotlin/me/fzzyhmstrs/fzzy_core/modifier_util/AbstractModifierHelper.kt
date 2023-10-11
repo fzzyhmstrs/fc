@@ -23,7 +23,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     //private val activeModifiers = Collections.synchronizedMap(mutableMapOf<Long, AbstractModifier.CompiledModifiers<T>>())
     abstract val fallbackData: AbstractModifier.CompiledModifiers<T>
 
-    open fun compile(input: List<Identifier>?): AbstractModifier.CompiledModifiers<T>{
+    open fun compile(input: List<Identifier>?, predicateId: Identifier? = null): AbstractModifier.CompiledModifiers<T>{
         val modList = input?.mapNotNull { getModifierByType(it) } ?: return fallbackData
         val compiler = compiler()
         for (mod in modList){
@@ -122,6 +122,10 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     fun getActiveModifiers(entity: LivingEntity): AbstractModifier.CompiledModifiers<T> {
         val container = (entity as ModifierHolding).fzzy_core_getModifierContainer()
         return container.getCompiledModifiers(getType()) ?: fallbackData
+    }
+    fun getSpecialActiveModifiers(entity: LivingEntity, predicateId: Identifier): AbstractModifier.CompiledModifiers<T> {
+        val container = (entity as ModifierHolding).fzzy_core_getModifierContainer()
+        return container.compileSpecialModifier(predicateId,getType()) ?: fallbackData
     }
 
 
@@ -388,23 +392,38 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         }*/
     }
 
-    fun getRelevantModifiers(stack): List<Identifier>{
+    fun getRelevantModifiers(livingEntity: LivingEntity, stack: ItemStack): List<T>{
         val item = stack.item
         val mods = getModifiersFromNbt(stack)
         if (item is Modifiable){
-            val list: MutableList<Identifier> = mutableListOf()
-            val predicateId = item.modifierObjectPredicate(stack)
+            val list: MutableList<T> = mutableListOf()
+            val predicateId = item.modifierObjectPredicate(livingEntity, stack)
             for (modId in mods){
                 val mod = getModifierByType(modId) ?: continue
                 if (!mod.hasObjectToAffect()) {
-                    list.add(modId)
+                    list.add(mod)
                 } else if (mod.checkObjectsToAffect(predicateId)) {
-                    list.add(modId)
+                    list.add(mod)
                 }
             }
             return list
         }
-        return mods
+        return mods.mapNotNull { getModifierByType(it) }
+    }
+
+    fun getRelevantModifierIds(mods: List<Identifier>, predicateId: Identifier?): List<Identifier>{
+        if (predicateId == null)
+            return mods
+        val list: MutableList<Identifier> = mutableListOf()
+        for (modId in mods){
+            val mod = getModifierByType(modId) ?: continue
+            if (!mod.hasObjectToAffect()) {
+                list.add(modId)
+            } else if (mod.checkObjectsToAffect(predicateId)) {
+                list.add(modId)
+            }
+        }
+        return list
     }
     
     fun getModifiersFromNbt(stack: ItemStack): List<Identifier>{
@@ -483,7 +502,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         object EmptyModifierHelper: AbstractModifierHelper<EmptyModifier>() {
             override val fallbackData: AbstractModifier.CompiledModifiers<EmptyModifier> = AbstractModifier.CompiledModifiers(arrayListOf(),EMPTY)
 
-            override fun compile(input: List<Identifier>?): AbstractModifier.CompiledModifiers<EmptyModifier> {
+            override fun compile(input: List<Identifier>?, predicateId: Identifier?): AbstractModifier.CompiledModifiers<EmptyModifier> {
                 return fallbackData
             }
 

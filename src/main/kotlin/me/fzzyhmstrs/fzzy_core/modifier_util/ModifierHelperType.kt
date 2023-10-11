@@ -17,18 +17,18 @@ abstract class ModifierHelperType <T: AbstractModifier<T>> (val id: Identifier, 
         return helper
     }
 
-    open fun compile(input: List<Identifier>?): AbstractModifier.CompiledModifiers<T> {
-        return helper.compile(input)
+    open fun compile(input: List<Identifier>?, predicateId: Identifier?): AbstractModifier.CompiledModifiers<T> {
+        return helper.compile(input, predicateId)
     }
 
     open fun add(stack: ItemStack, modifierContainer: ModifierContainer){
-        for (mod in helper.getRelevantModifiers(stack)){
+        for (mod in helper.getRelevantModifiers(modifierContainer.livingEntity, stack)) {
             modifierContainer.addModifier(mod, this)
         }
     }
 
     open fun remove(stack: ItemStack, modifierContainer: ModifierContainer){
-        for (mod in helper.getRelevantModifiers(stack)){
+        for (mod in helper.getRelevantModifiers(modifierContainer.livingEntity, stack)) {
             modifierContainer.removeModifier(mod, this)
         }
     }

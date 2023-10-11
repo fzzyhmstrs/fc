@@ -1,7 +1,9 @@
 package me.fzzyhmstrs.fzzy_core.interfaces;
 
+import me.fzzyhmstrs.fzzy_core.modifier_util.AbstractModifierHelper;
 import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierHelperType;
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -21,7 +23,7 @@ public interface Modifiable {
         return true;
     }
 
-    default Identifier modifierObjectPredicate(ItemStack stack){
-        return AbstractModifierHelper.Companion.BLANK;
+    default Identifier modifierObjectPredicate(LivingEntity livingEntity, ItemStack stack){
+        return AbstractModifierHelper.Companion.getBLANK();
     }
 }
