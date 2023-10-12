@@ -27,7 +27,7 @@ class ModifierContainer(val livingEntity: LivingEntity, innateModifiers: ArrayLi
         val list: MutableList<Identifier> = mutableListOf()
         list.addAll(normalMultimap.get(type) ?: listOf())
         list.addAll(innateMultimap.get(type) ?: listOf())
-        return type.compile(list,predicateId)
+        return type.compile(list,predicateId).also { println("Compiling special: $it for $livingEntity") }
     }
 
     fun getModifiers(type: ModifierHelperType<*>, entryType: EntryType): List<Identifier>{
@@ -44,6 +44,7 @@ class ModifierContainer(val livingEntity: LivingEntity, innateModifiers: ArrayLi
     }
 
     fun<T: AbstractModifier<T>> addModifier(modifier: AbstractModifier<T>, type: ModifierHelperType<T>, entryType: EntryType = EntryType.NORMAL){
+        println("Adding modifier $modifier to container for $livingEntity")
         if (entryType == EntryType.NORMAL)
             normalMultimap.put(type,modifier.modifierId)
         else
@@ -66,9 +67,9 @@ class ModifierContainer(val livingEntity: LivingEntity, innateModifiers: ArrayLi
             val list: MutableList<Identifier> = mutableListOf()
             list.addAll(normalMultimap.get(type) ?: listOf())
             list.addAll(innateMultimap.get(type) ?: listOf())
-            compiledMap.put(type, type.compile(list, null)) as AbstractModifier.CompiledModifiers<T>
+            compiledMap.put(type, type.compile(list, null)).also { println("Getting compiled modifier $it for $livingEntity") } as AbstractModifier.CompiledModifiers<T>
         } else {
-            compiledMap[type] as? AbstractModifier.CompiledModifiers<T>
+            compiledMap[type]/*.also { println("Getting pre-compiled modifier $it for $livingEntity") }*/ as? AbstractModifier.CompiledModifiers<T>
         }
 
     }

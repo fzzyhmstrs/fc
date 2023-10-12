@@ -3,6 +3,7 @@ package me.fzzyhmstrs.fzzy_core.modifier_util
 import me.fzzyhmstrs.fzzy_core.FC
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
 import net.minecraft.item.ItemStack
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.Registry
 import net.minecraft.registry.RegistryKey
 import net.minecraft.util.Identifier
@@ -22,20 +23,30 @@ abstract class ModifierHelperType <T: AbstractModifier<T>> (val id: Identifier, 
     }
 
     open fun add(stack: ItemStack, modifierContainer: ModifierContainer){
-        for (mod in helper.getRelevantModifiers(modifierContainer.livingEntity, stack)) {
+        //println("Adding modifiers to ${modifierContainer.livingEntity} from stack $stack")
+        for (mod in helper.modifiersFromNbt(stack)) {
             modifierContainer.addModifier(mod, this)
         }
     }
 
     open fun remove(stack: ItemStack, modifierContainer: ModifierContainer){
-        for (mod in helper.getRelevantModifiers(modifierContainer.livingEntity, stack)) {
+        for (mod in helper.modifiersFromNbt(stack)) {
             modifierContainer.removeModifier(mod, this)
         }
+    }
+
+    open fun areModifiersEqual(old: ItemStack, young: ItemStack): Boolean{
+        return helper.modifiersAreEqual(old, young)
     }
 
     abstract fun getModifierIdKey(): String
 
     abstract fun getModifiersKey(): String
+
+    //for API compat
+    fun initializeModifiers(stack: ItemStack, nbtCompound: NbtCompound, defaultMods: List<Identifier>){
+        getModifierInitializer().initializeModifiers(stack)
+    }
 
     open fun initializeModifiers(stack: ItemStack){
         getModifierInitializer().initializeModifiers(stack)
@@ -68,6 +79,13 @@ abstract class ModifierHelperType <T: AbstractModifier<T>> (val id: Identifier, 
             for (type in REGISTRY){
                 type.remove(stack, modifierContainer)
             }
+        }
+
+        fun areModifiersEqual(old: ItemStack, young: ItemStack): Boolean{
+            for (type in REGISTRY){
+                if (!type.areModifiersEqual(old, young)) return false
+            }
+            return true
         }
 
         object EmptyType: ModifierHelperType<AbstractModifierHelper.Companion.EmptyModifier>(Identifier(FC.MOD_ID,"empty_helper"), AbstractModifierHelper.getEmptyHelper()){

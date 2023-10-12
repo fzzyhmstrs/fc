@@ -24,7 +24,10 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     abstract val fallbackData: AbstractModifier.CompiledModifiers<T>
 
     open fun compile(input: List<Identifier>?, predicateId: Identifier? = null): AbstractModifier.CompiledModifiers<T>{
-        val modList = input?.mapNotNull { getModifierByType(it) } ?: return fallbackData
+        println("compiling with modifiers $input and predicate $predicateId")
+        if (input == null) return fallbackData
+        val modList = getRelevantModifiers(input, predicateId)
+        println("Filtered to modifiers $modList")
         val compiler = compiler()
         for (mod in modList){
             compiler.add(mod)
@@ -333,6 +336,11 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         }
     }
 
+    //for API compat
+    fun initializeModifiers(stack: ItemStack, nbt: NbtCompound,  defaultMods: List<Identifier>){
+        initializeModifiers(stack)
+    }
+
     override fun initializeModifiers(stack: ItemStack): List<Identifier>{
         val item = stack.item
         val list = if(item is Modifiable){
@@ -411,6 +419,21 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         return mods.mapNotNull { getModifierByType(it) }
     }
 
+    fun getRelevantModifiers(mods: List<Identifier>, predicateId: Identifier?): List<T>{
+        if (predicateId == null)
+            return mods.mapNotNull { getModifierByType(it) }
+        val list: MutableList<T> = mutableListOf()
+        for (modId in mods){
+            val mod = getModifierByType(modId) ?: continue
+            if (!mod.hasObjectToAffect()) {
+                list.add(mod)
+            } else if (mod.checkObjectsToAffect(predicateId)) {
+                list.add(mod)
+            }
+        }
+        return list
+    }
+
     fun getRelevantModifierIds(mods: List<Identifier>, predicateId: Identifier?): List<Identifier>{
         if (predicateId == null)
             return mods
@@ -442,6 +465,14 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
             }
         }
         return list
+    }
+
+    fun modifiersAreEqual(old: ItemStack, young: ItemStack): Boolean{
+        val oldNbt = old.nbt
+        val youngNbt = young.nbt
+        if (oldNbt == null && youngNbt == null) return true
+        if (oldNbt == null || youngNbt == null) return false
+        return Nbt.readNbtList(oldNbt, getType().getModifiersKey()) == Nbt.readNbtList(youngNbt, getType().getModifiersKey())
     }
 
     fun modifiersFromNbt(stack: ItemStack): List<T>{

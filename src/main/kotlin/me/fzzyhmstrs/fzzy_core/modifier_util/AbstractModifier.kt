@@ -128,7 +128,7 @@ abstract class AbstractModifier<T: AbstractModifier<T>>(val modifierId: Identifi
     }
 
     override fun toString(): String {
-        return "[Modifier: $modifierId]"
+        return "[${this::class.java.simpleName}: $modifierId]"
     }
 
     override fun hashCode(): Int {
@@ -149,6 +149,10 @@ abstract class AbstractModifier<T: AbstractModifier<T>>(val modifierId: Identifi
             blank.plus(compiledData)
             blank.plus(other.compiledData)
             return CompiledModifiers(list,blank)
+        }
+
+        override fun toString(): String {
+            return "CompiledModifier[components:$modifiers, compiled:$compiledData]"
         }
     }
 

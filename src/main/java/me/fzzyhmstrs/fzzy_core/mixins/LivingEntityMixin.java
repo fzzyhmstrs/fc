@@ -55,6 +55,7 @@ public class LivingEntityMixin implements ModifierHolding {
     private boolean fzzy_core_applyModifierChanges(LivingEntity instance, ItemStack old, ItemStack young, Operation<Boolean> operation){
         boolean bl = operation.call(instance, old, young);
         if (bl){
+            if (ModifierHelperType.Companion.areModifiersEqual(old, young)) return true;
             if (!old.isEmpty()){
                 ModifierHelperType.Companion.remove(old, fzzy_core_getModifierContainer());
             }
