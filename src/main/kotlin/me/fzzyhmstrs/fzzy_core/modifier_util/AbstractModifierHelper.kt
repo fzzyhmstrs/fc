@@ -24,10 +24,10 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     abstract val fallbackData: AbstractModifier.CompiledModifiers<T>
 
     open fun compile(input: List<Identifier>?, predicateId: Identifier? = null): AbstractModifier.CompiledModifiers<T>{
-        println("compiling with modifiers $input and predicate $predicateId")
+        //println("compiling with modifiers $input and predicate $predicateId")
         if (input == null) return fallbackData
         val modList = getRelevantModifiers(input, predicateId)
-        println("Filtered to modifiers $modList")
+        //println("Filtered to modifiers $modList")
         val compiler = compiler()
         for (mod in modList){
             compiler.add(mod)
