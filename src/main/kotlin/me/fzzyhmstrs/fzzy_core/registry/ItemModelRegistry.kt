@@ -107,7 +107,7 @@ object ItemModelRegistry: SynchronousResourceReloader {
      * For all builder methods, set needsRegstration to true if this is the first time you've added this model identifier to the PerModes instance. This will register the special model in the Fabric ModelLoading registry.
      */
     class ModelIdentifierPerModes(private val defaultId: ModelIdentifier){
-        private val modeMap: EnumMap<ModelTransformationMode,ModelIdentifier> = EnumMap(ModelTransformationMode::class.java)
+        private val modeMap: EnumMap<ModelTransformationMode, ModelIdentifier> = EnumMap(ModelTransformationMode::class.java)
 
         /**
          * define a model for a specifically chosen transformation mode.
@@ -168,6 +168,21 @@ object ItemModelRegistry: SynchronousResourceReloader {
             if (needsRegistration){
                 registerIdWithModalLoading(modelId)
             }
+            modeMap[ModelTransformationMode.FIRST_PERSON_RIGHT_HAND] = modelId
+            modeMap[ModelTransformationMode.FIRST_PERSON_LEFT_HAND] = modelId
+            modeMap[ModelTransformationMode.THIRD_PERSON_RIGHT_HAND] = modelId
+            modeMap[ModelTransformationMode.THIRD_PERSON_LEFT_HAND] = modelId
+            return this
+        }
+
+        fun withAll(modelId: ModelIdentifier, needsRegistration: Boolean = false): ModelIdentifierPerModes{
+            if (needsRegistration){
+                registerIdWithModalLoading(modelId)
+            }
+            modeMap[ModelTransformationMode.GUI] = modelId
+            modeMap[ModelTransformationMode.FIXED] = modelId
+            modeMap[ModelTransformationMode.GROUND] = modelId
+            modeMap[ModelTransformationMode.HEAD] = modelId
             modeMap[ModelTransformationMode.FIRST_PERSON_RIGHT_HAND] = modelId
             modeMap[ModelTransformationMode.FIRST_PERSON_LEFT_HAND] = modelId
             modeMap[ModelTransformationMode.THIRD_PERSON_RIGHT_HAND] = modelId

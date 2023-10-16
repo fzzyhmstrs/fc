@@ -64,10 +64,11 @@ class ModifierContainer(val livingEntity: LivingEntity, innateModifiers: ArrayLi
     fun<T: AbstractModifier<T>> getCompiledModifiers(type: ModifierHelperType<T>): AbstractModifier.CompiledModifiers<T>?{
         return if (dirtyTypes.contains(type)){
             dirtyTypes.remove(type)
-            val list: MutableList<Identifier> = mutableListOf()
+            val list: MutableList<net.minecraft.util.Identifier> = mutableListOf()
             list.addAll(normalMultimap.get(type) ?: listOf())
             list.addAll(innateMultimap.get(type) ?: listOf())
-            compiledMap.put(type, type.compile(list, null))/*.also { println("Getting compiled modifier $it for $livingEntity") }*/ as AbstractModifier.CompiledModifiers<T>
+            compiledMap[type] = type.compile(list, null)
+            compiledMap[type]/*.also { println("Getting pre-compiled modifier $it for $livingEntity") }*/ as? AbstractModifier.CompiledModifiers<T>
         } else {
             compiledMap[type]/*.also { println("Getting pre-compiled modifier $it for $livingEntity") }*/ as? AbstractModifier.CompiledModifiers<T>
         }

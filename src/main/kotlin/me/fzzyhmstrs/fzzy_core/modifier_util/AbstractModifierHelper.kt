@@ -325,7 +325,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     }
 
     fun modifiersInitialized(stack: ItemStack, nbt: NbtCompound): Boolean{
-        return nbt.contains(NbtKeys.MOD_INIT.str() + stack.translationKey)
+        return nbt.contains(getType().getModifierInitKey() + stack.translationKey)
     }
 
     fun modifiersInitialized(stack: ItemStack): Boolean{
@@ -348,16 +348,16 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         } else {
             listOf()
         }
+        val nbt = stack.orCreateNbt
         if (list.isNotEmpty()){
-            val nbt = stack.orCreateNbt
-            if (!nbt.contains(NbtKeys.MOD_INIT.str() + stack.translationKey)){
+            if (!nbt.contains(getType().getModifierInitKey() + stack.translationKey)){
                 for (mod in list) {
                     addModifierToNbt(stack,mod,nbt)
                 }
-                nbt.putBoolean(NbtKeys.MOD_INIT.str() + stack.translationKey,true)
+                nbt.putBoolean(getType().getModifierInitKey() + stack.translationKey,true)
             }
         }
-        return list
+        return getModifiersFromNbt(stack)
     }
 
     /*protected fun initializeModifiers(nbt: NbtCompound, id: Long){
@@ -372,7 +372,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         }
     }*/
 
-    fun getModifiers(stack: ItemStack): List<Identifier>{
+    open fun getModifiers(stack: ItemStack): List<Identifier>{
         val nbt = stack.nbt?:return listOf()
         //var id = Nbt.getItemStackId(stack)
         /*if (id == -1L){
