@@ -22,14 +22,14 @@ abstract class ModifierHelperType <T: AbstractModifier<T>> (val id: Identifier, 
         return helper.compile(input, predicateId)
     }
 
-    open fun add(stack: ItemStack, modifierContainer: ModifierContainer){
+    open fun add(stack: ItemStack, id: SlotId, modifierContainer: ModifierContainer){
         //println("Adding modifiers to ${modifierContainer.livingEntity} from stack $stack")
         for (mod in helper.modifiersFromNbt(stack)) {
             modifierContainer.addModifier(mod, this)
         }
     }
 
-    open fun remove(stack: ItemStack, modifierContainer: ModifierContainer){
+    open fun remove(stack: ItemStack, id: SlotId, modifierContainer: ModifierContainer){
         for (mod in helper.modifiersFromNbt(stack)) {
             modifierContainer.removeModifier(mod, this)
         }
@@ -72,14 +72,14 @@ abstract class ModifierHelperType <T: AbstractModifier<T>> (val id: Identifier, 
             return Registry.register(REGISTRY,type.id,type)
         }
 
-        fun add(stack: ItemStack, modifierContainer: ModifierContainer){
+        fun add(stack: ItemStack, id: SlotId, modifierContainer: ModifierContainer){
             for (type in REGISTRY){
-                type.add(stack, modifierContainer)
+                type.add(stack, id, modifierContainer)
             }
         }
-        fun remove(stack: ItemStack, modifierContainer: ModifierContainer){
+        fun remove(stack: ItemStack, id: SlotId, modifierContainer: ModifierContainer){
             for (type in REGISTRY){
-                type.remove(stack, modifierContainer)
+                type.remove(stack, id, modifierContainer)
             }
         }
 
