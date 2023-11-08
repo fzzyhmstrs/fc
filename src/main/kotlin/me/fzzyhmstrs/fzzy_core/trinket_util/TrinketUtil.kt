@@ -25,4 +25,8 @@ object TrinketUtil {
         }
         return listOf()
     }
+
+    fun getSlotRefString(ref: SlotReference): String {
+        return ref.inventory().getSlotType().getGroup() + "/" + ref.inventory().getSlotType().getName() + "/" + ref.index();
+    }
 }
