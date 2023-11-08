@@ -8,4 +8,9 @@ object TrinketChecker {
         FabricLoader.getInstance().isModLoaded("trinkets")
     }
 
+    fun getTrinketStacks(user: LivingEntity): List<ItemStack>{
+        if (trinketsLoaded)
+            return TrinketUtil.getTrinketStacks(user)
+        return listOf()
+    }
 }
