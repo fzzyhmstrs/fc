@@ -52,15 +52,17 @@ public class LivingEntityMixin implements ModifierHolding {
     }
 
     @WrapOperation(method = "getEquipmentChanges", at = @At(value = "INVOKE", target = "net/minecraft/entity/LivingEntity.areItemsDifferent (Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z"))
-    private boolean fzzy_core_applyModifierChanges(LivingEntity instance, ItemStack old, ItemStack young, Operation<Boolean> operation){
+    private boolean fzzy_core_applyModifierChanges(LivingEntity instance, ItemStack old, ItemStack young, Operation<Boolean> operation, @Local EquipmentSlot equipmentSlot){
         boolean bl = operation.call(instance, old, young);
         if (bl){
             if (ModifierHelperType.Companion.areModifiersEqual(old, young)) return true;
             if (!old.isEmpty()){
-                ModifierHelperType.Companion.remove(old, fzzy_core_getModifierContainer());
+                SlotId id = SlotId.INSTANCE.getIdBySlot(equipmentSlot)
+                ModifierHelperType.Companion.remove(old, id, fzzy_core_getModifierContainer());
             }
             if (!young.isEmpty()){
-                ModifierHelperType.Companion.add(young, fzzy_core_getModifierContainer());
+                SlotId id = SlotId.INSTANCE.getIdBySlot(equipmentSlot)
+                ModifierHelperType.Companion.add(young, id, fzzy_core_getModifierContainer());
             }
         }
         return bl;
