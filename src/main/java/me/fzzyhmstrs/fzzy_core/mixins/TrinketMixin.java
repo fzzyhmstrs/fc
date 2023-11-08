@@ -18,12 +18,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public interface TrinketMixin extends Modifiable {
     @Inject(method = "onEquip", at = @At("TAIL"))
     private void fzzy_core_processOnEquipForAugments(ItemStack stack, SlotReference slot, LivingEntity entity, CallbackInfo ci){
-        ModifierHelperType.Companion.add(stack, ((ModifierHolding) entity).fzzy_core_getModifierContainer());
+        val id = SlotId(TrinketUtil.INSTANCE.getSlotRefString(slot))
+        ModifierHelperType.Companion.add(stack, id, ((ModifierHolding) entity).fzzy_core_getModifierContainer());
     }
 
     @Inject(method = "onUnequip", at = @At("TAIL"))
     private void fzzy_core_processOnUnequipForAugments(ItemStack stack, SlotReference slot, LivingEntity entity, CallbackInfo ci){
-        ModifierHelperType.Companion.remove(stack, ((ModifierHolding) entity).fzzy_core_getModifierContainer());
+        val id = SlotId(TrinketUtil.INSTANCE.getSlotRefString(slot))
+        ModifierHelperType.Companion.remove(stack, id, ((ModifierHolding) entity).fzzy_core_getModifierContainer());
     }
 
 }
