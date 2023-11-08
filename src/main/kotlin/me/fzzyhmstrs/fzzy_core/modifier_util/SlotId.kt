@@ -25,7 +25,18 @@ open class SlotId(private val id: String) {
         val MAINHAND = SlotId(EquipmentSlot.MAINHAND.getName())
         val OFFHAND = SlotId(EquipmentSlot.CHEST.getName())
 
-        private val slotIds: Array<SlotId> = listOf(HEAD, CHEST, LEGS, FEET, MAINHAND, OFFHAND).toTypedArray()
+        private val slotIds: Array<SlotId>
+
+        init{
+            val list: MutableList<SlotId> = mutableListOf()
+            list.set(EquipmentSlot.HEAD.ordinal,HEAD)
+            list.set(EquipmentSlot.CHEST.ordinal,CHEST)
+            list.set(EquipmentSlot.LEGS.ordinal,LEGS)
+            list.set(EquipmentSlot.FEET.ordinal,FEET)
+            list.set(EquipmentSlot.MAINHAND.ordinal,MAINHAND)
+            list.set(EquipmentSlot.OFFHAND.ordinal,OFFHAND)
+            slotIds = list.toTypedArray()
+        }
 
         fun getIdBySlot(slot: EquipmentSlot): SlotId{
             return slotIds[slot.ordinal]
