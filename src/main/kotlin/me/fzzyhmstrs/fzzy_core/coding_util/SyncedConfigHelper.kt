@@ -53,13 +53,13 @@ object SyncedConfigHelper {
             if (f.exists()) {
                 return gson.fromJson(f.readLines().joinToString(""), T::class.java)
             } else if (!f.createNewFile()) {
-                println("Failed to create default config file ($file), using default config.")
+                FC.LOGGER.error("Failed to create default config file ($file), using default config.")
             } else {
                 f.writeText(gson.toJson(configClass()))
             }
             return configClass()
         } catch (e: Exception) {
-            println("Failed to read config file! Using default values: " + e.message)
+            FC.LOGGER.error("Failed to read config file! Using default values: " + e.message)
             return configClass()
         }
     }
@@ -82,7 +82,7 @@ object SyncedConfigHelper {
                         return gson.fromJson(f.readLines().joinToString(""), T::class.java)
                     } else if (!f.createNewFile()){
                         //don't delete old file if the new one can't be generated to take its place
-                        println("Failed to create new config file ($file), using old config with new defaults.")
+                        FC.LOGGER.error("Failed to create new config file ($file), using old config with new defaults.")
                     } else {
                         p.delete() //attempts to delete the now useless old config version file
                         f.writeText(gson.toJson(newClass))
@@ -96,7 +96,7 @@ object SyncedConfigHelper {
                 return readOrCreate(file,child, base, configClass)
             }
         } catch (e: Exception) {
-            println("Failed to read config file! Using default values: " + e.message)
+            FC.LOGGER.error("Failed to read config file! Using default values: " + e.message)
             return configClass()
         }
     }
@@ -111,7 +111,7 @@ object SyncedConfigHelper {
             File(FabricLoader.getInstance().configDir.toFile(), base)
         }
         if (!dir.exists() && !dir.mkdirs()) {
-            println("Could not create directory, using default configs.")
+            FC.LOGGER.error("Could not create directory, using default configs.")
             return Pair(dir,false)
         }
         return Pair(dir,true)
@@ -143,7 +143,7 @@ object SyncedConfigHelper {
             val textLines: List<String> = readmeText()
             val dirPair = makeDir("", base)
             if (!dirPair.second){
-                println("Couldn't make directory for storing the readme")
+                FC.LOGGER.error("Couldn't make directory for storing the readme")
             }
             val f = File(dirPair.first,file)
             val fw = FileWriter(f)

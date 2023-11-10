@@ -3,16 +3,20 @@ package me.fzzyhmstrs.fzzy_core.item_util
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSyntaxException
+import me.fzzyhmstrs.fzzy_core.FC
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtHelper
 import net.minecraft.nbt.NbtOps
 import net.minecraft.nbt.StringNbtReader
+import net.minecraft.recipe.ShapedRecipe
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
+import net.minecraft.util.JsonHelper
 
 class FzzyIngredient private constructor(private val checks: List<Checker>){
     
@@ -33,6 +37,25 @@ class FzzyIngredient private constructor(private val checks: List<Checker>){
     }
 
     companion object{
+
+        fun outputFromJson(json: JsonObject): ItemStack {
+            val item = ShapedRecipe.getItem(json)
+            val i = JsonHelper.getInt(json, "count", 1)
+            if (i < 1) {
+                throw JsonSyntaxException("Invalid output count: $i")
+            }
+            if (json.has("nbt")) {
+                try {
+                    val nbtString = json.getAsJsonPrimitive("nbt").asString
+                    val nbt = StringNbtReader.parse(nbtString)
+                    return ItemStack(item, i).also { it.nbt = nbt }
+                } catch (e: Exception){
+                    FC.LOGGER.error("Invalid 'data' string in recipe json")
+                    e.printStackTrace()
+                }
+            }
+            return ItemStack(item, i)
+        }
 
         fun fromJson(json: JsonElement): FzzyIngredient{
             if (json.isJsonObject){

@@ -13,6 +13,8 @@ import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.util.Identifier
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import kotlin.random.Random
 
 
@@ -20,6 +22,7 @@ object FC: ModInitializer {
     const val MOD_ID = "fzzy_core"
     val fcRandom = Random(System.currentTimeMillis())
     val fallbackId = Identifier("vanishing_curse")
+    val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
 
     val MODIFIER_HOLDER = Registry.register(Registries.ITEM, Identifier(MOD_ID,"modifier_holder"),ModifierHolderItem())
 
