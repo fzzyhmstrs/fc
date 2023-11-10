@@ -1,19 +1,21 @@
 package me.fzzyhmstrs.fzzy_core.modifier_util
 
+import net.minecraft.entity.EquipmentSlot
 import java.util.*
 
 open class SlotId(private val id: String) {
 
     fun getUUID(prefix: String): UUID{
-        return UUID.nameUUIDFromBytes((prefix + id).getBytes())
+        return UUID.nameUUIDFromBytes("$prefix@$id".toByteArray())
     }
 
-    override hashcode(): Int{
-        return id.hashcode()
+    override fun hashCode(): Int {
+        return id.hashCode()
     }
 
-    override equals(other: Any?): Boolean{
-        return (other as? SlotId)?.id == this.id
+    override fun equals(other: Any?): Boolean{
+        if (other !is SlotId) return false
+        return other.id == this.id
     }
 
     companion object{
@@ -29,12 +31,12 @@ open class SlotId(private val id: String) {
 
         init{
             val list: MutableList<SlotId> = mutableListOf()
-            list.set(EquipmentSlot.HEAD.ordinal,HEAD)
-            list.set(EquipmentSlot.CHEST.ordinal,CHEST)
-            list.set(EquipmentSlot.LEGS.ordinal,LEGS)
-            list.set(EquipmentSlot.FEET.ordinal,FEET)
-            list.set(EquipmentSlot.MAINHAND.ordinal,MAINHAND)
-            list.set(EquipmentSlot.OFFHAND.ordinal,OFFHAND)
+            list.add(MAINHAND)
+            list.add(OFFHAND)
+            list.add(FEET)
+            list.add(LEGS)
+            list.add(CHEST)
+            list.add(HEAD)
             slotIds = list.toTypedArray()
         }
 

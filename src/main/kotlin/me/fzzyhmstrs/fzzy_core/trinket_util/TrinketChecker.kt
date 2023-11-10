@@ -1,6 +1,8 @@
 package me.fzzyhmstrs.fzzy_core.trinket_util
 
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.entity.LivingEntity
+import net.minecraft.item.ItemStack
 
 object TrinketChecker {
 

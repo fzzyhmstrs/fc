@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_core.trinket_util
 
+import dev.emi.trinkets.api.SlotReference
 import dev.emi.trinkets.api.Trinket
 import dev.emi.trinkets.api.TrinketsApi
 import net.minecraft.entity.LivingEntity
@@ -27,6 +28,6 @@ object TrinketUtil {
     }
 
     fun getSlotRefString(ref: SlotReference): String {
-        return ref.inventory().getSlotType().getGroup() + "/" + ref.inventory().getSlotType().getName() + "/" + ref.index();
+        return ref.inventory().slotType.group + "/" + ref.inventory().slotType.name + "/" + ref.index();
     }
 }

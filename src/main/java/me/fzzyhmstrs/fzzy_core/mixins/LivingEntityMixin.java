@@ -3,9 +3,12 @@ package me.fzzyhmstrs.fzzy_core.mixins;
 import com.google.common.collect.ArrayListMultimap;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import me.fzzyhmstrs.fzzy_core.interfaces.ModifierHolding;
 import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierContainer;
 import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierHelperType;
+import me.fzzyhmstrs.fzzy_core.modifier_util.SlotId;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -57,11 +60,11 @@ public class LivingEntityMixin implements ModifierHolding {
         if (bl){
             if (ModifierHelperType.Companion.areModifiersEqual(old, young)) return true;
             if (!old.isEmpty()){
-                SlotId id = SlotId.INSTANCE.getIdBySlot(equipmentSlot)
+                SlotId id = SlotId.Companion.getIdBySlot(equipmentSlot);
                 ModifierHelperType.Companion.remove(old, id, fzzy_core_getModifierContainer());
             }
             if (!young.isEmpty()){
-                SlotId id = SlotId.INSTANCE.getIdBySlot(equipmentSlot)
+                SlotId id = SlotId.Companion.getIdBySlot(equipmentSlot);
                 ModifierHelperType.Companion.add(young, id, fzzy_core_getModifierContainer());
             }
         }
