@@ -83,10 +83,10 @@ abstract class AbstractModifier<T: AbstractModifier<T>>(val modifierId: Identifi
     /*fun getAncestor(): Identifier{
         return ancestor
     }*/
-    fun getAncestor(): AbstractModifier<T>?{
+    fun getAncestor(): T?{
         return getModifierHelper().getModifierByType(ancestor)
     }
-    fun getDescendant(): AbstractModifier<T>?{
+    fun getDescendant(): T?{
         return getModifierHelper().getModifierByType(descendant)
     }
     fun addDescendant(modifier: AbstractModifier<T>){
@@ -98,7 +98,7 @@ abstract class AbstractModifier<T: AbstractModifier<T>>(val modifierId: Identifi
     }
     private fun generateLineage(): List<Identifier>{
 
-        val lineage: MutableList<Identifier> = mutableListOf(this.modifierId)
+        val lineage: MutableList<Identifier> =  mutableListOf(this.modifierId)
         val nextInLineage = ModifierRegistry.get(descendant) ?: return lineage
         lineage.addAll(nextInLineage.getModLineage())
         return lineage

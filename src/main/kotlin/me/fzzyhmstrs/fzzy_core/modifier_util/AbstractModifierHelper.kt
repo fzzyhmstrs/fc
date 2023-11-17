@@ -110,20 +110,31 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         } else {
             getModifiersFromNbt(nbt)
         }
-        val mod = getModifierByType(modifier) ?: return false
-        val descendant = mod.getDescendant()
-        return if (uniqueOnly && mods.contains(modifier)) {
-            if (descendant == null) {
-                false
-            }else{
-                removeModifierWithoutCheck(stack, modifier, nbt)
-                addModifierToNbt(stack,descendant.modifierId,nbt)
-                true
-            }
-        } else {
-            addModifierToNbt(stack,modifier,nbt)
-            true
+        val realMod = getModifierByType(modifier) ?: return false
+        var descendant: T = realMod
+        var highestDescendant: T? = null
+        do {
+            if (mods.contains(descendant.modifierId))
+                highestDescendant = descendant
+            descendant = descendant.getDescendant() ?: continue
+        }  while (descendant.hasDescendant())
+        if (mods.contains(descendant.modifierId))
+            highestDescendant = descendant
+        if (highestDescendant == null){
+            highestDescendant = realMod
         }
+        if (!highestDescendant.hasDescendant() && mods.contains(highestDescendant.modifierId)) {
+            return false
+        }else{
+            if (highestDescendant.hasDescendant() && mods.contains(highestDescendant.modifierId)) {
+                removeModifierWithoutCheck(stack, highestDescendant.modifierId, nbt)
+                val newDescendant = highestDescendant.getDescendant() ?: return false
+                addModifierToNbt(stack, newDescendant.modifierId, nbt)
+            } else {
+                addModifierToNbt(stack, highestDescendant.modifierId, nbt)
+            }
+        }
+        return true
     }
 
     protected fun addModifierWithoutChecking(modifier: Identifier, stack: ItemStack, nbt: NbtCompound){
