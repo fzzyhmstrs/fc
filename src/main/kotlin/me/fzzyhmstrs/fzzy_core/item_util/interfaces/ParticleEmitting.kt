@@ -46,7 +46,9 @@ interface ParticleEmitting{
         internal fun registerClient(){
             ClientPlayNetworking.registerGlobalReceiver(EMITTED_PARTICLE_PACKET) { minecraftClient: MinecraftClient, _, buf, _ ->
                 val id = buf.readString()
-                emitters[id]?.accept(minecraftClient)
+                minecraftClient.execute {
+                    emitters[id]?.accept(minecraftClient)
+                }
             }
         }
     
