@@ -12,6 +12,7 @@ import net.minecraft.entity.attribute.EntityAttribute
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
+import java.util.*
 
 /**
  * interface for use with an item that wants to interact with [Equipment Augments][BaseAugment]. Some methods below interact with any extension of the BaseAugment itself, some are more specialized.
@@ -114,9 +115,10 @@ interface AugmentTasks {
     fun modifierEnchantmentTasks(stack: ItemStack,world: World,entity: Entity, map: Multimap<EntityAttribute, EntityAttributeModifier>){
         if (entity !is LivingEntity) return
         val enchants = EnchantmentHelper.get(stack)
-        for (enchant in enchants.keys){
-            if (enchant is BaseAugment){
-                val modifier: Pair<EntityAttribute, EntityAttributeModifier> = enchant.baseAttributeModifier(stack,entity.uuid)?:continue
+        for (enchant in enchants){
+            val chk = enchant.key
+            if (chk is BaseAugment){
+                val modifier: Pair<EntityAttribute, EntityAttributeModifier> = chk.baseAttributeModifier(stack,enchant.value, UUID.nameUUIDFromBytes(chk.getName(enchant.value).string.toByteArray()))?:continue
                 map.put(modifier.first,modifier.second)
             }
         }

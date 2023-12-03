@@ -52,13 +52,17 @@ abstract class BaseAugment(weight: Rarity, val mxLvl: Int = 1, val target: Encha
         return
     }
 
-    internal fun baseAttributeModifier(stack: ItemStack, uuid: UUID): Pair<EntityAttribute,EntityAttributeModifier>? {
+    internal fun baseAttributeModifier(stack: ItemStack, level: Int, uuid: UUID): Pair<EntityAttribute,EntityAttributeModifier>? {
         if (!checkEnabled()) return null
-        return attributeModifier(stack, uuid)
+        return attributeModifier(stack,level, uuid)
+    }
+
+    open fun attributeModifier(stack: ItemStack,level: Int, uuid: UUID): Pair<EntityAttribute,EntityAttributeModifier>? {
+        return null
     }
 
     open fun attributeModifier(stack: ItemStack, uuid: UUID): Pair<EntityAttribute,EntityAttributeModifier>? {
-        return null
+        return attributeModifier(stack, 1, uuid)
     }
 
     open fun acceptableItemStacks(): MutableList<ItemStack>{
