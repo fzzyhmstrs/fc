@@ -118,7 +118,7 @@ interface AugmentTasks {
         for (enchant in enchants){
             val chk = enchant.key
             if (chk is BaseAugment){
-                val modifier: Pair<EntityAttribute, EntityAttributeModifier> = chk.baseAttributeModifier(stack,enchant.value, UUID.nameUUIDFromBytes(chk.getName(enchant.value).string.toByteArray()))?:continue
+                val modifier: Pair<EntityAttribute, EntityAttributeModifier> = chk.baseAttributeModifier(stack,enchant.value, UUID.nameUUIDFromBytes((stack.name.string + chk.getName(enchant.value).string).toByteArray()))?:continue
                 map.put(modifier.first,modifier.second)
             }
         }
