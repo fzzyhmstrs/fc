@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_core.entity_util
 
+import me.fzzyhmstrs.fzzy_core.mixins.TridentEntityAccessor
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
@@ -10,6 +11,7 @@ import net.minecraft.entity.data.DataTracker
 import net.minecraft.entity.data.TrackedDataHandlerRegistry
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.projectile.PersistentProjectileEntity
+import net.minecraft.entity.projectile.TridentEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.ToolMaterial
 import net.minecraft.nbt.NbtCompound
@@ -25,29 +27,25 @@ import net.minecraft.world.World
 open class BasicCustomTridentEntity(entityType: EntityType<out BasicCustomTridentEntity?>?, world: World?) : TridentEntity(entityType,world) {
     private var dealtDamage = false
     private var damage = 8f
+    private var isOffhand = false
 
     constructor(entityType: EntityType<out BasicCustomTridentEntity?>?,world: World?, owner: LivingEntity?, stack: ItemStack) : this(
         entityType,
         world
     ) {
-        setOwner(owner)
-        this.tridentStack = stack.copy()
+        this.owner = owner
+        (this as TridentEntityAccessor).tridentStack = stack.copy()
     }
 
+    fun setOffhand(){
+        isOffhand = true
+    }
     fun setDamage(damage: Float){
       this.damage = damage
     }
     fun setDamage(material:ToolMaterial) {
         setDamage(material.attackDamage)
     }
-
-    private val isOwnerAlive: Boolean
-        get() {
-            val entity = owner
-            return if (entity == null || !entity.isAlive) {
-                false
-            } else entity !is ServerPlayerEntity || !entity.isSpectator()
-        }
 
     override fun getEntityCollision(currentPosition: Vec3d, nextPosition: Vec3d): EntityHitResult? {
         return if (dealtDamage) {
@@ -110,10 +108,6 @@ open class BasicCustomTridentEntity(entityType: EntityType<out BasicCustomTriden
         playSound(soundEvent, volume, 1.0f)
     }
 
-    private fun hasChanneling(): Boolean {
-        return EnchantmentHelper.hasChanneling(asItemStack())
-    }
-
     override fun tryPickup(player: PlayerEntity): Boolean {
         return when (this.pickupType){
             PickupPermission.ALLOWED -> {
@@ -158,5 +152,15 @@ open class BasicCustomTridentEntity(entityType: EntityType<out BasicCustomTriden
         if (isOwner(player) || owner == null) {
             super.onPlayerCollision(player)
         }
+    }
+
+    override fun writeCustomDataToNbt(nbt: NbtCompound) {
+        super.writeCustomDataToNbt(nbt)
+        nbt.putFloat("TridentDamage", this.damage)
+    }
+
+    override fun readCustomDataFromNbt(nbt: NbtCompound) {
+        super.readCustomDataFromNbt(nbt)
+        this.damage = nbt.getFloat("TridentDamage")
     }
 }

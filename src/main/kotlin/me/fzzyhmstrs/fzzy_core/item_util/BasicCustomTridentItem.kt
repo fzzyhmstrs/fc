@@ -128,6 +128,9 @@ abstract class BasicCustomTridentItem<T: BasicCustomTridentEntity>(private val m
                 if (user.abilities.creativeMode) {
                     glisteringTridentEntity.pickupType = PersistentProjectileEntity.PickupPermission.CREATIVE_ONLY
                 }
+                if(ItemStack.areEqual(user.offHandStack, stack)) {
+                    glisteringTridentEntity.setOffhand()
+                }
                 world.spawnEntity(glisteringTridentEntity)
                 world.playSoundFromEntity(
                     null,
