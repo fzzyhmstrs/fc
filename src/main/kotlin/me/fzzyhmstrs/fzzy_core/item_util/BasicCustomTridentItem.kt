@@ -29,7 +29,8 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 
 abstract class BasicCustomTridentItem<T: BasicCustomTridentEntity>(private val material: ToolMaterial, attackSpeed: Double = -2.9, settings: Settings) : TridentItem(settings.maxDamageIfAbsent(material.durability)), Modifiable {
- private val attributeModifiers: Multimap<EntityAttribute, EntityAttributeModifier>
+
+    private val attributeModifiers: Multimap<EntityAttribute, EntityAttributeModifier>
 
     private val flavorText: MutableText by lazy{
         FlavorHelper.makeFlavorText(this)

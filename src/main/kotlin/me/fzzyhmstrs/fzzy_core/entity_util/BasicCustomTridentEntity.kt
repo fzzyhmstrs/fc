@@ -7,10 +7,7 @@ import net.minecraft.entity.EntityType
 import net.minecraft.entity.LightningEntity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.damage.DamageSource
-import net.minecraft.entity.data.DataTracker
-import net.minecraft.entity.data.TrackedDataHandlerRegistry
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.entity.projectile.PersistentProjectileEntity
 import net.minecraft.entity.projectile.TridentEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.ToolMaterial
@@ -24,17 +21,23 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 
-open class BasicCustomTridentEntity(entityType: EntityType<out BasicCustomTridentEntity?>?, world: World?) : TridentEntity(entityType,world) {
+open class BasicCustomTridentEntity(entityType: EntityType<out BasicCustomTridentEntity>, world: World) : TridentEntity(entityType,world) {
     private var dealtDamage = false
     private var damage = 8f
     private var isOffhand = false
 
-    constructor(entityType: EntityType<out BasicCustomTridentEntity?>?,world: World?, owner: LivingEntity?, stack: ItemStack) : this(
+    constructor(entityType: EntityType<out BasicCustomTridentEntity>,world: World, owner: LivingEntity, stack: ItemStack) : this(
         entityType,
         world
     ) {
         this.owner = owner
+        if (owner is PlayerEntity) {
+            pickupType = PickupPermission.ALLOWED
+        }
+        this.setPosition(owner.x, owner.eyeY - 0.1, owner.z)
         (this as TridentEntityAccessor).tridentStack = stack.copy()
+        dataTracker.set(TridentEntityAccessor.getLOYALTY(), EnchantmentHelper.getLoyalty(stack).toByte())
+        dataTracker.set(TridentEntityAccessor.getENCHANTED(), stack.hasGlint())
     }
 
     fun setOffhand(){
