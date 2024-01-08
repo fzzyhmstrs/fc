@@ -25,4 +25,9 @@ public interface TridentEntityAccessor {
     void setTridentStack(ItemStack tridentStack);
 
 
+    @Accessor
+    boolean isDealtDamage();
+
+    @Accessor
+    void setDealtDamage(boolean dealtDamage);
 }

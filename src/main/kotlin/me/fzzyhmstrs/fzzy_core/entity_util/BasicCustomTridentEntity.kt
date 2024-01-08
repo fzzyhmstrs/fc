@@ -22,8 +22,6 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 
 open class BasicCustomTridentEntity(entityType: EntityType<out BasicCustomTridentEntity>, world: World) : TridentEntity(entityType,world) {
-    private var dealtDamage = false
-    private var damage = 8f
     private var isOffhand = false
 
     constructor(entityType: EntityType<out BasicCustomTridentEntity>,world: World, owner: LivingEntity, stack: ItemStack) : this(
@@ -40,20 +38,22 @@ open class BasicCustomTridentEntity(entityType: EntityType<out BasicCustomTriden
         dataTracker.set(TridentEntityAccessor.getENCHANTED(), stack.hasGlint())
     }
 
+    init {
+        this.damage = 8.0
+    }
+
     fun setOffhand(){
         isOffhand = true
     }
     fun setDamage(damage: Float){
-      this.damage = damage
+        this.damage = damage.toDouble()
     }
     fun setDamage(material:ToolMaterial) {
         setDamage(material.attackDamage)
     }
 
-    override fun getEntityCollision(currentPosition: Vec3d, nextPosition: Vec3d): EntityHitResult? {
-        return if (dealtDamage) {
-            null
-        } else super.getEntityCollision(currentPosition, nextPosition)
+    fun hasDealtDamage(): Boolean{
+        return (this as TridentEntityAccessor).isDealtDamage
     }
 
     open fun onOwnedHit(owner: LivingEntity, target: LivingEntity, source: DamageSource, amount: Float, stack: ItemStack): Float{
@@ -66,7 +66,7 @@ open class BasicCustomTridentEntity(entityType: EntityType<out BasicCustomTriden
     override fun onEntityHit(entityHitResult: EntityHitResult) {
         val blockPos: BlockPos?
         val entity = entityHitResult.entity
-        var f = this.damage
+        var f = this.damage.toFloat()
         val livingEntity: Entity? = owner
         val trident = asItemStack()
         val damageSource = this.damageSources.trident(this, if (owner == null) this else livingEntity)
@@ -78,8 +78,7 @@ open class BasicCustomTridentEntity(entityType: EntityType<out BasicCustomTriden
                 f
             }
         }
-        
-        dealtDamage = true
+        (this as TridentEntityAccessor).isDealtDamage = true
         var soundEvent = SoundEvents.ITEM_TRIDENT_HIT
         if (entity.damage(damageSource, f)) {
             if (entity.type === EntityType.ENDERMAN) {
@@ -155,15 +154,5 @@ open class BasicCustomTridentEntity(entityType: EntityType<out BasicCustomTriden
         if (isOwner(player) || owner == null) {
             super.onPlayerCollision(player)
         }
-    }
-
-    override fun writeCustomDataToNbt(nbt: NbtCompound) {
-        super.writeCustomDataToNbt(nbt)
-        nbt.putFloat("TridentDamage", this.damage)
-    }
-
-    override fun readCustomDataFromNbt(nbt: NbtCompound) {
-        super.readCustomDataFromNbt(nbt)
-        this.damage = nbt.getFloat("TridentDamage")
     }
 }

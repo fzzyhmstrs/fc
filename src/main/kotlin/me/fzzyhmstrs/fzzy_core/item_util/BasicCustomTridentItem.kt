@@ -28,7 +28,11 @@ import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 
-abstract class BasicCustomTridentItem<T: BasicCustomTridentEntity>(private val material: ToolMaterial, attackSpeed: Double = -2.9, settings: Settings) : TridentItem(settings.maxDamageIfAbsent(material.durability)), Modifiable {
+abstract class BasicCustomTridentItem<T: BasicCustomTridentEntity>(private val material: ToolMaterial, attackDamage: Double = 0.0, attackSpeed: Double = -2.9, settings: Settings) : TridentItem(settings.maxDamageIfAbsent(material.durability)), Modifiable {
+
+    constructor(material: ToolMaterial, attackSpeed: Double, settings: Settings): this(material,0.0, attackSpeed, settings)
+
+    constructor(material: ToolMaterial,settings: Settings): this(material,0.0,-2.9,settings)
 
     private val attributeModifiers: Multimap<EntityAttribute, EntityAttributeModifier>
 
@@ -47,7 +51,7 @@ abstract class BasicCustomTridentItem<T: BasicCustomTridentEntity>(private val m
             EntityAttributeModifier(
                 ATTACK_DAMAGE_MODIFIER_ID,
                 "Tool modifier",
-                material.attackDamage.toDouble(),
+                material.attackDamage.toDouble() + attackDamage,
                 EntityAttributeModifier.Operation.ADDITION
             )
         )
@@ -80,6 +84,10 @@ abstract class BasicCustomTridentItem<T: BasicCustomTridentEntity>(private val m
 
     override fun getEnchantability(): Int {
         return material.enchantability
+    }
+
+    fun getMaterial(): ToolMaterial{
+        return material
     }
 
     override fun getUseAction(stack: ItemStack): UseAction {
