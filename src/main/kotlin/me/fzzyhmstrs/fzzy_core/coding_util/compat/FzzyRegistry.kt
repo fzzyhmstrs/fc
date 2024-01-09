@@ -2,6 +2,7 @@ package me.fzzyhmstrs.fzzy_core.coding_util.compat
 
 import com.mojang.serialization.DynamicOps
 import net.minecraft.registry.Registry
+import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import net.minecraft.util.collection.IndexedIterable
@@ -20,6 +21,10 @@ open class FzzyRegistry<T>(protected val registry: Registry<T>): IndexedIterable
 
     fun registry(): Registry<T>{
         return registry
+    }
+
+    fun iterateEntries(tag: TagKey<T>): MutableIterable<RegistryEntry<T>>{
+        return registry.iterateEntries(tag)
     }
 
     open fun get(id: Identifier?): T?{
@@ -46,12 +51,8 @@ open class FzzyRegistry<T>(protected val registry: Registry<T>): IndexedIterable
         return Registry.register(registry,id,entry)
     }
 
-    fun isIn(tag: FzzyTag<T>, entry: T): Boolean{
-        return registry.getEntry(entry).isIn(tag.get())
-    }
-
-    fun tagOf(id: Identifier): FzzyTag<T>{
-        return FzzyTag(this, TagKey.of(registry.key,id))
+    fun tagOf(id: Identifier): TagKey<T>{
+        return TagKey.of(registry.key,id)
     }
 
     override fun iterator(): MutableIterator<T> {

@@ -3,7 +3,6 @@ package me.fzzyhmstrs.fzzy_core.coding_util
 import com.google.common.collect.ImmutableSet
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.datafixers.util.Pair
-import kotlinx.coroutines.withTimeoutOrNull
 import me.fzzyhmstrs.fzzy_core.coding_util.compat.FzzyDefaultedRegistry
 import me.fzzyhmstrs.fzzy_core.coding_util.compat.FzzyRegistry
 import net.fabricmc.fabric.api.`object`.builder.v1.world.poi.PointOfInterestHelper
@@ -18,6 +17,10 @@ import net.minecraft.recipe.RecipeManager
 import net.minecraft.recipe.RecipeType
 import net.minecraft.registry.Registries
 import net.minecraft.registry.entry.RegistryEntry
+import net.minecraft.resource.featuretoggle.FeatureFlags
+import net.minecraft.screen.ScreenHandler
+import net.minecraft.screen.ScreenHandlerType
+import net.minecraft.screen.ScreenHandlerType.Factory
 import net.minecraft.sound.SoundEvent
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -30,7 +33,9 @@ import java.util.function.Predicate
 
 object FzzyPort {
 
+    val ATTRIBUTE = FzzyRegistry(Registries.ATTRIBUTE)
     val BLOCK = FzzyDefaultedRegistry(Registries.BLOCK)
+    val BLOCK_ENTITY_TYPE = FzzyRegistry(Registries.BLOCK_ENTITY_TYPE)
     val ENCHANTMENT = FzzyRegistry(Registries.ENCHANTMENT)
     val ENTITY_TYPE = FzzyDefaultedRegistry(Registries.ENTITY_TYPE)
     val ITEM = FzzyDefaultedRegistry(Registries.ITEM)
@@ -69,6 +74,10 @@ object FzzyPort {
         return ButtonWidget.builder(name, action).position(x, y).size(w, h).build()
     }
 
+    fun getRecipe(id: Identifier, manager: RecipeManager): Optional<out Recipe<*>>{
+        return manager.get(id)
+    }
+
     fun <C: Inventory, R: Recipe<C>> getFirstMatch(type: RecipeType<R>, inventory: C, world: World): Optional<R>{
         return world.recipeManager.getFirstMatch(type,inventory, world)
     }
@@ -81,8 +90,11 @@ object FzzyPort {
         return world.recipeManager.getAllMatches(type,inventory, world)
     }
 
-    fun <C: Inventory, R: Recipe<C>> getAllOfType(type: RecipeType<R>, recipeManager: RecipeManager): List<R>{
+    fun <C: Inventory, R: Recipe<C>> listAllOfType(type: RecipeType<R>, recipeManager: RecipeManager): List<R>{
         return recipeManager.listAllOfType(type)
     }
 
+    fun <T: ScreenHandler> buildHandlerType(factory: Factory<T>): ScreenHandlerType<T>{
+        return ScreenHandlerType(factory,FeatureFlags.VANILLA_FEATURES)
+    }
 }
