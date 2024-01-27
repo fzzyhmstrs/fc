@@ -4,6 +4,7 @@ import net.minecraft.util.math.MathHelper
 import org.joml.Math
 import org.joml.Quaternionf
 
+@Suppress("unused")
 enum class FzzyRotation {
     NEGATIVE_X{
         override fun rotation(r: Float): Quaternionf {
@@ -51,5 +52,14 @@ enum class FzzyRotation {
     abstract fun rotation(r: Float): Quaternionf
     fun degrees(d: Float): Quaternionf{
         return rotation(d * MathHelper.RADIANS_PER_DEGREE)
+    }
+    fun rotationDegrees(d: Float): Quaternionf{
+        return rotation(d * MathHelper.RADIANS_PER_DEGREE)
+    }
+    fun rotationRadians(r: Float): Quaternionf{
+        return rotation(r)
+    }
+    fun radians(r: Float): Quaternionf{
+        return rotation(r)
     }
 }

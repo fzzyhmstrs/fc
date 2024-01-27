@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package me.fzzyhmstrs.fzzy_core.registry
 
 import me.fzzyhmstrs.fzzy_core.interfaces.Modifiable
@@ -29,6 +31,9 @@ object ModifierRegistry {
     /**
      * register a modifier with this.
      */
+    fun values(): Collection<AbstractModifier<*>>{
+        return registry.values
+    }
     fun register(modifier: AbstractModifier<*>){
         val id = modifier.modifierId
         if (registry.containsKey(id)){throw IllegalStateException("AbstractModifier with id $id already present in ModififerRegistry")}
@@ -54,28 +59,30 @@ object ModifierRegistry {
      * get method that wraps in a type check, simplifying retrieval of only the relevant modifier type.
      */
     inline fun <reified T: AbstractModifier<T>> getByType(id: Identifier): T?{
-        val mod = get(id)
-        return if (mod is T){
-            mod
-        } else {
-            null
-        }
+        return get(id) as? T
     }
 
     /**
      * Alternative get-by-type that does reflective class checking.
      */
     fun <T: AbstractModifier<T>>getByType(id: Identifier, classType: Class<T>): T?{
-        val mod = get(id)
-        return if (mod?.javaClass?.isInstance(classType) == true){
-            try {
-                mod as T
+        return try {
+                classType.cast(get(id))
             } catch(e: ClassCastException){
-                return null
+                null
             }
-        } else {
-            null
-        }
+
+    }
+
+    inline fun <reified T: AbstractModifier<T>> getAllByType(): Set<T>{
+        return values().mapNotNull { it as? T}.toSet()
+    }
+
+    /**
+     * Alternative get-by-type that does reflective class checking.
+     */
+    fun <T: AbstractModifier<T>>getAllByType(classType: Class<T>): Set<T>{
+        return values().mapNotNull { try{classType.cast(it)} catch (e: Exception) {null} }.toSet()
     }
 
     /**
@@ -111,6 +118,7 @@ object ModifierRegistry {
         }
         val nbt = NbtCompound()
         nbt.put(type.getModifiersKey(), modList)
+        @Suppress("DEPRECATION")
         return SetNbtLootFunction.builder(nbt)
     }
 }

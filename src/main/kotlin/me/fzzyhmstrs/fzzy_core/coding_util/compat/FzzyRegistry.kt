@@ -9,6 +9,7 @@ import net.minecraft.util.collection.IndexedIterable
 import java.util.Optional
 import java.util.stream.Stream
 
+@Suppress("unused")
 open class FzzyRegistry<T>(protected val registry: Registry<T>): IndexedIterable<T> {
 
     fun <U> keys(ops: DynamicOps<U>): Stream<U>{
@@ -53,6 +54,10 @@ open class FzzyRegistry<T>(protected val registry: Registry<T>): IndexedIterable
 
     fun tagOf(id: Identifier): TagKey<T>{
         return TagKey.of(registry.key,id)
+    }
+
+    fun isInTag(entry: T, tag: TagKey<T>): Boolean{
+        return registry.getEntry(entry).isIn(tag)
     }
 
     override fun iterator(): MutableIterator<T> {
