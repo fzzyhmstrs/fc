@@ -38,16 +38,13 @@ dependencies {
     val fabricKotlinVersion: String by project
     modImplementation("net.fabricmc:fabric-language-kotlin:$fabricKotlinVersion")
 
-    modImplementation("dev.emi:trinkets:3.7.0"){
+    val trinketsVersion: String by project
+    modImplementation("dev.emi:trinkets:${trinketsVersion}"){
         exclude("net.fabricmc.fabric-api")
     }
-    modCompileOnly("dev.onyxstudios.cardinal-components-api:cardinal-components-base:5.2.0")
-    modCompileOnly("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:5.2.0")
-
-
-    implementation("com.github.LlamaLad7.mixinextras:mixinextras-fabric:0.2.0-beta.6")
-    annotationProcessor("com.github.LlamaLad7.mixinextras:mixinextras-fabric:0.2.0-beta.6")
-    include("com.github.LlamaLad7.mixinextras:mixinextras-fabric:0.2.0-beta.6")
+    val ccaVersion: String by project
+    modCompileOnly("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${ccaVersion}")
+    modCompileOnly("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${ccaVersion}")
 
 }
 tasks {
