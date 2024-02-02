@@ -45,7 +45,7 @@ abstract class ModifierHelperType <T: AbstractModifier<T>> (val id: Identifier, 
     abstract fun getModifierInitKey(): String
 
     //for API compat
-    fun initializeModifiers(stack: ItemStack, nbtCompound: NbtCompound, defaultMods: List<Identifier>){
+    fun initializeModifiers(stack: ItemStack, @Suppress("UNUSED_PARAMETER") nbtCompound: NbtCompound, @Suppress("UNUSED_PARAMETER") defaultMods: List<Identifier>){
         getModifierInitializer().initializeModifiers(stack)
     }
 

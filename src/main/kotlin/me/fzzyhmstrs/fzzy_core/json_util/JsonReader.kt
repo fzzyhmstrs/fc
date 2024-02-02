@@ -12,6 +12,7 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import java.util.*
 
+@Suppress("unused")
 object JsonReader {
 
     fun readEntityAttribute(json: JsonElement): Pair<EntityAttribute,EntityAttributeModifier>{

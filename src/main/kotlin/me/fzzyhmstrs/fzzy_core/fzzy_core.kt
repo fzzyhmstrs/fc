@@ -1,8 +1,6 @@
 package me.fzzyhmstrs.fzzy_core
 
-import me.fzzyhmstrs.fzzy_core.coding_util.FzzyPort
 import me.fzzyhmstrs.fzzy_core.config.FcConfig
-import me.fzzyhmstrs.fzzy_core.item_util.ModifierHolderItem
 import me.fzzyhmstrs.fzzy_core.registry.EventRegistry
 import me.fzzyhmstrs.fzzy_core.registry.ItemModelRegistry
 import me.fzzyhmstrs.fzzy_core.registry.LootRegistry
@@ -19,10 +17,7 @@ import kotlin.random.Random
 object FC: ModInitializer {
     const val MOD_ID = "fzzy_core"
     val fcRandom = Random(System.currentTimeMillis())
-    val fallbackId = Identifier("vanishing_curse")
     val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
-
-    val MODIFIER_HOLDER = FzzyPort.ITEM.register(Identifier(MOD_ID,"modifier_holder"),ModifierHolderItem())
 
     override fun onInitialize() {
         FcConfig.initConfig()

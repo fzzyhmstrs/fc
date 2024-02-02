@@ -11,6 +11,7 @@ import net.minecraft.entity.EntityDimensions
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.SpawnGroup
 
+@Suppress("unused")
 open class EntityBuilder {
     fun <T: Entity> buildEntity(group: SpawnGroup, factory: EntityType.EntityFactory<T>, w: Float, h: Float, trackedRange: Int = 5, trackedUpdateRate: Int = 3): EntityType<T> {
         return FabricEntityTypeBuilder.create(group, factory).dimensions(EntityDimensions.fixed(w,h)).trackRangeChunks(trackedRange).trackedUpdateRate(trackedUpdateRate).build()

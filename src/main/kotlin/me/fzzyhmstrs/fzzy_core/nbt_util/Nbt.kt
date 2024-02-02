@@ -12,6 +12,7 @@ import java.util.function.Predicate
 /**
  * simple functions that arrange Nbt functions in a way I prefer and add some functionalities vanilla nbt doens't make as easy
  */
+@Suppress("unused")
 object Nbt {
 
     /**

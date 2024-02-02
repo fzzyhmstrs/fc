@@ -91,6 +91,7 @@ abstract class BaseAugment(weight: Rarity, val mxLvl: Int = 1, val target: Encha
         return false
     }
 
+    @Suppress("unused")
     companion object{
         private val countQueue: MutableMap<UUID,MutableMap<String,Int>> = mutableMapOf()
 

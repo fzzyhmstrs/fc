@@ -8,7 +8,8 @@ import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
 import net.minecraft.util.Identifier
 
-class ModifierContainer(val livingEntity: LivingEntity, innateModifiers: ArrayListMultimap<ModifierHelperType<*>, Identifier> = ArrayListMultimap.create()) {
+@Suppress("UNCHECKED_CAST")
+class ModifierContainer(@Suppress("unused") val livingEntity: LivingEntity, innateModifiers: ArrayListMultimap<ModifierHelperType<*>, Identifier> = ArrayListMultimap.create()) {
 
     private val compiledMap: MutableMap<ModifierHelperType<*>, AbstractModifier.CompiledModifiers<*>> = mutableMapOf()
     private val predicateInstanceMap: MutableMap<ModifierHelperType<*>, MutableMap<Identifier,AbstractModifier.CompiledModifiers<*>>> = mutableMapOf()
@@ -63,7 +64,7 @@ class ModifierContainer(val livingEntity: LivingEntity, innateModifiers: ArrayLi
     fun<T: AbstractModifier<T>> getCompiledModifiers(type: ModifierHelperType<T>): AbstractModifier.CompiledModifiers<T>?{
         return if (dirtyTypes.contains(type)){
             dirtyTypes.remove(type)
-            val list: MutableList<net.minecraft.util.Identifier> = mutableListOf()
+            val list: MutableList<Identifier> = mutableListOf()
             list.addAll(normalMultimap.get(type) ?: listOf())
             list.addAll(innateMultimap.get(type) ?: listOf())
             compiledMap[type] = type.compile(list, null)

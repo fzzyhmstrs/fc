@@ -30,6 +30,7 @@ import java.util.*
 import java.util.function.Predicate
 
 
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 object FzzyPort {
 
     val ATTRIBUTE = FzzyRegistry(Registry.ATTRIBUTE)
@@ -57,7 +58,7 @@ object FzzyPort {
         return VILLAGER_PROFESSION.register(id,VillagerProfession(id.toString(),workstation,jobSite, ImmutableSet.copyOf(harvestableItems), ImmutableSet.copyOf(secondaryJobSites),workSound))
     }
 
-    fun clientBlockSpriteRegister(id: Identifier){
+    fun clientBlockSpriteRegister(@Suppress("UNUSED_PARAMETER") id: Identifier){
         //do absolutely nothing lol
     }
 

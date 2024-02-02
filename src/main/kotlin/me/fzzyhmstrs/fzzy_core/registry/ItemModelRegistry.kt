@@ -27,6 +27,7 @@ import java.util.function.Consumer
  *
  * This registry provides methods for handling both of those situations (rendering differently per Mode, and rendering as an entity)
  */
+@Suppress("unused")
 @Environment(value = EnvType.CLIENT)
 object ItemModelRegistry: SynchronousResourceReloader {
 

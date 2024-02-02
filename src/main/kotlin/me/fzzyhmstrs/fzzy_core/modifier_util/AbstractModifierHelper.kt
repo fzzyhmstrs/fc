@@ -102,7 +102,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         return addModifier(modifier, stack, nbt,uniqueOnly)
     }
 
-    protected fun addModifier(modifier: Identifier, stack: ItemStack, nbt: NbtCompound, uniqueOnly: Boolean = true): Boolean {
+    protected fun addModifier(modifier: Identifier, stack: ItemStack, nbt: NbtCompound, @Suppress("UNUSED_PARAMETER") uniqueOnly: Boolean = true): Boolean {
         //val id = Nbt.makeItemStackId(stack)
         val mods = if (!modifiersInitialized(stack, nbt)) {
             initializeModifiers(stack)
@@ -232,7 +232,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     }
 
     //for API compat
-    fun initializeModifiers(stack: ItemStack, nbt: NbtCompound,  defaultMods: List<Identifier>){
+    fun initializeModifiers(stack: ItemStack, @Suppress("UNUSED_PARAMETER") nbt: NbtCompound, @Suppress("UNUSED_PARAMETER") defaultMods: List<Identifier>){
         initializeModifiers(stack)
     }
 

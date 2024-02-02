@@ -16,6 +16,7 @@ import net.minecraft.tag.TagKey
 import net.minecraft.util.Identifier
 import net.minecraft.util.JsonHelper
 
+@Suppress("unused")
 class FzzyIngredient private constructor(private val checks: List<Checker>){
     
     fun test(stack: ItemStack): Boolean{
