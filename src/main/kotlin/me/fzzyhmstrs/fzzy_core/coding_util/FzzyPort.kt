@@ -5,7 +5,9 @@ import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.datafixers.util.Pair
 import me.fzzyhmstrs.fzzy_core.coding_util.compat.FzzyDefaultedRegistry
 import me.fzzyhmstrs.fzzy_core.coding_util.compat.FzzyRegistry
+import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
 import net.fabricmc.fabric.api.`object`.builder.v1.world.poi.PointOfInterestHelper
+import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBlockTags
 import net.minecraft.block.Block
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ButtonWidget.PressAction
@@ -21,8 +23,11 @@ import net.minecraft.screen.ScreenHandlerType.Factory
 import net.minecraft.sound.SoundEvent
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.BlockPos
+import net.minecraft.util.registry.DefaultedRegistry
 import net.minecraft.util.registry.Registry
 import net.minecraft.util.registry.RegistryEntry
+import net.minecraft.util.registry.SimpleRegistry
 import net.minecraft.village.VillagerProfession
 import net.minecraft.world.World
 import net.minecraft.world.poi.PointOfInterestType
@@ -96,5 +101,50 @@ object FzzyPort {
 
     fun <T: ScreenHandler> buildHandlerType(factory: Factory<T>): ScreenHandlerType<T>{
         return ScreenHandlerType(factory)
+    }
+
+    inline fun <reified T> simpleRegistry(registryId: Identifier): SimpleRegistry<T>{
+        return FabricRegistryBuilder.createSimple(T::class.java, registryId).buildAndRegister()
+    }
+
+    inline fun <reified T> defaultedRegistry(registryId: Identifier, defaultId: Identifier): DefaultedRegistry<T>{
+        return FabricRegistryBuilder.createDefaulted(T::class.java, registryId, defaultId).buildAndRegister()
+    }
+
+    fun calculateEnchantingShelves(world: World, pos: BlockPos): Int{
+        var i = 0
+        var j: Int = -1
+        while (j <= 1) {
+            for (k in -1..1) {
+                if (j == 0 && k == 0 || !world.isAir(pos.add(k, 0, j)) || !world.isAir(
+                        pos.add(
+                            k,
+                            1,
+                            j
+                        )
+                    )
+                ) continue
+                if (world.getBlockState(pos.add(k * 2, 0, j * 2)).isIn(ConventionalBlockTags.BOOKSHELVES)) {
+                    ++i
+                }
+                if (world.getBlockState(pos.add(k * 2, 1, j * 2)).isIn(ConventionalBlockTags.BOOKSHELVES)) {
+                    ++i
+                }
+                if (k == 0 || j == 0) continue
+                if (world.getBlockState(pos.add(k * 2, 0, j)).isIn(ConventionalBlockTags.BOOKSHELVES)) {
+                    ++i
+                }
+                if (world.getBlockState(pos.add(k * 2, 1, j)).isIn(ConventionalBlockTags.BOOKSHELVES)) {
+                    ++i
+                }
+                if (world.getBlockState(pos.add(k, 0, j * 2)).isIn(ConventionalBlockTags.BOOKSHELVES)) {
+                    ++i
+                }
+                if (!world.getBlockState(pos.add(k, 1, j * 2)).isIn(ConventionalBlockTags.BOOKSHELVES)) continue
+                ++i
+            }
+            ++j
+        }
+        return i
     }
 }
