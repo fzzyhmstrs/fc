@@ -7,8 +7,8 @@ import me.fzzyhmstrs.fzzy_core.coding_util.compat.FzzyDefaultedRegistry
 import me.fzzyhmstrs.fzzy_core.coding_util.compat.FzzyRegistry
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
 import net.fabricmc.fabric.api.`object`.builder.v1.world.poi.PointOfInterestHelper
-import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBlockTags
 import net.minecraft.block.Block
+import net.minecraft.block.EnchantingTableBlock
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ButtonWidget.PressAction
 import net.minecraft.client.render.GameRenderer
@@ -19,6 +19,7 @@ import net.minecraft.recipe.RecipeManager
 import net.minecraft.recipe.RecipeType
 import net.minecraft.registry.DefaultedRegistry
 import net.minecraft.registry.Registries
+import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.SimpleRegistry
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.resource.featuretoggle.FeatureFlags
@@ -36,6 +37,7 @@ import java.util.Optional
 import java.util.function.Predicate
 
 
+@Suppress("unused")
 object FzzyPort {
 
     val ATTRIBUTE = FzzyRegistry(Registries.ATTRIBUTE)
@@ -63,7 +65,7 @@ object FzzyPort {
         return VILLAGER_PROFESSION.register(id,VillagerProfession(id.toString(),workstation,jobSite, ImmutableSet.copyOf(harvestableItems), ImmutableSet.copyOf(secondaryJobSites),workSound))
     }
 
-    fun clientBlockSpriteRegister(id: Identifier){
+    fun clientBlockSpriteRegister(@Suppress("UNUSED_PARAMETER") id: Identifier){
         //do absolutely nothing lol
     }
 
@@ -104,46 +106,18 @@ object FzzyPort {
     }
 
     inline fun <reified T> simpleRegistry(registryId: Identifier): SimpleRegistry<T> {
-        return FabricRegistryBuilder.createSimple(T::class.java, registryId).buildAndRegister()
+        return FabricRegistryBuilder.createSimple(RegistryKey.ofRegistry<T>(registryId)).buildAndRegister()
     }
 
     inline fun <reified T> defaultedRegistry(registryId: Identifier, defaultId: Identifier): DefaultedRegistry<T>{
-        return FabricRegistryBuilder.createDefaulted(T::class.java, registryId, defaultId).buildAndRegister()
+        return FabricRegistryBuilder.createDefaulted(RegistryKey.ofRegistry<T>(registryId), defaultId).buildAndRegister()
     }
 
     fun calculateEnchantingShelves(world: World, pos: BlockPos): Int{
         var i = 0
-        var j: Int = -1
-        while (j <= 1) {
-            for (k in -1..1) {
-                if (j == 0 && k == 0 || !world.isAir(pos.add(k, 0, j)) || !world.isAir(
-                        pos.add(
-                            k,
-                            1,
-                            j
-                        )
-                    )
-                ) continue
-                if (world.getBlockState(pos.add(k * 2, 0, j * 2)).isIn(ConventionalBlockTags.BOOKSHELVES)) {
-                    ++i
-                }
-                if (world.getBlockState(pos.add(k * 2, 1, j * 2)).isIn(ConventionalBlockTags.BOOKSHELVES)) {
-                    ++i
-                }
-                if (k == 0 || j == 0) continue
-                if (world.getBlockState(pos.add(k * 2, 0, j)).isIn(ConventionalBlockTags.BOOKSHELVES)) {
-                    ++i
-                }
-                if (world.getBlockState(pos.add(k * 2, 1, j)).isIn(ConventionalBlockTags.BOOKSHELVES)) {
-                    ++i
-                }
-                if (world.getBlockState(pos.add(k, 0, j * 2)).isIn(ConventionalBlockTags.BOOKSHELVES)) {
-                    ++i
-                }
-                if (!world.getBlockState(pos.add(k, 1, j * 2)).isIn(ConventionalBlockTags.BOOKSHELVES)) continue
-                ++i
-            }
-            ++j
+        for (blockPos in EnchantingTableBlock.POWER_PROVIDER_OFFSETS) {
+            if (!EnchantingTableBlock.canAccessPowerProvider(world, pos, blockPos)) continue
+            ++i
         }
         return i
     }

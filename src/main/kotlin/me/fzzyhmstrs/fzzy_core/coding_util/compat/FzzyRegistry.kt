@@ -61,8 +61,7 @@ open class FzzyRegistry<T>(protected val registry: Registry<T>): IndexedIterable
     }
 
     fun getEntry(entry: T): RegistryEntry<T>{
-        val id = registry.getRawId(entry)
-        return registry.getEntry(id).takeIf { it.isPresent }?.get() ?: RegistryEntry.of(entry)
+        return registry.getEntry(entry)
     }
 
     override fun iterator(): MutableIterator<T> {
