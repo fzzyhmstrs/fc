@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_core.modifier_util
 
 import me.fzzyhmstrs.fzzy_core.FC
-import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
+import me.fzzyhmstrs.fzzy_core.coding_util.FzzyPort
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.Registry
@@ -65,7 +65,7 @@ abstract class ModifierHelperType <T: AbstractModifier<T>> (val id: Identifier, 
     }
 
     companion object{
-        val REGISTRY = FabricRegistryBuilder.createSimple(RegistryKey.ofRegistry<ModifierHelperType<*>>(Identifier(FC.MOD_ID,"modifier_helper_type"))).buildAndRegister()
+        val REGISTRY = FzzyPort.simpleRegistry<ModifierHelperType<*>>(Identifier(FC.MOD_ID,"modifier_helper_type"))
         val EMPTY_TYPE = Registry.register(REGISTRY,EmptyType.id,EmptyType)
 
         fun<T: AbstractModifier<T>> register(type: ModifierHelperType<T>): ModifierHelperType<T>{
