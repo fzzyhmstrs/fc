@@ -59,7 +59,7 @@ object JsonReader {
             ?: throw IllegalStateException("Modifier Json has a bonus with a modifier value [$json] that can't be found in the modifier registry.")
     }
 
-    fun readFormatting(json: JsonObject,name: String, fallback: List<Formatting>): List<Formatting>{
+    fun readFormatting(json: JsonObject, name: String, @Suppress("UNUSED_PARAMETER") fallback: List<Formatting>): List<Formatting>{
         return if (json.has(name)) {
             try {
                 json.getAsJsonArray(name)

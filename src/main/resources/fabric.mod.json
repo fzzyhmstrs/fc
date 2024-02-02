@@ -22,12 +22,6 @@
         "value": "me.fzzyhmstrs.fzzy_core.FC"
       }
     ],
-    "preLaunch": [
-      {
-        "adapter": "kotlin",
-        "value": "me.fzzyhmstrs.fzzy_core.FCPreLaunch"
-      }
-    ],
     "client": [
       {
         "adapter": "kotlin",

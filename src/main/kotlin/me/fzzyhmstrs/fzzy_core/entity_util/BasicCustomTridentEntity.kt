@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package me.fzzyhmstrs.fzzy_core.entity_util
 
 import me.fzzyhmstrs.fzzy_core.coding_util.compat.FzzyDamage

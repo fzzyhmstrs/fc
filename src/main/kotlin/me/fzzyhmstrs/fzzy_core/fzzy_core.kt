@@ -7,8 +7,6 @@ import me.fzzyhmstrs.fzzy_core.registry.LootRegistry
 import me.fzzyhmstrs.fzzy_core.registry.ModifierRegistry
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
-import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint
-import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.random.Random
@@ -27,6 +25,7 @@ object FC: ModInitializer {
     }
 }
 
+@Suppress("unused")
 object FCC: ClientModInitializer {
     val acRandom = Random(System.currentTimeMillis())
 
@@ -34,11 +33,4 @@ object FCC: ClientModInitializer {
         ItemModelRegistry.registerAll()
         EventRegistry.registerClient()
     }
-}
-
-object FCPreLaunch: PreLaunchEntrypoint{
-
-    override fun onPreLaunch() {
-    }
-
 }
