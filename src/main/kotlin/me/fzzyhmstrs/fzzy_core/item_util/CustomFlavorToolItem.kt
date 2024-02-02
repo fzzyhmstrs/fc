@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.fzzyhmstrs.fzzy_core.item_util
 
 import me.fzzyhmstrs.fzzy_core.coding_util.AcText

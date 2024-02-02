@@ -4,6 +4,7 @@ import net.minecraft.block.OreBlock
 import net.minecraft.util.math.intprovider.ConstantIntProvider
 import net.minecraft.util.math.intprovider.IntProvider
 
+@Suppress("unused")
 open class XpDroppingBlock(settings: Settings, experience: IntProvider): OreBlock(settings, experience) {
     constructor(settings: Settings): this(settings,ConstantIntProvider.create(0))
 }

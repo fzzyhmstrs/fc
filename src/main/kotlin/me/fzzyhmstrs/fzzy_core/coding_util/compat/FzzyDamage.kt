@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package me.fzzyhmstrs.fzzy_core.coding_util.compat
 
 import net.minecraft.entity.Entity
@@ -12,87 +14,87 @@ import net.minecraft.world.explosion.Explosion
 
 object FzzyDamage{
 
-    fun inFire(origin: Entity): DamageSource {
+    fun inFire(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.IN_FIRE
     }
 
-    fun lightning(origin: Entity): DamageSource {
+    fun lightning(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.LIGHTNING_BOLT
     }
 
-    fun onFire(origin: Entity): DamageSource {
+    fun onFire(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.ON_FIRE
     }
 
-    fun lava(origin: Entity): DamageSource {
+    fun lava(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.LAVA
     }
 
-    fun hotFloor(origin: Entity): DamageSource {
+    fun hotFloor(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.HOT_FLOOR
     }
 
-    fun inWall(origin: Entity): DamageSource {
+    fun inWall(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.IN_WALL
     }
 
-    fun cramming(origin: Entity): DamageSource {
+    fun cramming(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.CRAMMING
     }
 
-    fun drown(origin: Entity): DamageSource {
+    fun drown(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.DROWN
     }
 
-    fun starve(origin: Entity): DamageSource {
+    fun starve(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.STARVE
     }
 
-    fun cactus(origin: Entity): DamageSource {
+    fun cactus(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.CACTUS
     }
 
-    fun fall(origin: Entity): DamageSource {
+    fun fall(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.FALL
     }
 
-    fun flyIntoWall(origin: Entity): DamageSource {
+    fun flyIntoWall(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.FLY_INTO_WALL
     }
 
-    fun outOfWorld(origin: Entity): DamageSource {
+    fun outOfWorld(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.OUT_OF_WORLD
     }
 
-    fun generic(origin: Entity): DamageSource {
+    fun generic(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.GENERIC
     }
     
-    fun magic(origin: Entity): DamageSource {
+    fun magic(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.MAGIC
     }
 
-    fun wither(origin: Entity): DamageSource {
+    fun wither(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.WITHER
     }
 
-    fun dragonBreath(origin: Entity): DamageSource {
+    fun dragonBreath(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.DRAGON_BREATH
     }
 
-    fun dryOut(origin: Entity): DamageSource {
+    fun dryOut(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.DRYOUT
     }
 
-    fun sweetBerry(origin: Entity): DamageSource {
+    fun sweetBerry(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.SWEET_BERRY_BUSH
     }
 
-    fun freeze(origin: Entity): DamageSource {
+    fun freeze(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.FREEZE
     }
 
-    fun stalagmite(origin: Entity): DamageSource {
+    fun stalagmite(@Suppress("UNUSED_PARAMETER") origin: Entity): DamageSource {
         return DamageSource.STALAGMITE
     }
 
@@ -144,11 +146,11 @@ object FzzyDamage{
         return DamageSource.thorns(source)
     }
 
-    fun explosion(origin: Entity, explosion: Explosion?): DamageSource{
+    fun explosion(@Suppress("UNUSED_PARAMETER") origin: Entity, explosion: Explosion?): DamageSource{
         return DamageSource.explosion(explosion)
     }
 
-    fun explosion(origin: Entity, source: Entity? = origin, attacker: Entity? = origin): DamageSource{
+    fun explosion(origin: Entity, @Suppress("UNUSED_PARAMETER") source: Entity? = origin, attacker: Entity? = origin): DamageSource{
         return DamageSource.explosion(attacker as? LivingEntity)
     }
 

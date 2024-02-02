@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package me.fzzyhmstrs.fzzy_core.coding_util
 
 import net.fabricmc.fabric.api.`object`.builder.v1.block.FabricBlockSettings
