@@ -10,9 +10,7 @@ import net.minecraft.client.model.Model
 import net.minecraft.client.model.ModelPart
 import net.minecraft.client.render.entity.model.EntityModelLayer
 import net.minecraft.client.render.entity.model.EntityModelLoader
-import net.minecraft.client.render.item.ItemRenderer
 import net.minecraft.client.render.model.json.ModelTransformation
-import net.minecraft.client.render.model.json.ModelTransformationMode
 import net.minecraft.client.util.ModelIdentifier
 import net.minecraft.item.Item
 import net.minecraft.resource.ReloadableResourceManagerImpl
@@ -23,7 +21,7 @@ import java.util.*
 import java.util.function.Consumer
 
 /**
- * Registry for custom item models. Use this if you want to implement items that appear different in different [ModelTransformationMode].
+ * Registry for custom item models. Use this if you want to implement items that appear different in different [ModelTransformation.Mode].
  *
  * The easy example of an item that does this is the Minecraft Trident. In inventory, it appears as a pixel art icon, but in hand and in third person, it appears as a rendered entitty.
  *
@@ -32,7 +30,7 @@ import java.util.function.Consumer
 @Environment(value = EnvType.CLIENT)
 object ItemModelRegistry: SynchronousResourceReloader {
 
-    private val fallbackId = ItemRenderer.TRIDENT_IN_HAND
+    private val fallbackId = ModelIdentifier("mineraft","trident_in_hand", "inventory")
     private val modelIdMap: HashMap<Item, ModelIdentifierPerModes> = HashMap()
     private val entityModelMap: HashMap<Item,CustomItemEntityModelLoader> = HashMap()
     private val entityModelLoader: EntityModelLoader by lazy { MinecraftClient.getInstance().entityModelLoader }
@@ -86,7 +84,7 @@ object ItemModelRegistry: SynchronousResourceReloader {
         return (modelIdMap.containsKey(item))
     }
 
-    fun getModel(item: Item, mode: ModelTransformationMode): ModelIdentifier{
+    fun getModel(item: Item, mode: ModelTransformation.Mode): ModelIdentifier{
         return modelIdMap[item]?.getIdFromMode(mode) ?: fallbackId
     }
 
@@ -98,7 +96,7 @@ object ItemModelRegistry: SynchronousResourceReloader {
     }
 
     /**
-     * Used to tell the registry which models to use for which [ModelTransformationMode]
+     * Used to tell the registry which models to use for which [ModelTransformation.Mode]
      *
      * [defaultId]: The fallback [ModelIdentifier]. If a specific replacement model ID isn't called out for a Mode, this is used.
      *
@@ -107,12 +105,12 @@ object ItemModelRegistry: SynchronousResourceReloader {
      * For all builder methods, set needsRegstration to true if this is the first time you've added this model identifier to the PerModes instance. This will register the special model in the Fabric ModelLoading registry.
      */
     class ModelIdentifierPerModes(private val defaultId: ModelIdentifier){
-        private val modeMap: EnumMap<ModelTransformationMode, ModelIdentifier> = EnumMap(ModelTransformationMode::class.java)
+        private val modeMap: EnumMap<ModelTransformation.Mode, ModelIdentifier> = EnumMap(ModelTransformation.Mode::class.java)
 
         /**
          * define a model for a specifically chosen transformation mode.
          */
-        fun with(mode: ModelTransformationMode, modelId: ModelIdentifier, needsRegistration: Boolean = false): ModelIdentifierPerModes{
+        fun with(mode: ModelTransformation.Mode, modelId: ModelIdentifier, needsRegistration: Boolean = false): ModelIdentifierPerModes{
             if (needsRegistration){
                 registerIdWithModalLoading(modelId)
             }
@@ -129,9 +127,9 @@ object ItemModelRegistry: SynchronousResourceReloader {
             if (needsRegistration){
                 registerIdWithModalLoading(modelId)
             }
-            modeMap[ModelTransformationMode.GUI] = modelId
-            modeMap[ModelTransformationMode.FIXED] = modelId
-            modeMap[ModelTransformationMode.GROUND] = modelId
+            modeMap[ModelTransformation.Mode.GUI] = modelId
+            modeMap[ModelTransformation.Mode.FIXED] = modelId
+            modeMap[ModelTransformation.Mode.GROUND] = modelId
             return this
         }
 
@@ -142,8 +140,8 @@ object ItemModelRegistry: SynchronousResourceReloader {
             if (needsRegistration){
                 registerIdWithModalLoading(modelId)
             }
-            modeMap[ModelTransformationMode.FIRST_PERSON_RIGHT_HAND] = modelId
-            modeMap[ModelTransformationMode.FIRST_PERSON_LEFT_HAND] = modelId
+            modeMap[ModelTransformation.Mode.FIRST_PERSON_RIGHT_HAND] = modelId
+            modeMap[ModelTransformation.Mode.FIRST_PERSON_LEFT_HAND] = modelId
             return this
         }
 
@@ -154,8 +152,8 @@ object ItemModelRegistry: SynchronousResourceReloader {
             if (needsRegistration){
                 registerIdWithModalLoading(modelId)
             }
-            modeMap[ModelTransformationMode.THIRD_PERSON_RIGHT_HAND] = modelId
-            modeMap[ModelTransformationMode.THIRD_PERSON_LEFT_HAND] = modelId
+            modeMap[ModelTransformation.Mode.THIRD_PERSON_RIGHT_HAND] = modelId
+            modeMap[ModelTransformation.Mode.THIRD_PERSON_LEFT_HAND] = modelId
             return this
         }
 
@@ -168,10 +166,10 @@ object ItemModelRegistry: SynchronousResourceReloader {
             if (needsRegistration){
                 registerIdWithModalLoading(modelId)
             }
-            modeMap[ModelTransformationMode.FIRST_PERSON_RIGHT_HAND] = modelId
-            modeMap[ModelTransformationMode.FIRST_PERSON_LEFT_HAND] = modelId
-            modeMap[ModelTransformationMode.THIRD_PERSON_RIGHT_HAND] = modelId
-            modeMap[ModelTransformationMode.THIRD_PERSON_LEFT_HAND] = modelId
+            modeMap[ModelTransformation.Mode.FIRST_PERSON_RIGHT_HAND] = modelId
+            modeMap[ModelTransformation.Mode.FIRST_PERSON_LEFT_HAND] = modelId
+            modeMap[ModelTransformation.Mode.THIRD_PERSON_RIGHT_HAND] = modelId
+            modeMap[ModelTransformation.Mode.THIRD_PERSON_LEFT_HAND] = modelId
             return this
         }
 
@@ -179,21 +177,21 @@ object ItemModelRegistry: SynchronousResourceReloader {
             if (needsRegistration){
                 registerIdWithModalLoading(modelId)
             }
-            modeMap[ModelTransformationMode.GUI] = modelId
-            modeMap[ModelTransformationMode.FIXED] = modelId
-            modeMap[ModelTransformationMode.GROUND] = modelId
-            modeMap[ModelTransformationMode.HEAD] = modelId
-            modeMap[ModelTransformationMode.FIRST_PERSON_RIGHT_HAND] = modelId
-            modeMap[ModelTransformationMode.FIRST_PERSON_LEFT_HAND] = modelId
-            modeMap[ModelTransformationMode.THIRD_PERSON_RIGHT_HAND] = modelId
-            modeMap[ModelTransformationMode.THIRD_PERSON_LEFT_HAND] = modelId
+            modeMap[ModelTransformation.Mode.GUI] = modelId
+            modeMap[ModelTransformation.Mode.FIXED] = modelId
+            modeMap[ModelTransformation.Mode.GROUND] = modelId
+            modeMap[ModelTransformation.Mode.HEAD] = modelId
+            modeMap[ModelTransformation.Mode.FIRST_PERSON_RIGHT_HAND] = modelId
+            modeMap[ModelTransformation.Mode.FIRST_PERSON_LEFT_HAND] = modelId
+            modeMap[ModelTransformation.Mode.THIRD_PERSON_RIGHT_HAND] = modelId
+            modeMap[ModelTransformation.Mode.THIRD_PERSON_LEFT_HAND] = modelId
             return this
         }
 
         /**
          * return a specific model identifier based on the imput view mode.
          */
-        fun getIdFromMode(mode: ModelTransformationMode): ModelIdentifier{
+        fun getIdFromMode(mode: ModelTransformation.Mode): ModelIdentifier{
             return modeMap[mode] ?: defaultId
         }
 

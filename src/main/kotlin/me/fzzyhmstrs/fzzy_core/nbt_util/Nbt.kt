@@ -1,11 +1,11 @@
 package me.fzzyhmstrs.fzzy_core.nbt_util
 
 import me.fzzyhmstrs.fzzy_core.FC
+import me.fzzyhmstrs.fzzy_core.coding_util.FzzyPort
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
-import net.minecraft.registry.Registries
 import net.minecraft.util.math.BlockPos
 import java.util.function.Predicate
 
@@ -127,7 +127,7 @@ object Nbt {
 
     fun createItemStackWithNbt(item:Item, count: Int, compound: NbtCompound): ItemStack{
         val nbt = NbtCompound()
-        val identifier = Registries.ITEM.getId(item)
+        val identifier = FzzyPort.ITEM.getId(item)
         nbt.putString("id", identifier.toString())
         nbt.putByte("Count", count.toByte())
         nbt.put("tag",compound.copy())

@@ -13,146 +13,146 @@ import net.minecraft.world.explosion.Explosion
 object FzzyDamage{
 
     fun inFire(origin: Entity): DamageSource {
-        return origin.damageSources.inFire()
+        return DamageSource.IN_FIRE
     }
 
     fun lightning(origin: Entity): DamageSource {
-        return origin.damageSources.lightningBolt()
+        return DamageSource.LIGHTNING_BOLT
     }
 
     fun onFire(origin: Entity): DamageSource {
-        return origin.damageSources.onFire()
+        return DamageSource.ON_FIRE
     }
 
     fun lava(origin: Entity): DamageSource {
-        return origin.damageSources.lava()
+        return DamageSource.LAVA
     }
 
     fun hotFloor(origin: Entity): DamageSource {
-        return origin.damageSources.hotFloor()
+        return DamageSource.HOT_FLOOR
     }
 
     fun inWall(origin: Entity): DamageSource {
-        return origin.damageSources.inWall()
+        return DamageSource.IN_WALL
     }
 
     fun cramming(origin: Entity): DamageSource {
-        return origin.damageSources.cramming()
+        return DamageSource.CRAMMING
     }
 
     fun drown(origin: Entity): DamageSource {
-        return origin.damageSources.drown()
+        return DamageSource.DROWN
     }
 
     fun starve(origin: Entity): DamageSource {
-        return origin.damageSources.starve()
+        return DamageSource.STARVE
     }
 
     fun cactus(origin: Entity): DamageSource {
-        return origin.damageSources.cactus()
+        return DamageSource.CACTUS
     }
 
     fun fall(origin: Entity): DamageSource {
-        return origin.damageSources.fall()
+        return DamageSource.FALL
     }
 
     fun flyIntoWall(origin: Entity): DamageSource {
-        return origin.damageSources.flyIntoWall()
+        return DamageSource.FLY_INTO_WALL
     }
 
     fun outOfWorld(origin: Entity): DamageSource {
-        return origin.damageSources.outOfWorld()
+        return DamageSource.OUT_OF_WORLD
     }
 
     fun generic(origin: Entity): DamageSource {
-        return origin.damageSources.generic()
+        return DamageSource.GENERIC
     }
     
     fun magic(origin: Entity): DamageSource {
-        return origin.damageSources.magic()
+        return DamageSource.MAGIC
     }
 
     fun wither(origin: Entity): DamageSource {
-        return origin.damageSources.wither()
+        return DamageSource.WITHER
     }
 
     fun dragonBreath(origin: Entity): DamageSource {
-        return origin.damageSources.dragonBreath()
+        return DamageSource.DRAGON_BREATH
     }
 
     fun dryOut(origin: Entity): DamageSource {
-        return origin.damageSources.dryOut()
+        return DamageSource.DRYOUT
     }
 
     fun sweetBerry(origin: Entity): DamageSource {
-        return origin.damageSources.sweetBerryBush()
+        return DamageSource.SWEET_BERRY_BUSH
     }
 
     fun freeze(origin: Entity): DamageSource {
-        return origin.damageSources.freeze()
+        return DamageSource.FREEZE
     }
 
     fun stalagmite(origin: Entity): DamageSource {
-        return origin.damageSources.stalagmite()
+        return DamageSource.STALAGMITE
     }
 
     fun sting(origin: Entity, attacker: LivingEntity? = origin as? LivingEntity): DamageSource{
-        return origin.damageSources.sting(attacker)
+        return DamageSource.sting(attacker)
     }
 
     fun mobAttack(origin: Entity, attacker: LivingEntity? = origin as? LivingEntity): DamageSource{
-        return origin.damageSources.mobAttack(attacker)
+        return DamageSource.mob(attacker)
     }
 
     fun mobProjectile(origin: Entity, source: Entity? = origin, attacker: LivingEntity? = origin as? LivingEntity): DamageSource{
-        return origin.damageSources.mobProjectile(source, attacker)
+        return DamageSource.mobProjectile(source,attacker)
     }
 
     fun playerAttack(origin: Entity, attacker: PlayerEntity? = origin as? PlayerEntity): DamageSource{
-        return origin.damageSources.playerAttack(attacker)
+        return DamageSource.player(attacker)
     }
 
     fun arrow(origin: Entity, source: PersistentProjectileEntity? = origin as? PersistentProjectileEntity, attacker: Entity? = origin): DamageSource{
-        return origin.damageSources.arrow(source, attacker)
+        return DamageSource.arrow(source,attacker)
     }
 
     fun trident(origin: Entity, source: Entity? = origin, attacker: Entity? = origin): DamageSource{
-        return origin.damageSources.trident(source, attacker)
+        return DamageSource.trident(source,attacker)
     }
 
     fun firework(origin: Entity, source: FireworkRocketEntity? = origin as? FireworkRocketEntity, attacker: Entity? = origin): DamageSource{
-        return origin.damageSources.fireworks(source, attacker)
+        return DamageSource.firework(source,attacker)
     }
 
     fun fireball(origin: Entity, source: AbstractFireballEntity? = origin as? AbstractFireballEntity, attacker: Entity? = origin): DamageSource{
-        return origin.damageSources.fireball(source, attacker)
+        return DamageSource.fireball(source,attacker)
     }
 
     fun witherSkull(origin: Entity, source: WitherSkullEntity? = origin as? WitherSkullEntity, attacker: Entity? = origin): DamageSource{
-        return origin.damageSources.witherSkull(source, attacker)
+        return DamageSource.witherSkull(source,attacker)
     }
 
     fun thrown(origin: Entity, source: Entity? = origin, attacker: Entity? = origin): DamageSource{
-        return origin.damageSources.thrown(source, attacker)
+        return DamageSource.thrownProjectile(source,attacker)
     }
 
     fun indirectMagic(origin: Entity, source: Entity? = origin, attacker: Entity? = origin): DamageSource{
-        return origin.damageSources.indirectMagic(source, attacker)
+        return DamageSource.magic(source,attacker)
     }
 
     fun thorns(origin: Entity, source: Entity? = origin): DamageSource{
-        return origin.damageSources.thorns(source)
+        return DamageSource.thorns(source)
     }
 
     fun explosion(origin: Entity, explosion: Explosion?): DamageSource{
-        return origin.damageSources.explosion(explosion)
+        return DamageSource.explosion(explosion)
     }
 
     fun explosion(origin: Entity, source: Entity? = origin, attacker: Entity? = origin): DamageSource{
-        return origin.damageSources.explosion(source, attacker)
+        return DamageSource.explosion(attacker as? LivingEntity)
     }
 
     fun sonicBoom(origin: Entity, attacker: Entity? = origin): DamageSource{
-        return origin.damageSources.sonicBoom(attacker)
+        return DamageSource.sonicBoom(attacker)
     }
 }

@@ -15,36 +15,35 @@ import net.minecraft.item.Item
 import net.minecraft.recipe.Recipe
 import net.minecraft.recipe.RecipeManager
 import net.minecraft.recipe.RecipeType
-import net.minecraft.registry.Registries
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.resource.featuretoggle.FeatureFlags
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.ScreenHandlerType.Factory
 import net.minecraft.sound.SoundEvent
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.registry.Registry
+import net.minecraft.util.registry.RegistryEntry
 import net.minecraft.village.VillagerProfession
 import net.minecraft.world.World
 import net.minecraft.world.poi.PointOfInterestType
-import java.util.Optional
+import java.util.*
 import java.util.function.Predicate
 
 
 object FzzyPort {
 
-    val ATTRIBUTE = FzzyRegistry(Registries.ATTRIBUTE)
-    val BLOCK = FzzyDefaultedRegistry(Registries.BLOCK)
-    val BLOCK_ENTITY_TYPE = FzzyRegistry(Registries.BLOCK_ENTITY_TYPE)
-    val ENCHANTMENT = FzzyRegistry(Registries.ENCHANTMENT)
-    val ENTITY_TYPE = FzzyDefaultedRegistry(Registries.ENTITY_TYPE)
-    val ITEM = FzzyDefaultedRegistry(Registries.ITEM)
-    val PARTICLE_TYPE = FzzyRegistry(Registries.PARTICLE_TYPE)
-    val POTION = FzzyDefaultedRegistry(Registries.POTION)
-    val SCREEN_HANDLER = FzzyRegistry(Registries.SCREEN_HANDLER)
-    val SOUND_EVENT = FzzyRegistry(Registries.SOUND_EVENT)
-    val STATUS_EFFECT = FzzyRegistry(Registries.STATUS_EFFECT)
-    val VILLAGER_PROFESSION = FzzyDefaultedRegistry(Registries.VILLAGER_PROFESSION)
+    val ATTRIBUTE = FzzyRegistry(Registry.ATTRIBUTE)
+    val BLOCK = FzzyDefaultedRegistry( Registry.BLOCK)
+    val BLOCK_ENTITY_TYPE = FzzyRegistry( Registry.BLOCK_ENTITY_TYPE)
+    val ENCHANTMENT = FzzyRegistry( Registry.ENCHANTMENT)
+    val ENTITY_TYPE = FzzyDefaultedRegistry( Registry.ENTITY_TYPE)
+    val ITEM = FzzyDefaultedRegistry( Registry.ITEM)
+    val PARTICLE_TYPE = FzzyRegistry( Registry.PARTICLE_TYPE)
+    val POTION = FzzyDefaultedRegistry( Registry.POTION)
+    val SCREEN_HANDLER = FzzyRegistry( Registry.SCREEN_HANDLER)
+    val SOUND_EVENT = FzzyRegistry( Registry.SOUND_EVENT)
+    val STATUS_EFFECT = FzzyRegistry( Registry.STATUS_EFFECT)
+    val VILLAGER_PROFESSION = FzzyDefaultedRegistry( Registry.VILLAGER_PROFESSION)
 
     fun createAndRegisterVillagerProfession(id: Identifier, workSound: SoundEvent, vararg poi: Block): VillagerProfession{
         return createAndRegisterVillagerProfession(id, workSound, setOf(), setOf(), *poi)
@@ -52,9 +51,9 @@ object FzzyPort {
 
     fun createAndRegisterVillagerProfession(id: Identifier, workSound: SoundEvent, harvestableItems: Set<Item>, secondaryJobSites: Set<Block>, vararg poi: Block): VillagerProfession{
         val pointOfInterest = PointOfInterestHelper.register(id,1,1,*poi)
-        val poiKey = Registries.POINT_OF_INTEREST_TYPE.getKey(pointOfInterest).get()
-        val workstation = Predicate<RegistryEntry<PointOfInterestType>>{entry -> entry.matchesKey(poiKey)}
-        val jobSite = Predicate<RegistryEntry<PointOfInterestType>>{entry -> entry.matchesKey(poiKey)}
+        val poiKey =  Registry.POINT_OF_INTEREST_TYPE.getKey(pointOfInterest).get()
+        val workstation = Predicate<RegistryEntry<PointOfInterestType>>{ entry -> entry.matchesKey(poiKey)}
+        val jobSite = Predicate<RegistryEntry<PointOfInterestType>>{ entry -> entry.matchesKey(poiKey)}
         return VILLAGER_PROFESSION.register(id,VillagerProfession(id.toString(),workstation,jobSite, ImmutableSet.copyOf(harvestableItems), ImmutableSet.copyOf(secondaryJobSites),workSound))
     }
 
@@ -63,15 +62,15 @@ object FzzyPort {
     }
 
     fun setPositionTexShader() {
-        RenderSystem.setShader { GameRenderer.getPositionTexProgram() }
+        RenderSystem.setShader { GameRenderer.getPositionTexShader() }
     }
 
     fun setPositionColorTexShader() {
-        RenderSystem.setShader { GameRenderer.getPositionColorTexProgram() }
+        RenderSystem.setShader { GameRenderer.getPositionColorTexShader() }
     }
 
     fun newButton(x: Int, y: Int, w: Int, h: Int, name: Text, action: PressAction): ButtonWidget {
-        return ButtonWidget.builder(name, action).position(x, y).size(w, h).build()
+        return ButtonWidget(x, y,w, h,name, action)
     }
 
     fun getRecipe(id: Identifier, manager: RecipeManager): Optional<out Recipe<*>>{
@@ -95,6 +94,6 @@ object FzzyPort {
     }
 
     fun <T: ScreenHandler> buildHandlerType(factory: Factory<T>): ScreenHandlerType<T>{
-        return ScreenHandlerType(factory,FeatureFlags.VANILLA_FEATURES)
+        return ScreenHandlerType(factory)
     }
 }

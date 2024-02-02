@@ -5,11 +5,11 @@ import me.fzzyhmstrs.fzzy_core.item_util.interfaces.Flavorful
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.registry.Registries
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
+import net.minecraft.util.registry.Registry
 import net.minecraft.world.World
 
 /**
@@ -56,7 +56,7 @@ open class CustomFlavorItem(settings: Settings) : Item(settings), Flavorful<Cust
     }
     
     private fun makeFlavorText(): MutableText{
-        val id = Registries.ITEM.getId(this)
+        val id = Registry.ITEM.getId(this)
         val key = "item.${id.namespace}.${id.path}.flavor"
         val text = AcText.translatable(key).formatted(Formatting.WHITE, Formatting.ITALIC)
         if (text.string == key) return AcText.empty()
@@ -64,7 +64,7 @@ open class CustomFlavorItem(settings: Settings) : Item(settings), Flavorful<Cust
     }
     
     private fun makeFlavorTextDesc(): MutableText{
-        val id = Registries.ITEM.getId(this)
+        val id = Registry.ITEM.getId(this)
         val key = "item.${id.namespace}.${id.path}.flavor.desc"
         val text = AcText.translatable(key).formatted(Formatting.WHITE)
         if (text.string == key) return AcText.empty()

@@ -1,8 +1,8 @@
 package me.fzzyhmstrs.fzzy_core.entity_util
 
-import net.fabricmc.fabric.api.`object`.builder.v1.entity.FabricEntityTypeBuilder
 import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
 import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder.Factory
+import net.fabricmc.fabric.api.`object`.builder.v1.entity.FabricEntityTypeBuilder
 import net.minecraft.block.Block
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType

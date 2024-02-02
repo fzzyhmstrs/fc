@@ -1,12 +1,12 @@
 package me.fzzyhmstrs.fzzy_core.coding_util.compat
 
 import com.mojang.serialization.DynamicOps
-import net.minecraft.registry.Registry
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.registry.tag.TagKey
+import net.minecraft.tag.TagKey
 import net.minecraft.util.Identifier
 import net.minecraft.util.collection.IndexedIterable
-import java.util.Optional
+import net.minecraft.util.registry.Registry
+import net.minecraft.util.registry.RegistryEntry
+import java.util.*
 import java.util.stream.Stream
 
 @Suppress("unused")
@@ -52,12 +52,13 @@ open class FzzyRegistry<T>(protected val registry: Registry<T>): IndexedIterable
         return Registry.register(registry,id,entry)
     }
 
-    fun tagOf(id: Identifier): TagKey<T>{
+    fun tagOf(id: Identifier): TagKey<T> {
         return TagKey.of(registry.key,id)
     }
 
     fun isInTag(entry: T, tag: TagKey<T>): Boolean{
-        return registry.getEntry(entry).isIn(tag)
+        val id = registry.getRawId(entry)
+        return registry.getEntry(id).takeIf { it.isPresent }?.get()?.isIn(tag) ?: false
     }
 
     override fun iterator(): MutableIterator<T> {

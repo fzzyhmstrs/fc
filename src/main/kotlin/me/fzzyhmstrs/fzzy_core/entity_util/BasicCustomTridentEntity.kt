@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_core.entity_util
 
+import me.fzzyhmstrs.fzzy_core.coding_util.compat.FzzyDamage
 import me.fzzyhmstrs.fzzy_core.mixins.TridentEntityAccessor
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.entity.Entity
@@ -11,7 +12,6 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.projectile.TridentEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.ToolMaterial
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundEvent
@@ -69,7 +69,7 @@ open class BasicCustomTridentEntity(entityType: EntityType<out BasicCustomTriden
         var f = this.damage.toFloat()
         val livingEntity: Entity? = owner
         val trident = asItemStack()
-        val damageSource = this.damageSources.trident(this, if (owner == null) this else livingEntity)
+        val damageSource = FzzyDamage.trident(this,this, if (owner == null) this else livingEntity)
         if (entity is LivingEntity) {
             f += EnchantmentHelper.getAttackDamage(trident, entity.group)
             f = if (livingEntity is LivingEntity) {
@@ -141,7 +141,8 @@ open class BasicCustomTridentEntity(entityType: EntityType<out BasicCustomTriden
         }
         if (!player.inventory.offHand[0].isEmpty)
             return false
-        player.inventory.offHand[0] = stack.copyAndEmpty()
+        player.inventory.offHand[0] = if(stack.isEmpty) ItemStack.EMPTY else stack.copy()
+        stack.count = 0
         player.inventory.offHand[0].bobbingAnimationTime = 5
         return true
     }

@@ -2,12 +2,12 @@ package me.fzzyhmstrs.fzzy_core.json_util
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import me.fzzyhmstrs.fzzy_core.coding_util.FzzyPort
 import me.fzzyhmstrs.fzzy_core.modifier_util.AbstractModifier
 import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierHelperType.Companion.EmptyType.id
 import me.fzzyhmstrs.fzzy_core.registry.ModifierRegistry
 import net.minecraft.entity.attribute.EntityAttribute
 import net.minecraft.entity.attribute.EntityAttributeModifier
-import net.minecraft.registry.Registries
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import java.util.*
@@ -20,13 +20,13 @@ object JsonReader {
             val attributeIdString = attributeJson.get("attribute").asString
             val attributeId = Identifier.tryParse(attributeIdString)
                 ?: throw IllegalStateException("Entity Attribute Json has an attribute bonus with an invalid identifier value [$attributeIdString].")
-            Registries.ATTRIBUTE.get(attributeId)
+            FzzyPort.ATTRIBUTE.get(attributeId)
                 ?: throw IllegalStateException("Entity Attribute Json has an attribute bonus with an attribute value [$attributeIdString] that can't be found in the attribute registry.")
         } catch (e: Exception){
             throw IllegalStateException("Entity Attribute Json has an attribute bonus with aan invalid 'attribute' key [$attributeJson]. Missing or needs to be a valid identifier string.")
         }
         val uuid = UUID.randomUUID()
-        val name = "${Registries.ATTRIBUTE.getId(attribute)}_modifier"
+        val name = "${FzzyPort.ATTRIBUTE.getId(attribute)}_modifier"
         val value = try {
             attributeJson.get("amount").asDouble
         } catch (e: Exception){

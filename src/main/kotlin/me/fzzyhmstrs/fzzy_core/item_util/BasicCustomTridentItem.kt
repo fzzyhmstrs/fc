@@ -2,9 +2,8 @@ package me.fzzyhmstrs.fzzy_core.item_util
 
 import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Multimap
-import me.fzzyhmstrs.fzzy_core.interfaces.Modifiable
-import me.fzzyhmstrs.fzzy_core.item_util.FlavorHelper
 import me.fzzyhmstrs.fzzy_core.entity_util.BasicCustomTridentEntity
+import me.fzzyhmstrs.fzzy_core.interfaces.Modifiable
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.entity.EquipmentSlot

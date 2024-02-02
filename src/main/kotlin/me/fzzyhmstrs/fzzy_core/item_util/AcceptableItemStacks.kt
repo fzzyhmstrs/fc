@@ -5,7 +5,6 @@ import net.minecraft.block.Block
 import net.minecraft.enchantment.EnchantmentTarget
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.item.*
-import net.minecraft.registry.Registries
 
 /**
  * Helper object to generate a list of all acceptable items in the Item Registry as applicable to various enchantment targets.
@@ -131,7 +130,7 @@ object AcceptableItemStacks {
             }
             EnchantmentTarget.WEARABLE->{
                 for (entry in FzzyPort.ITEM){
-                    if (entry is Equipment || Block.getBlockFromItem(entry) is Equipment){
+                    if (entry is Wearable || Block.getBlockFromItem(entry) is Wearable){
                         list.add(ItemStack(entry,1))
                     }
                 }

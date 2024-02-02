@@ -5,16 +5,14 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSyntaxException
 import me.fzzyhmstrs.fzzy_core.FC
+import me.fzzyhmstrs.fzzy_core.coding_util.FzzyPort
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtHelper
-import net.minecraft.nbt.NbtOps
 import net.minecraft.nbt.StringNbtReader
 import net.minecraft.recipe.ShapedRecipe
-import net.minecraft.registry.Registries
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.registry.tag.TagKey
+import net.minecraft.tag.TagKey
 import net.minecraft.util.Identifier
 import net.minecraft.util.JsonHelper
 
@@ -124,7 +122,7 @@ class FzzyIngredient private constructor(private val checks: List<Checker>){
     private class ItemChecker(private val item: Identifier, private val nbt: NbtCompound): Checker{
 
         private val itemCached: Item by lazy{
-            Registries.ITEM.get(item)
+            FzzyPort.ITEM.get(item)
         }
         
         override fun check(stack: ItemStack): Boolean{
@@ -141,7 +139,7 @@ class FzzyIngredient private constructor(private val checks: List<Checker>){
     private class TagChecker(private val tag: Identifier, private val nbt: NbtCompound): Checker{
 
         private val tagCached: TagKey<Item> by lazy{
-            TagKey.of(RegistryKeys.ITEM,tag)
+            FzzyPort.ITEM.tagOf(tag)
         }
         
         override fun check(stack: ItemStack): Boolean{
