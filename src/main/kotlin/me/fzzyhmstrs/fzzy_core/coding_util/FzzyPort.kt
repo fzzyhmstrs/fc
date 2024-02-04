@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.datafixers.util.Pair
 import me.fzzyhmstrs.fzzy_core.coding_util.compat.FzzyDefaultedRegistry
 import me.fzzyhmstrs.fzzy_core.coding_util.compat.FzzyRegistry
+import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
 import net.fabricmc.fabric.api.`object`.builder.v1.world.poi.PointOfInterestHelper
 import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBlockTags
@@ -12,6 +13,7 @@ import net.minecraft.block.Block
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ButtonWidget.PressAction
 import net.minecraft.client.render.GameRenderer
+import net.minecraft.client.texture.SpriteAtlasTexture
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.recipe.Recipe
@@ -63,8 +65,12 @@ object FzzyPort {
         return VILLAGER_PROFESSION.register(id,VillagerProfession(id.toString(),workstation,jobSite, ImmutableSet.copyOf(harvestableItems), ImmutableSet.copyOf(secondaryJobSites),workSound))
     }
 
-    fun clientBlockSpriteRegister(@Suppress("UNUSED_PARAMETER") id: Identifier){
-        //do absolutely nothing lol
+    fun clientBlockSpriteRegister(id: Identifier){
+        @Suppress("DEPRECATION")
+        ClientSpriteRegistryCallback.event(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).register {
+                _ , registry ->
+            registry.register(id)
+        }
     }
 
     fun setPositionTexShader() {
