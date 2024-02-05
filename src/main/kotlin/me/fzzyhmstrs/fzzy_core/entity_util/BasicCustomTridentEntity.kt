@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_core.entity_util
 
 import me.fzzyhmstrs.fzzy_core.mixins.TridentEntityAccessor
+import me.fzzyhmstrs.fzzy_core.coding_util.compat.FzzyDamage
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
@@ -69,7 +70,7 @@ open class BasicCustomTridentEntity(entityType: EntityType<out BasicCustomTriden
         var f = this.damage.toFloat()
         val livingEntity: Entity? = owner
         val trident = asItemStack()
-        val damageSource = this.damageSources.trident(this, if (owner == null) this else livingEntity)
+        val damageSource = FzzyDamage.trident(this,this, if (owner == null) this else livingEntity)
         if (entity is LivingEntity) {
             f += EnchantmentHelper.getAttackDamage(trident, entity.group)
             f = if (livingEntity is LivingEntity) {
