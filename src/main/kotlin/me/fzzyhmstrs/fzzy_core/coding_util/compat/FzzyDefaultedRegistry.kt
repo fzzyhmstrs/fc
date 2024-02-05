@@ -6,7 +6,7 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.collection.IndexedIterable
 import java.util.stream.Stream
 
-class FzzyDefaultedRegistry<T>(registry: Registry<T>): FzzyRegistry<T>(registry) {
+open class FzzyDefaultedRegistry<T>(registry: Registry<T>): FzzyRegistry<T>(registry) {
 
     override fun getId(var1: T): Identifier {
         return super.getId(var1)!!

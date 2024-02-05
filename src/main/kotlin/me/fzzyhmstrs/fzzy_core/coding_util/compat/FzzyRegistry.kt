@@ -60,6 +60,11 @@ open class FzzyRegistry<T>(protected val registry: Registry<T>): IndexedIterable
         return registry.getEntry(entry).isIn(tag)
     }
 
+    fun isInTag(id: Identifier, tag: TagKey<T>): Boolean{
+        val entry = registry.get(id) ?: return false
+        return registry.getEntry(entry).isIn(tag)
+    }
+
     fun getEntry(entry: T): RegistryEntry<T>{
         return registry.getEntry(entry)
     }
