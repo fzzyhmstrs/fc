@@ -5,7 +5,6 @@ import me.fzzyhmstrs.fzzy_core.coding_util.FzzyPort
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.Registry
-import net.minecraft.registry.RegistryKey
 import net.minecraft.util.Identifier
 
 abstract class ModifierHelperType <T: AbstractModifier<T>> (val id: Identifier, private val helper: AbstractModifierHelper<T>) {
@@ -46,7 +45,7 @@ abstract class ModifierHelperType <T: AbstractModifier<T>> (val id: Identifier, 
     abstract fun getModifierInitKey(): String
 
     //for API compat
-    fun initializeModifiers(stack: ItemStack, nbtCompound: NbtCompound, defaultMods: List<Identifier>){
+    fun initializeModifiers(stack: ItemStack, @Suppress("UNUSED_PARAMETER") nbtCompound: NbtCompound, @Suppress("UNUSED_PARAMETER") defaultMods: List<Identifier>){
         getModifierInitializer().initializeModifiers(stack)
     }
 

@@ -5,11 +5,16 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.Registry
 import net.minecraft.util.Identifier
 
+@Suppress("unused")
 open class VariantRegistry<T: Variant>(registry: Registry<T>): FzzyDefaultedRegistry<T>(registry) {
 
     protected val RANDOMLY_SELECTABLE: MutableList<T> = mutableListOf()
     fun registerVariant(id: Identifier, variant: T, randomlySelectable: Boolean = true): T{
         return this.register(id, variant.also { if(randomlySelectable) RANDOMLY_SELECTABLE.add(it) })
+    }
+
+    fun registerWeighted(id: Identifier, variant: T, weight: Int): T{
+        return this.register(id, variant.also { for (i in 1..weight) RANDOMLY_SELECTABLE.add(it) })
     }
 
     fun randomVariant(): T?{

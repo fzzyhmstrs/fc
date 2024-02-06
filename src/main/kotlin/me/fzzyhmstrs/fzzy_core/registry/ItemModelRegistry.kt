@@ -11,7 +11,6 @@ import net.minecraft.client.model.ModelPart
 import net.minecraft.client.render.entity.model.EntityModelLayer
 import net.minecraft.client.render.entity.model.EntityModelLoader
 import net.minecraft.client.render.item.ItemRenderer
-import net.minecraft.client.render.model.json.ModelTransformation
 import net.minecraft.client.render.model.json.ModelTransformationMode
 import net.minecraft.client.util.ModelIdentifier
 import net.minecraft.item.Item
@@ -29,6 +28,7 @@ import java.util.function.Consumer
  *
  * This registry provides methods for handling both of those situations (rendering differently per Mode, and rendering as an entity)
  */
+@Suppress("unused")
 @Environment(value = EnvType.CLIENT)
 object ItemModelRegistry: SynchronousResourceReloader {
 

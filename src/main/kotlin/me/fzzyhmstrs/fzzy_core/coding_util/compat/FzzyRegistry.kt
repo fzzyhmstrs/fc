@@ -6,7 +6,7 @@ import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import net.minecraft.util.collection.IndexedIterable
-import java.util.Optional
+import java.util.*
 import java.util.stream.Stream
 
 @Suppress("unused")

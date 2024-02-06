@@ -2,14 +2,13 @@ package me.fzzyhmstrs.fzzy_core.modifier_util
 
 import com.google.common.collect.ArrayListMultimap
 import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
 import net.minecraft.util.Identifier
 
-class ModifierContainer(val livingEntity: LivingEntity, innateModifiers: ArrayListMultimap<ModifierHelperType<*>, Identifier> = ArrayListMultimap.create()) {
+class ModifierContainer(@Suppress("unused") val livingEntity: LivingEntity, innateModifiers: ArrayListMultimap<ModifierHelperType<*>, Identifier> = ArrayListMultimap.create()) {
 
     private val compiledMap: MutableMap<ModifierHelperType<*>, AbstractModifier.CompiledModifiers<*>> = mutableMapOf()
     private val predicateInstanceMap: MutableMap<ModifierHelperType<*>, MutableMap<Identifier,AbstractModifier.CompiledModifiers<*>>> = mutableMapOf()
@@ -17,6 +16,7 @@ class ModifierContainer(val livingEntity: LivingEntity, innateModifiers: ArrayLi
     private val innateMultimap: ArrayListMultimap<ModifierHelperType<*>, Identifier> = innateModifiers
     private val dirtyTypes: MutableSet<ModifierHelperType<*>> = mutableSetOf()
 
+    @Suppress("UNCHECKED_CAST")
     fun<T: AbstractModifier<T>> compileSpecialModifier(predicateId: Identifier, type: ModifierHelperType<T>): AbstractModifier.CompiledModifiers<T>? {
         return predicateInstanceMap
             .computeIfAbsent(type) { mutableMapOf()}
@@ -61,10 +61,11 @@ class ModifierContainer(val livingEntity: LivingEntity, innateModifiers: ArrayLi
         predicateInstanceMap.remove(type) //reset special instances here, as the baseline compiled instance has changed
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun<T: AbstractModifier<T>> getCompiledModifiers(type: ModifierHelperType<T>): AbstractModifier.CompiledModifiers<T>?{
         return if (dirtyTypes.contains(type)){
             dirtyTypes.remove(type)
-            val list: MutableList<net.minecraft.util.Identifier> = mutableListOf()
+            val list: MutableList<Identifier> = mutableListOf()
             list.addAll(normalMultimap.get(type) ?: listOf())
             list.addAll(innateMultimap.get(type) ?: listOf())
             compiledMap[type] = type.compile(list, null)

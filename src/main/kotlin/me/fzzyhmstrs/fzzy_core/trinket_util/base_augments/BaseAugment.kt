@@ -1,6 +1,5 @@
 package me.fzzyhmstrs.fzzy_core.trinket_util.base_augments
 
-import com.ibm.icu.impl.locale.XCldrStub
 import me.fzzyhmstrs.fzzy_core.coding_util.AbstractConfigDisableEnchantment
 import me.fzzyhmstrs.fzzy_core.item_util.AcceptableItemStacks
 import net.minecraft.enchantment.Enchantment
@@ -10,7 +9,6 @@ import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.attribute.EntityAttribute
 import net.minecraft.entity.attribute.EntityAttributeModifier
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -93,6 +91,7 @@ abstract class BaseAugment(weight: Rarity, val mxLvl: Int = 1, val target: Encha
         return false
     }
 
+    @Suppress("unused")
     companion object{
         private val countQueue: MutableMap<UUID,MutableMap<String,Int>> = mutableMapOf()
 

@@ -2,9 +2,8 @@ package me.fzzyhmstrs.fzzy_core.item_util
 
 import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Multimap
-import me.fzzyhmstrs.fzzy_core.interfaces.Modifiable
-import me.fzzyhmstrs.fzzy_core.item_util.FlavorHelper
 import me.fzzyhmstrs.fzzy_core.entity_util.BasicCustomTridentEntity
+import me.fzzyhmstrs.fzzy_core.interfaces.Modifiable
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.entity.EquipmentSlot
@@ -28,6 +27,7 @@ import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 
+@Suppress("unused")
 abstract class BasicCustomTridentItem<T: BasicCustomTridentEntity>(private val material: ToolMaterial, attackDamage: Double = 0.0, attackSpeed: Double = -2.9, settings: Settings) : TridentItem(settings.maxDamageIfAbsent(material.durability)), Modifiable {
 
     constructor(material: ToolMaterial, attackSpeed: Double, settings: Settings): this(material,0.0, attackSpeed, settings)

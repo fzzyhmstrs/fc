@@ -5,7 +5,6 @@ import net.minecraft.block.Block
 import net.minecraft.enchantment.EnchantmentTarget
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.item.*
-import net.minecraft.registry.Registries
 
 /**
  * Helper object to generate a list of all acceptable items in the Item Registry as applicable to various enchantment targets.

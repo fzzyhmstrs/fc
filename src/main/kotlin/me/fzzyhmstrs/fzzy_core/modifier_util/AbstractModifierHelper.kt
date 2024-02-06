@@ -7,7 +7,6 @@ import me.fzzyhmstrs.fzzy_core.coding_util.PersistentEffectHelper
 import me.fzzyhmstrs.fzzy_core.interfaces.Modifiable
 import me.fzzyhmstrs.fzzy_core.interfaces.ModifierHolding
 import me.fzzyhmstrs.fzzy_core.nbt_util.Nbt
-import me.fzzyhmstrs.fzzy_core.nbt_util.NbtKeys
 import me.fzzyhmstrs.fzzy_core.registry.ModifierRegistry
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.LivingEntity
@@ -103,7 +102,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         return addModifier(modifier, stack, nbt,uniqueOnly)
     }
 
-    protected fun addModifier(modifier: Identifier, stack: ItemStack, nbt: NbtCompound, uniqueOnly: Boolean = true): Boolean {
+    protected fun addModifier(modifier: Identifier, stack: ItemStack, nbt: NbtCompound, @Suppress("UNUSED_PARAMETER") uniqueOnly: Boolean = true): Boolean {
         //val id = Nbt.makeItemStackId(stack)
         val mods = if (!modifiersInitialized(stack, nbt)) {
             initializeModifiers(stack)
@@ -233,7 +232,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     }
 
     //for API compat
-    fun initializeModifiers(stack: ItemStack, nbt: NbtCompound,  defaultMods: List<Identifier>){
+    fun initializeModifiers(stack: ItemStack, @Suppress("UNUSED_PARAMETER") nbt: NbtCompound, @Suppress("UNUSED_PARAMETER") defaultMods: List<Identifier>){
         initializeModifiers(stack)
     }
 

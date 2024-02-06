@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_core.entity_util
 
-import me.fzzyhmstrs.fzzy_core.mixins.TridentEntityAccessor
 import me.fzzyhmstrs.fzzy_core.coding_util.compat.FzzyDamage
+import me.fzzyhmstrs.fzzy_core.mixins.TridentEntityAccessor
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
@@ -12,7 +12,6 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.projectile.TridentEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.ToolMaterial
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundEvent
@@ -22,6 +21,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 
+@Suppress("unused")
 open class BasicCustomTridentEntity(entityType: EntityType<out BasicCustomTridentEntity>, world: World) : TridentEntity(entityType,world) {
     private var isOffhand = false
 
