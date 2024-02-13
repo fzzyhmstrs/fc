@@ -46,10 +46,10 @@ object EventRegistry {
         registerServerTick()
         SyncedConfigRegistry.registerServer()
         PersistentEffectHelper.registerServer()
-        ServerPlayerEvents.COPY_FROM.register{old, new, _ ->
+        /*ServerPlayerEvents.COPY_FROM.register{old, new, _ ->
             val container = (old as ModifierHolding).fzzy_core_getModifierContainer()
             (new as ModifierHolding).fzzy_core_setModifierContainer(container)
-        }
+        }*/
     }
 
     internal fun registerClient(){
