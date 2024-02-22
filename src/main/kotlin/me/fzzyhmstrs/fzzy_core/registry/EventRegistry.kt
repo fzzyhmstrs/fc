@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_core.registry
 
 import me.fzzyhmstrs.fzzy_core.FC
+import me.fzzyhmstrs.fzzy_core.coding_util.AdvancementCompletionCriterion
 import me.fzzyhmstrs.fzzy_core.coding_util.PersistentEffectHelper
 import me.fzzyhmstrs.fzzy_core.interfaces.ModifierHolding
 import me.fzzyhmstrs.fzzy_core.item_util.interfaces.ParticleEmitting
@@ -8,6 +9,7 @@ import me.fzzyhmstrs.fzzy_core.registry.EventRegistry.Ticker
 import me.fzzyhmstrs.fzzy_core.trinket_util.EffectQueue
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
+import net.minecraft.advancement.criterion.Criteria
 import net.minecraft.util.Identifier
 
 /**

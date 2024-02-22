@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_core
 
 import com.llamalad7.mixinextras.MixinExtrasBootstrap
+import me.fzzyhmstrs.fzzy_core.coding_util.AdvancementCompletionCriterion
 import me.fzzyhmstrs.fzzy_core.config.FcConfig
 import me.fzzyhmstrs.fzzy_core.item_util.ModifierHolderItem
 import me.fzzyhmstrs.fzzy_core.registry.EventRegistry
@@ -10,6 +11,7 @@ import me.fzzyhmstrs.fzzy_core.registry.ModifierRegistry
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint
+import net.minecraft.advancement.criterion.Criteria
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.util.Identifier
@@ -24,7 +26,7 @@ object FC: ModInitializer {
     val fallbackId = Identifier("vanishing_curse")
     val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
 
-    val MODIFIER_HOLDER = Registry.register(Registries.ITEM, Identifier(MOD_ID,"modifier_holder"),ModifierHolderItem())
+    val ADVANCEMENT_COMPLETION = Criteria.register(AdvancementCompletionCriterion(Identifier(MOD_ID,"advancement")))
 
     override fun onInitialize() {
         FcConfig.initConfig()
