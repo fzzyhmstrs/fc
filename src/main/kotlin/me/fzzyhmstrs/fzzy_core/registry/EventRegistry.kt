@@ -48,6 +48,7 @@ object EventRegistry {
         registerServerTick()
         SyncedConfigRegistry.registerServer()
         PersistentEffectHelper.registerServer()
+        ModifierRegistry
         /*ServerPlayerEvents.COPY_FROM.register{old, new, _ ->
             val container = (old as ModifierHolding).fzzy_core_getModifierContainer()
             (new as ModifierHolding).fzzy_core_setModifierContainer(container)
@@ -92,7 +93,7 @@ object EventRegistry {
             ready = false
             tick++
         }
-        
+
         open fun ready(){
         }
 

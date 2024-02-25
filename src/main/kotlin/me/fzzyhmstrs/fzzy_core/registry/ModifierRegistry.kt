@@ -2,10 +2,16 @@
 
 package me.fzzyhmstrs.fzzy_core.registry
 
+import com.google.common.collect.ArrayListMultimap
+import com.google.gson.JsonParser
+import me.fzzyhmstrs.fzzy_core.FC
+import me.fzzyhmstrs.fzzy_core.coding_util.FzzyPort
 import me.fzzyhmstrs.fzzy_core.interfaces.Modifiable
 import me.fzzyhmstrs.fzzy_core.modifier_util.AbstractModifier
 import me.fzzyhmstrs.fzzy_core.modifier_util.AbstractModifierHelper
 import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierHelperType
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.loot.function.LootFunction
@@ -13,6 +19,8 @@ import net.minecraft.loot.function.SetEnchantmentsLootFunction
 import net.minecraft.loot.function.SetNbtLootFunction
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
+import net.minecraft.resource.ResourceManager
+import net.minecraft.resource.ResourceType
 import net.minecraft.util.Identifier
 
 /**
@@ -24,16 +32,23 @@ import net.minecraft.util.Identifier
 @Suppress("MemberVisibilityCanBePrivate")
 object ModifierRegistry {
     private val registry: MutableMap<Identifier, AbstractModifier<*>> = mutableMapOf()
+    private val loader = Loader()
+    private var modifierDefaults = ModifierDefaults()
 
     internal fun registerAll(){
+        loader.registerServer()
     }
 
-    /**
-     * register a modifier with this.
-     */
+    fun <T> getDefaultModifiers(obj: T, type: ModifierHelperType<*>): List<Identifier> where T: Item, T: Modifiable{
+        return modifierDefaults.getModifiers(obj,type)
+    }
+
     fun values(): Collection<AbstractModifier<*>>{
         return registry.values
     }
+    /**
+     * register a modifier with this.
+     */
     fun register(modifier: AbstractModifier<*>){
         val id = modifier.modifierId
         if (registry.containsKey(id)){throw IllegalStateException("AbstractModifier with id $id already present in ModififerRegistry")}
@@ -91,10 +106,10 @@ object ModifierRegistry {
     fun<T: AbstractModifier<T>> modifiersLootFunctionBuilder(item: Item, modifiers: List<AbstractModifier<T>> = listOf(), type: ModifierHelperType<T>): LootFunction.Builder{
         val modList = NbtList()
         if (item is Modifiable) {
-            if (item.defaultModifiers(type).isEmpty() && modifiers.isEmpty()){
+            if (getDefaultModifiers(item,type).isEmpty() && modifiers.isEmpty()){
                 return SetEnchantmentsLootFunction.Builder() //empty builder for placehold purposes basically
             } else {
-                item.defaultModifiers(type).forEach {
+                getDefaultModifiers(item,type).forEach {
                     val nbtEl = NbtCompound()
                     nbtEl.putString(type.getModifierIdKey(),it.toString())
                     modList.add(nbtEl)
@@ -120,5 +135,141 @@ object ModifierRegistry {
         nbt.put(type.getModifiersKey(), modList)
         @Suppress("DEPRECATION")
         return SetNbtLootFunction.builder(nbt)
+    }
+
+    private class Loader: SimpleSynchronousResourceReloadListener {
+
+        override fun reload(manager: ResourceManager) {
+            val map: MutableMap<Item, ArrayListMultimap<ModifierHelperType<*>, Identifier>> = mutableMapOf()
+            val defaults = ReloadableModifierDefaults()
+            manager.findResources("item_modifiers") { path -> path.path.endsWith(".json") }
+            .forEach {(id,resource) ->
+                try {
+                    val reader = resource.reader
+                    val json = JsonParser.parseReader(reader).asJsonObject
+                    for ((elName, el) in json.entrySet()){
+                        if (!el.isJsonObject){
+                            println("Error: element $elName not a valid JsonOblject, skipping!")
+                        }
+                        val itemId = Identifier.tryParse(elName)
+                        if (itemId == null){
+                            println("Error: key $elName not a valid item identifier, skipping!")
+                            continue
+                        }
+                        val item = FzzyPort.ITEM.get(itemId)
+                        if (item !is Modifiable){
+                            println("Error: item $itemId isn't Modifiable, skipping!")
+                            continue
+                        }
+                        val jsonTypes = el.asJsonObject
+                        var replace = false
+                        for ((typeName, typeEl) in jsonTypes.entrySet()){
+                            val typesMap: ArrayListMultimap<ModifierHelperType<*>,Identifier> = ArrayListMultimap.create()
+                            if (typeName == "replace"){
+                                if (!typeEl.isJsonPrimitive || !typeEl.asJsonPrimitive.isBoolean){
+                                    println("Error: 'replace' key in modifier definition $typeName not a boolean, values are NOT being replaced per default!")
+                                } else {
+                                    replace = typeEl.asBoolean
+                                }
+                                continue
+                            }
+                            if (!typeEl.isJsonArray && !typeEl.isJsonPrimitive){
+                                println("Error: modifier definition $typeName not an array or string, skipping!")
+                                continue
+                            }
+                            val typeId = Identifier.tryParse(typeName)
+                            if (typeId == null){
+                                println("Error: type key $typeName not a valid modifier type identifier, skipping!")
+                                continue
+                            }
+                            val type = ModifierHelperType.REGISTRY.get(typeId)
+                            if (type == null){
+                                println("Error: type key $typeName not a valid modifier type identifier, skipping!")
+                                continue
+                            }
+                            if (!item.canBeModifiedBy(type)){
+                                println("Error: item $itemId can't be modified by ModifierType $typeId, skipping!")
+                                continue
+                            }
+                            typesMap.putAll(type,item.defaultModifiers(type))
+                            if (typeEl.isJsonArray){
+                                val modifierArray = typeEl.asJsonArray
+                                for (modifierEl in modifierArray){
+                                    if(!modifierEl.isJsonPrimitive){
+                                        println("Error: modifier element $modifierEl not a valid modifier id, skipping!")
+                                        continue
+                                    }
+                                    val modifierId = Identifier.tryParse(modifierEl.asString)
+                                    if (modifierId == null){
+                                        println("Error: modifier element $modifierEl not a valid modifier id, skipping!")
+                                        continue
+                                    }
+                                    val modifier = type.helper().getModifierByType(modifierId)
+                                    if (modifier == null){
+                                        println("Error: modifier $modifierId not found in the registry or not of type $typeId, skipping!")
+                                        continue
+                                    }
+                                    typesMap.put(type,modifierId)
+                                }
+                            } else if (typeEl.isJsonPrimitive){
+                                val modifierId = Identifier.tryParse(typeEl.asString)
+                                if (modifierId == null){
+                                    println("Error: modifier element $typeEl not a valid modifier id, skipping!")
+                                    continue
+                                }
+                                val modifier = type.helper().getModifierByType(modifierId)
+                                if (modifier == null){
+                                    println("Error: modifier $modifierId not found in the registry or not of type $typeId, skipping!")
+                                    continue
+                                }
+                                typesMap.put(type,modifierId)
+                            } else {
+                                println("Unknown Error: something went wrong with the type key $typeId, skipping!")
+                                continue
+                            }
+                            if (replace)
+                                map[item] = typesMap
+                            else
+                                map.computeIfAbsent(item) { ArrayListMultimap.create() }.putAll(typesMap)
+                        }
+                    }
+                    defaults.setMap(map)
+                    println(map)
+                } catch (e: Exception){
+                    println("Error while loading item modifiers file $id!")
+                    e.printStackTrace()
+                }
+            }
+            modifierDefaults = defaults
+        }
+
+        override fun getFabricId(): Identifier {
+            return Identifier(FC.MOD_ID,"default_modifier_loader")
+        }
+
+        fun registerServer(){
+            ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(this)
+        }
+    }
+
+    private class ReloadableModifierDefaults: ModifierDefaults(){
+
+        private var itemModifierMap: Map<Item, ArrayListMultimap<ModifierHelperType<*>, Identifier>> = mapOf()
+
+        override fun <T> getModifiers(item: T, type: ModifierHelperType<*>): List<Identifier> where T: Item, T:Modifiable{
+            return itemModifierMap[item]?.get(type) ?: item.defaultModifiers(type)
+        }
+
+        fun setMap(map: Map<Item, ArrayListMultimap<ModifierHelperType<*>, Identifier>>){
+            itemModifierMap = map
+        }
+    }
+
+    private open class ModifierDefaults{
+
+        private val emptyList: List<Identifier> = listOf()
+        open fun <T> getModifiers(item: T, type: ModifierHelperType<*>): List<Identifier> where T: Item, T:Modifiable{
+            return emptyList
+        }
     }
 }

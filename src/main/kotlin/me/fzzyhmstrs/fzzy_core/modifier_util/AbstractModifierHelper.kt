@@ -39,7 +39,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     //abstract fun gatherActiveModifiers(stack: ItemStack)
 
     abstract fun getTranslationKeyFromIdentifier(id: Identifier): String
-    
+
     abstract fun getDescTranslationKeyFromIdentifier(id: Identifier): String
 
     abstract fun getType(): ModifierHelperType<T>
@@ -239,7 +239,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
     override fun initializeModifiers(stack: ItemStack): List<Identifier>{
         val item = stack.item
         val list = if(item is Modifiable){
-            item.defaultModifiers(getType())
+            ModifierRegistry.getDefaultModifiers(item,getType())
         } else {
             listOf()
         }
@@ -311,7 +311,7 @@ abstract class AbstractModifierHelper<T: AbstractModifier<T>> : ModifierInitiali
         }
         return list
     }
-    
+
     fun getModifiersFromNbt(stack: ItemStack): List<Identifier>{
         val nbt = stack.nbt?:return listOf()
         return getModifiersFromNbt(nbt)
