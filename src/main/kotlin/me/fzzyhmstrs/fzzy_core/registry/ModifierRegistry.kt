@@ -43,7 +43,7 @@ object ModifierRegistry {
         return modifierDefaults.getModifiers(obj,type)
     }
 
-    fun values(): Collection<AbstractModifier<*>>{
+    fun values(): Collection<AbstractModifier<*>> {
         return registry.values
     }
     /**
@@ -142,23 +142,23 @@ object ModifierRegistry {
         override fun reload(manager: ResourceManager) {
             val map: MutableMap<Item, ArrayListMultimap<ModifierHelperType<*>, Identifier>> = mutableMapOf()
             val defaults = ReloadableModifierDefaults()
-            manager.findResources("item_modifiers") { path -> path.path.endsWith(".json") }
+            manager.findResources("modifier_items") { path -> path.path.endsWith(".json") }
             .forEach {(id,resource) ->
                 try {
                     val reader = resource.reader
                     val json = JsonParser.parseReader(reader).asJsonObject
                     for ((elName, el) in json.entrySet()){
                         if (!el.isJsonObject){
-                            println("Error: element $elName not a valid JsonOblject, skipping!")
+                            FC.LOGGER.warn("Error: element $elName not a valid JsonOblject, skipping!")
                         }
                         val itemId = Identifier.tryParse(elName)
                         if (itemId == null){
-                            println("Error: key $elName not a valid item identifier, skipping!")
+                            FC.LOGGER.warn("Error: key $elName not a valid item identifier, skipping!")
                             continue
                         }
                         val item = FzzyPort.ITEM.get(itemId)
                         if (item !is Modifiable){
-                            println("Error: item $itemId isn't Modifiable, skipping!")
+                            FC.LOGGER.warn("Error: item $itemId isn't Modifiable, skipping!")
                             continue
                         }
                         val jsonTypes = el.asJsonObject
@@ -167,28 +167,28 @@ object ModifierRegistry {
                             val typesMap: ArrayListMultimap<ModifierHelperType<*>,Identifier> = ArrayListMultimap.create()
                             if (typeName == "replace"){
                                 if (!typeEl.isJsonPrimitive || !typeEl.asJsonPrimitive.isBoolean){
-                                    println("Error: 'replace' key in modifier definition $typeName not a boolean, values are NOT being replaced per default!")
+                                    FC.LOGGER.warn("Error: 'replace' key in modifier definition $typeName not a boolean, values are NOT being replaced per default!")
                                 } else {
                                     replace = typeEl.asBoolean
                                 }
                                 continue
                             }
                             if (!typeEl.isJsonArray && !typeEl.isJsonPrimitive){
-                                println("Error: modifier definition $typeName not an array or string, skipping!")
+                                FC.LOGGER.warn("Error: modifier definition $typeName not an array or string, skipping!")
                                 continue
                             }
                             val typeId = Identifier.tryParse(typeName)
                             if (typeId == null){
-                                println("Error: type key $typeName not a valid modifier type identifier, skipping!")
+                                FC.LOGGER.warn("Error: type key $typeName not a valid modifier type identifier, skipping!")
                                 continue
                             }
                             val type = ModifierHelperType.REGISTRY.get(typeId)
                             if (type == null){
-                                println("Error: type key $typeName not a valid modifier type identifier, skipping!")
+                                FC.LOGGER.warn("Error: type key $typeName not a valid modifier type identifier, skipping!")
                                 continue
                             }
                             if (!item.canBeModifiedBy(type)){
-                                println("Error: item $itemId can't be modified by ModifierType $typeId, skipping!")
+                                FC.LOGGER.warn("Error: item $itemId can't be modified by ModifierType $typeId, skipping!")
                                 continue
                             }
                             typesMap.putAll(type,item.defaultModifiers(type))
@@ -196,17 +196,17 @@ object ModifierRegistry {
                                 val modifierArray = typeEl.asJsonArray
                                 for (modifierEl in modifierArray){
                                     if(!modifierEl.isJsonPrimitive){
-                                        println("Error: modifier element $modifierEl not a valid modifier id, skipping!")
+                                        FC.LOGGER.warn("Error: modifier element $modifierEl not a valid modifier id, skipping!")
                                         continue
                                     }
                                     val modifierId = Identifier.tryParse(modifierEl.asString)
                                     if (modifierId == null){
-                                        println("Error: modifier element $modifierEl not a valid modifier id, skipping!")
+                                        FC.LOGGER.warn("Error: modifier element $modifierEl not a valid modifier id, skipping!")
                                         continue
                                     }
                                     val modifier = type.helper().getModifierByType(modifierId)
                                     if (modifier == null){
-                                        println("Error: modifier $modifierId not found in the registry or not of type $typeId, skipping!")
+                                        FC.LOGGER.warn("Error: modifier $modifierId not found in the registry or not of type $typeId, skipping!")
                                         continue
                                     }
                                     typesMap.put(type,modifierId)
@@ -214,17 +214,17 @@ object ModifierRegistry {
                             } else if (typeEl.isJsonPrimitive){
                                 val modifierId = Identifier.tryParse(typeEl.asString)
                                 if (modifierId == null){
-                                    println("Error: modifier element $typeEl not a valid modifier id, skipping!")
+                                    FC.LOGGER.warn("Error: modifier element $typeEl not a valid modifier id, skipping!")
                                     continue
                                 }
                                 val modifier = type.helper().getModifierByType(modifierId)
                                 if (modifier == null){
-                                    println("Error: modifier $modifierId not found in the registry or not of type $typeId, skipping!")
+                                    FC.LOGGER.warn("Error: modifier $modifierId not found in the registry or not of type $typeId, skipping!")
                                     continue
                                 }
                                 typesMap.put(type,modifierId)
                             } else {
-                                println("Unknown Error: something went wrong with the type key $typeId, skipping!")
+                                FC.LOGGER.warn("Unknown Error: something went wrong with the type key $typeId, skipping!")
                                 continue
                             }
                             if (replace)
@@ -234,9 +234,8 @@ object ModifierRegistry {
                         }
                     }
                     defaults.setMap(map)
-                    println(map)
                 } catch (e: Exception){
-                    println("Error while loading item modifiers file $id!")
+                    FC.LOGGER.warn("Error while loading item modifiers file $id!")
                     e.printStackTrace()
                 }
             }

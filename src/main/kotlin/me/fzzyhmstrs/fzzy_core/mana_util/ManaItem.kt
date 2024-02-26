@@ -4,6 +4,7 @@ import me.fzzyhmstrs.fzzy_core.coding_util.AcText
 import net.minecraft.enchantment.Enchantment
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.entity.LivingEntity
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
@@ -50,7 +51,8 @@ interface ManaItem {
                     1.0F,
                     1.0F
                 )
-                entity.sendMessage(message)
+                if (entity is PlayerEntity)
+                    entity.sendMessage(message,true)
             }
             false
         }
@@ -72,7 +74,8 @@ interface ManaItem {
             }
         }
         if (message.toString() != "") {
-            entity.sendMessage(message)
+            if (entity is PlayerEntity)
+                entity.sendMessage(message,true)
         }
         EnchantmentHelper.set(newEnchantList, stack)
     }
@@ -113,7 +116,8 @@ interface ManaItem {
                     1.0F
                 )
                 if (message.toString() != "") {
-                    entity.sendMessage(message)
+                    if (entity is PlayerEntity)
+                        entity.sendMessage(message,true)
                 }
             }
             if (newCurrentDmg == (maxDmg - 1)) {

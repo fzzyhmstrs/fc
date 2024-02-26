@@ -4,6 +4,8 @@ import com.llamalad7.mixinextras.MixinExtrasBootstrap
 import me.fzzyhmstrs.fzzy_core.coding_util.AdvancementCompletionCriterion
 import me.fzzyhmstrs.fzzy_core.config.FcConfig
 import me.fzzyhmstrs.fzzy_core.item_util.ModifierHolderItem
+import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierConsumerType
+import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierPredicateType
 import me.fzzyhmstrs.fzzy_core.registry.EventRegistry
 import me.fzzyhmstrs.fzzy_core.registry.ItemModelRegistry
 import me.fzzyhmstrs.fzzy_core.registry.LootRegistry
@@ -33,6 +35,8 @@ object FC: ModInitializer {
         LootRegistry.registerAll()
         EventRegistry.registerAll()
         ModifierRegistry.registerAll()
+        ModifierPredicateType.Types.init()
+        ModifierConsumerType.Types.init()
     }
 }
 

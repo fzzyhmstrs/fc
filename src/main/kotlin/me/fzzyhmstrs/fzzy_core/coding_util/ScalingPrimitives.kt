@@ -1,5 +1,8 @@
 package me.fzzyhmstrs.fzzy_core.coding_util
 
+import com.mojang.datafixers.util.Either
+import com.mojang.serialization.Codec
+import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.nbt.NbtCompound
 
 /**
@@ -11,7 +14,8 @@ import net.minecraft.nbt.NbtCompound
  */
 
 object ScalingPrimitivesHelper {
-    fun writeNbt(primitive: ScalingPrimitives): NbtCompound{
+
+    fun writeNbt(primitive: ScalingPrimitives<*>): NbtCompound{
         val nbtCompound = NbtCompound()
         when (primitive){
             is PerLvlI ->{
@@ -42,7 +46,7 @@ object ScalingPrimitivesHelper {
         return nbtCompound
     }
 
-    fun readNbt(nbtCompound: NbtCompound): ScalingPrimitives{
+    fun readNbt(nbtCompound: NbtCompound): ScalingPrimitives<*>{
         when(nbtCompound.getString("type")){
             "i" -> {
                 return PerLvlI(
@@ -78,19 +82,20 @@ object ScalingPrimitivesHelper {
 
 }
 
-interface ScalingPrimitives
+interface ScalingPrimitives<T: Number>{
+}
 
-data class PerLvlI(private var base: Int = 0, private var perLevel: Int = 0, private var percent: Int = 0): ScalingPrimitives{
+data class PerLvlI(private var base: Int = 0, private var perLevel: Int = 0, private var percent: Int = 0): ScalingPrimitives<Int>{
     fun base(): Int{
         return base
     }
-    fun perLevel(): Int{
+     fun perLevel(): Int{
         return perLevel
     }
-    fun percent(): Int{
+     fun percent(): Int{
         return percent
     }
-    fun value(level: Int): Int{
+     fun value(level: Int): Int{
         return (base + perLevel * level) * (100 + percent) / 100
     }
     fun plus(ldi: PerLvlI): PerLvlI {
@@ -111,9 +116,24 @@ data class PerLvlI(private var base: Int = 0, private var perLevel: Int = 0, pri
         this.percent = percent
         return this
     }
+
+    companion object{
+        val CODEC: Codec<PerLvlI> = Codec.either(
+            Codec.INT,
+            RecordCodecBuilder.create { instance: RecordCodecBuilder.Instance<PerLvlI> ->
+                instance.group(
+                    Codec.INT.optionalFieldOf("base", 0).forGetter { perLvlI -> perLvlI.base() },
+                    Codec.INT.optionalFieldOf("perLevel", 0).forGetter { perLvlI -> perLvlI.perLevel() },
+                    Codec.INT.optionalFieldOf("percent", 0).forGetter { perLvlI -> perLvlI.percent() }
+                ).apply(instance){base, perLevel, percent -> PerLvlI(base, perLevel, percent)} }
+        ).xmap(
+            {either -> either.map({i -> PerLvlI(i)},{pli -> pli})},
+            {pli -> if(pli.perLevel() == 0 && pli.percent() == 0) Either.left(pli.base()) else Either.right(pli)}
+        )
+    }
 }
 
-data class PerLvlL(private var base: Long = 0, private var perLevel: Long = 0, private var percent: Long = 0): ScalingPrimitives{
+data class PerLvlL(private var base: Long = 0, private var perLevel: Long = 0, private var percent: Long = 0): ScalingPrimitives<Long>{
     fun base(): Long{
         return base
     }
@@ -123,7 +143,7 @@ data class PerLvlL(private var base: Long = 0, private var perLevel: Long = 0, p
     fun percent(): Long{
         return percent
     }
-    fun value(level: Long): Long{
+     fun value(level: Int): Long{
         return (base + perLevel * level) * (100 + percent) / 100
     }
     fun plus(ldl: PerLvlL): PerLvlL {
@@ -144,19 +164,35 @@ data class PerLvlL(private var base: Long = 0, private var perLevel: Long = 0, p
         this.percent = percent
         return this
     }
+
+    companion object {
+        val CODEC: Codec<PerLvlL> = Codec.either(
+            Codec.LONG,
+            RecordCodecBuilder.create { instance: RecordCodecBuilder.Instance<PerLvlL> ->
+                instance.group(
+                    Codec.LONG.optionalFieldOf("base", 0L).forGetter { perLvlL -> perLvlL.base() },
+                    Codec.LONG.optionalFieldOf("perLevel", 0L).forGetter { perLvlL -> perLvlL.perLevel() },
+                    Codec.LONG.optionalFieldOf("percent", 0L).forGetter { perLvlL -> perLvlL.percent() }
+                ).apply(instance) { base, perLevel, percent -> PerLvlL(base, perLevel, percent) }
+            }
+        ).xmap(
+            { either -> either.map({ l -> PerLvlL(l) }, { pll -> pll }) },
+            { pll -> if (pll.perLevel() == 0L && pll.percent() == 0L) Either.left(pll.base()) else Either.right(pll) }
+        )
+    }
 }
 
-data class PerLvlF(private var base: Float = 0.0F, private var perLevel: Float = 0.0F, private var percent: Float = 0.0F): ScalingPrimitives{
-    fun base(): Float{
+data class PerLvlF(private var base: Float = 0.0F, private var perLevel: Float = 0.0F, private var percent: Float = 0.0F): ScalingPrimitives<Float>{
+     fun base(): Float{
         return base
     }
-    fun perLevel(): Float{
+     fun perLevel(): Float{
         return perLevel
     }
-    fun percent(): Float{
+     fun percent(): Float{
         return percent
     }
-    fun value(level: Int): Float{
+     fun value(level: Int): Float{
         return (base + perLevel * level) * (100 + percent) / 100
     }
     fun plus(ldf: PerLvlF): PerLvlF {
@@ -177,19 +213,34 @@ data class PerLvlF(private var base: Float = 0.0F, private var perLevel: Float =
         this.percent = percent
         return this
     }
+
+    companion object {
+        val CODEC: Codec<PerLvlF> = Codec.either(
+            Codec.FLOAT,
+            RecordCodecBuilder.create { instance: RecordCodecBuilder.Instance<PerLvlF> ->
+                instance.group(
+                    Codec.FLOAT.optionalFieldOf("base", 0f).forGetter { perLvlF -> perLvlF.base() },
+                    Codec.FLOAT.optionalFieldOf("perLevel", 0f).forGetter { perLvlF -> perLvlF.perLevel() },
+                    Codec.FLOAT.optionalFieldOf("percent", 0f).forGetter { perLvlF -> perLvlF.percent() }
+                ).apply(instance){base, perLevel, percent -> PerLvlF(base, perLevel, percent)} }
+        ).xmap(
+            { either -> either.map({ f -> PerLvlF(f) }, { plf -> plf }) },
+            { plf -> if (plf.perLevel() == 0f && plf.percent() == 0f) Either.left(plf.base()) else Either.right(plf) }
+        )
+    }
 }
 
-data class PerLvlD(private var base: Double = 0.0, private var perLevel: Double = 0.0, private var percent: Double = 0.0): ScalingPrimitives{
-    fun base(): Double{
+data class PerLvlD(private var base: Double = 0.0, private var perLevel: Double = 0.0, private var percent: Double = 0.0): ScalingPrimitives<Double>{
+     fun base(): Double{
         return base
     }
-    fun perLevel(): Double{
+     fun perLevel(): Double{
         return perLevel
     }
-    fun percent(): Double{
+     fun percent(): Double{
         return percent
     }
-    fun value(level: Int): Double{
+     fun value(level: Int): Double{
         return (base + perLevel * level) * (100 + percent) / 100
     }
     fun plus(ldd: PerLvlD): PerLvlD {
@@ -209,5 +260,27 @@ data class PerLvlD(private var base: Double = 0.0, private var perLevel: Double 
         this.perLevel = perLevel
         this.percent = percent
         return this
+    }
+
+    companion object{
+        val CODEC: Codec<PerLvlD> = RecordCodecBuilder.create { instance: RecordCodecBuilder.Instance<PerLvlD> ->
+            instance.group(
+                Codec.DOUBLE.optionalFieldOf("base", 0.0).forGetter { perLvlD -> perLvlD.base() },
+                Codec.DOUBLE.optionalFieldOf("perLevel", 0.0).forGetter { perLvlD -> perLvlD.perLevel() },
+                Codec.DOUBLE.optionalFieldOf("percent", 0.0).forGetter { perLvlD -> perLvlD.percent() }
+            ).apply(instance){base, perLevel, percent -> PerLvlD(base, perLevel, percent)} }
+
+        val coed = Codec.either(
+            Codec.DOUBLE,
+            RecordCodecBuilder.create { instance: RecordCodecBuilder.Instance<PerLvlD> ->
+                instance.group(
+                    Codec.DOUBLE.optionalFieldOf("base", 0.0).forGetter { perLvlD -> perLvlD.base() },
+                    Codec.DOUBLE.optionalFieldOf("perLevel", 0.0).forGetter { perLvlD -> perLvlD.perLevel() },
+                    Codec.DOUBLE.optionalFieldOf("percent", 0.0).forGetter { perLvlD -> perLvlD.percent() }
+                ).apply(instance){base, perLevel, percent -> PerLvlD(base, perLevel, percent)} }
+        ).xmap(
+            { either -> either.map({ d -> PerLvlD(d) }, { pld -> pld }) },
+            { pld -> if (pld.perLevel() == 0.0 && pld.percent() == 0.0) Either.left(pld.base()) else Either.right(pld) }
+        )
     }
 }
