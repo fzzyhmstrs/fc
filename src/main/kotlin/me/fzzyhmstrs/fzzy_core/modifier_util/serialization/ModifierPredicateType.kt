@@ -1,21 +1,26 @@
-package me.fzzyhmstrs.fzzy_core.modifier_util
+package me.fzzyhmstrs.fzzy_core.modifier_util.serialization
 
+import com.mojang.datafixers.util.Either
 import com.mojang.serialization.Codec
 import me.fzzyhmstrs.fzzy_core.FC
 import me.fzzyhmstrs.fzzy_core.coding_util.FzzyPort
-import me.fzzyhmstrs.fzzy_core.modifier_util.base_predicates.*
+import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.base_predicates.*
 import net.minecraft.registry.Registry
 import net.minecraft.util.Identifier
 
-interface ModifierPredicateType<T:ModifierPredicate> {
+interface ModifierPredicateType<T: ModifierPredicate> {
 
     fun codec(): Codec<T>
 
     companion object{
         val REGISTRY = FzzyPort.simpleRegistry<ModifierPredicateType<*>>(Identifier(FC.MOD_ID,"modifier_predicate_type"))
-        val CODEC: Codec<ModifierPredicate> = REGISTRY.codec.dispatch({p: ModifierPredicate -> p.getType()},{t -> t.codec()})
+        val CODEC: Codec<ModifierPredicate> = REGISTRY.codec.dispatch({ p: ModifierPredicate -> p.getType()},{ t -> t.codec()})
+        val LIST_CODEC: Codec<List<ModifierPredicate>> = Codec.either(CODEC, CODEC.listOf()).xmap(
+            {e -> e.map({l -> listOf(l)},{r -> r})},
+            {l -> if (l.size == 1) Either.left(l[0]) else Either.right(l)}
+        )
 
-        fun <T: ModifierPredicate> register(type: ModifierPredicateType<T>, identifier: Identifier): ModifierPredicateType<T>{
+        fun <T: ModifierPredicate> register(type: ModifierPredicateType<T>, identifier: Identifier): ModifierPredicateType<T> {
             return Registry.register(REGISTRY,identifier,type)
         }
 
@@ -55,12 +60,12 @@ interface ModifierPredicateType<T:ModifierPredicate> {
 
         fun init(){}
 
-        val ENCHANTMENT_TAG = register(EnchantmentTagModifierPredicate.Type, Identifier(FC.MOD_ID,"tag_enchant"))
-        val ITEM_TAG = register(ItemTagModifierPredicate.Type, Identifier(FC.MOD_ID,"tag_item"))
-        val ENTITY_TYPE_TAG = register(EntityTagModifierPredicate.Type, Identifier(FC.MOD_ID,"tag_entity"))
-        val INVERT = register(InvertModifierPredicate.Type, Identifier(FC.MOD_ID,"invert"))
-        val AND = register(AndModifierPredicate.Type, Identifier(FC.MOD_ID,"and"))
-        val OR = register(OrModifierPredicate.Type, Identifier(FC.MOD_ID,"or"))
+        val ENCHANTMENT_TAG = register(EnchantmentTagModifierPredicate, Identifier(FC.MOD_ID,"tag_enchant"))
+        val ITEM_TAG = register(ItemTagModifierPredicate, Identifier(FC.MOD_ID,"tag_item"))
+        val ENTITY_TYPE_TAG = register(EntityTagModifierPredicate, Identifier(FC.MOD_ID,"tag_entity"))
+        val INVERT = register(InvertModifierPredicate, Identifier(FC.MOD_ID,"invert"))
+        val AND = register(AndModifierPredicate, Identifier(FC.MOD_ID,"and"))
+        val OR = register(OrModifierPredicate, Identifier(FC.MOD_ID,"or"))
     }
 
 }

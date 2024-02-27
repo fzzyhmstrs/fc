@@ -1,9 +1,9 @@
-package me.fzzyhmstrs.fzzy_core.modifier_util.base_consumers
+package me.fzzyhmstrs.fzzy_core.modifier_util.serialization.base_consumers
 
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierConsumer
-import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierConsumerType
+import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.ModifierConsumer
+import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.ModifierConsumerType
 import net.minecraft.entity.LivingEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.util.math.random.Random
@@ -19,7 +19,7 @@ class RandomChanceModifierConsumer(private val chance: Float, private val child:
         return Type
     }
 
-    companion object Type: ModifierConsumerType<RandomChanceModifierConsumer>{
+    companion object Type: ModifierConsumerType<RandomChanceModifierConsumer> {
 
         private val random = Random.createThreadSafe()
 
@@ -27,7 +27,7 @@ class RandomChanceModifierConsumer(private val chance: Float, private val child:
             instance.group(
                 Codec.FLOAT.fieldOf("chance").forGetter { c -> c.chance },
                 ModifierConsumerType.CODEC.fieldOf("child").forGetter { c -> c.child }
-            ).apply(instance){f,c -> RandomChanceModifierConsumer(f,c)}
+            ).apply(instance){f,c -> RandomChanceModifierConsumer(f,c) }
         }
 
         override fun codec(): Codec<RandomChanceModifierConsumer> {

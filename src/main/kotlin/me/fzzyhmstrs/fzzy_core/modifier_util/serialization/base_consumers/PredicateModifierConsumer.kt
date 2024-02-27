@@ -1,20 +1,20 @@
-package me.fzzyhmstrs.fzzy_core.modifier_util.base_consumers
+package me.fzzyhmstrs.fzzy_core.modifier_util.serialization.base_consumers
 
 import com.mojang.datafixers.util.Either
 import com.mojang.datafixers.util.Pair
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import me.fzzyhmstrs.fzzy_core.coding_util.FzzyPort
 import me.fzzyhmstrs.fzzy_core.modifier_util.*
+import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.ModifierConsumer
+import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.ModifierConsumerType
+import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.ModifierPredicate
+import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.ModifierPredicateType
 import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.effect.StatusEffect
-import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.item.ItemStack
-import net.minecraft.util.Identifier
-import net.minecraft.util.math.random.Random
 
-class PredicateModifierConsumer private constructor (private val predicates: List<PredicateRecord>, private val consumer: ModifierConsumer): ModifierConsumer {
+class PredicateModifierConsumer private constructor (private val predicates: List<PredicateRecord>, private val consumer: ModifierConsumer):
+    ModifierConsumer {
 
     constructor(consumer: ModifierConsumer, predicates: List<Pair<ModifierPredicate, Boolean>>): this(predicates.map { PredicateRecord(it.first,it.second) }, consumer)
 
@@ -59,7 +59,7 @@ class PredicateModifierConsumer private constructor (private val predicates: Lis
                 instance.group(
                     ModifierPredicateType.CODEC.fieldOf("predicate").forGetter { p -> p.predicate },
                     Codec.BOOL.optionalFieldOf("user", true).forGetter { p -> p.user }
-                ).apply(instance){p,u -> PredicateRecord(p,u)}
+                ).apply(instance){p,u -> PredicateRecord(p,u) }
             }
         }
     }

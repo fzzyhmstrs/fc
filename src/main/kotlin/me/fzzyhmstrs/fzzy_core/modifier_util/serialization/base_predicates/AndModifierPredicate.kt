@@ -1,8 +1,8 @@
-package me.fzzyhmstrs.fzzy_core.modifier_util.base_predicates
+package me.fzzyhmstrs.fzzy_core.modifier_util.serialization.base_predicates
 
 import com.mojang.serialization.Codec
-import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierPredicate
-import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierPredicateType
+import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.ModifierPredicate
+import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.ModifierPredicateType
 import net.minecraft.entity.LivingEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
@@ -23,7 +23,7 @@ class AndModifierPredicate(private val predicates: List<ModifierPredicate>): Mod
     companion object Type: ModifierPredicateType<AndModifierPredicate> {
 
         private val CODEC = Codec.list(ModifierPredicateType.CODEC).xmap(
-            {p -> AndModifierPredicate(p)},
+            {p -> AndModifierPredicate(p) },
             {a -> a.predicates}
         )
 

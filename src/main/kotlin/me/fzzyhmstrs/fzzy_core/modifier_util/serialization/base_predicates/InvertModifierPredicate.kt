@@ -1,8 +1,8 @@
-package me.fzzyhmstrs.fzzy_core.modifier_util.base_predicates
+package me.fzzyhmstrs.fzzy_core.modifier_util.serialization.base_predicates
 
 import com.mojang.serialization.Codec
-import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierPredicate
-import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierPredicateType
+import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.ModifierPredicate
+import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.ModifierPredicateType
 import net.minecraft.entity.LivingEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
@@ -19,7 +19,7 @@ class InvertModifierPredicate(private val predicate: ModifierPredicate): Modifie
     companion object Type: ModifierPredicateType<InvertModifierPredicate> {
 
         private val CODEC = ModifierPredicateType.CODEC.xmap(
-            {p -> InvertModifierPredicate(p)},
+            {p -> InvertModifierPredicate(p) },
             {i -> i.predicate}
         )
 

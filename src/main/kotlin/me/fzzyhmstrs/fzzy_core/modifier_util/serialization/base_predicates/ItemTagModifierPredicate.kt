@@ -1,9 +1,9 @@
-package me.fzzyhmstrs.fzzy_core.modifier_util.base_predicates
+package me.fzzyhmstrs.fzzy_core.modifier_util.serialization.base_predicates
 
 import com.mojang.serialization.Codec
 import me.fzzyhmstrs.fzzy_core.coding_util.FzzyPort
-import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierPredicate
-import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierPredicateType
+import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.ModifierPredicate
+import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.ModifierPredicateType
 import net.minecraft.entity.LivingEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -27,7 +27,7 @@ class ItemTagModifierPredicate(private val tag:TagKey<Item>): ModifierPredicate 
     companion object Type: ModifierPredicateType<ItemTagModifierPredicate> {
 
         private val CODEC = TagKey.codec(FzzyPort.ITEM.registry().key).xmap(
-            {tag -> ItemTagModifierPredicate(tag)},
+            {tag -> ItemTagModifierPredicate(tag) },
             {predicate -> predicate.tag}
         )
 
