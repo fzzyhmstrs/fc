@@ -34,8 +34,6 @@ abstract class AbstractModifier<T: AbstractModifier<T>>(val modifierId: Identifi
      */
     private var descendant: Identifier = AbstractModifierHelper.BLANK
     private var ancestor: Identifier = AbstractModifierHelper.BLANK
-    private val lineage: List<Identifier> by lazy { generateLineage() }
-
 
     private var objectsToAffect: Predicate<Identifier>? = null
 
@@ -52,7 +50,7 @@ abstract class AbstractModifier<T: AbstractModifier<T>>(val modifierId: Identifi
     open fun getTranslationKey(): String{
         return getModifierHelper().getTranslationKeyFromIdentifier(modifierId)
     }
-    
+
     /**
      * defines the lang translation key for TranslatableText of the extended modifier description.
      */
@@ -93,15 +91,8 @@ abstract class AbstractModifier<T: AbstractModifier<T>>(val modifierId: Identifi
         descendant = modifier.modifierId
         modifier.ancestor = this.modifierId
     }
-    fun getModLineage(): List<Identifier>{
-        return lineage
-    }
-    private fun generateLineage(): List<Identifier>{
-
-        val lineage: MutableList<Identifier> =  mutableListOf(this.modifierId)
-        val nextInLineage = ModifierRegistry.get(descendant) ?: return lineage
-        lineage.addAll(nextInLineage.getModLineage())
-        return lineage
+    fun addDescendant(modifier: Identifier){
+        descendant = modifier
     }
     open fun hasObjectToAffect(): Boolean{
         return objectsToAffect != null
