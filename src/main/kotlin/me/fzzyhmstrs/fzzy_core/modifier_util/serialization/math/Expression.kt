@@ -3,7 +3,6 @@ package me.fzzyhmstrs.fzzy_core.modifier_util.serialization.math
 import com.mojang.brigadier.StringReader
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.random.Random
-import org.apache.commons.lang3.StringUtils.substring
 import java.lang.StringBuilder
 import kotlin.math.pow
 import kotlin.reflect.typeOf
