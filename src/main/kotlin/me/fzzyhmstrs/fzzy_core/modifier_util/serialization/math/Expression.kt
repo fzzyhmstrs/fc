@@ -14,6 +14,11 @@ fun interface Expression {
     @Suppress("SameParameterValue")
     companion object{
 
+        val CODEC = Codec.STRING.comapFlatMap(
+            {s -> try{ DataResult.success(parse(s, s)) } catch(e:Exception) { DataResult.error { "Error while deserializing math equation: ${e.localizedMessage}" }}},
+            {e -> u.toString()}
+        )
+
         fun parse(str: String, context: String): Expression{
             try {
                 val reader = StringReader(str)
@@ -500,7 +505,7 @@ fun interface Expression {
                 }
 
                 override fun toString(): String {
-                    return "MathHelper.$chunk${inputs.toString().replace('[','(').replace(']',')')}"
+                    return "$chunk${inputs.toString().replace('[','(').replace(']',')')}"
                 }
             }
         }
