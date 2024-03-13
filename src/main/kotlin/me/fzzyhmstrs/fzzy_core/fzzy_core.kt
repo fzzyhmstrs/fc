@@ -43,6 +43,7 @@ object FCC: ClientModInitializer {
     override fun onInitializeClient() {
         ItemModelRegistry.registerAll()
         EventRegistry.registerClient()
+        ModifierRegistry.registerClient()
     }
 }
 
