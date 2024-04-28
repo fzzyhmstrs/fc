@@ -106,6 +106,8 @@ abstract class ModifierHelperType <T: AbstractModifier<T>> (val id: Identifier, 
                 }
             )
 
+        fun init(){}
+
         private fun getTypeFromEither(either: Either<out AbstractModifier<*>, out List<AbstractModifier<*>>>): DataResult<ModifierHelperType<*>>{
             var dataResult: DataResult<ModifierHelperType<*>> = DataResult.error{"Modifier helper type can't be generated from provided values: $either"}
             either.ifLeft{ dataResult = DataResult.success(it.getModifierHelper().getType()) }

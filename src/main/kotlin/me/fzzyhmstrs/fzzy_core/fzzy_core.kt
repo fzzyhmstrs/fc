@@ -3,6 +3,7 @@ package me.fzzyhmstrs.fzzy_core
 import com.llamalad7.mixinextras.MixinExtrasBootstrap
 import me.fzzyhmstrs.fzzy_core.coding_util.AdvancementCompletionCriterion
 import me.fzzyhmstrs.fzzy_core.config.FcConfig
+import me.fzzyhmstrs.fzzy_core.modifier_util.ModifierHelperType
 import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.ModifierConsumerType
 import me.fzzyhmstrs.fzzy_core.modifier_util.serialization.ModifierPredicateType
 import me.fzzyhmstrs.fzzy_core.registry.EventRegistry
@@ -32,6 +33,7 @@ object FC: ModInitializer {
         LootRegistry.registerAll()
         EventRegistry.registerAll()
         ModifierRegistry.registerAll()
+        ModifierHelperType.init()
         ModifierPredicateType.Types.init()
         ModifierConsumerType.Types.init()
     }
@@ -47,7 +49,7 @@ object FCC: ClientModInitializer {
     }
 }
 
-object FCPreLaunch: PreLaunchEntrypoint{
+object FCPreLaunch: PreLaunchEntrypoint {
 
     override fun onPreLaunch() {
         MixinExtrasBootstrap.init()
